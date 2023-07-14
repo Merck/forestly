@@ -1,0 +1,12 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+.DS_Store
+docs/
+
+.sas7bdat
+.xpt
+.html
+.log

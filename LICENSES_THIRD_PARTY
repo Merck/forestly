@@ -1,0 +1,25 @@
+forestly uses third-party R packages which may be distributed under different
+licenses. We have listed all of these third party packages and their licenses
+below. However, the most up-to-date information can be found via inspecting
+the Imports field in the DESCRIPTION file.
+
+You must agree to the terms of these licenses, in addition to the forestly
+source code license, in order to use this software.
+
+--------------------------------------------------
+Third party R packages listed by License type
+[Format: Name - URL]
+--------------------------------------------------
+
+MIT / X11 License (or adaptations) (https://www.opensource.org/licenses/MIT)
+  * crosstalk - https://github.com/rstudio/crosstalk/blob/main/LICENSE
+  * glue - https://github.com/tidyverse/glue
+  * reactable - https://cran.r-project.org/web/packages/reactable/LICENSE
+  * reactR - https://cran.r-project.org/web/packages/reactR/LICENSE
+  * rlang - https://github.com/r-lib/rlang
+
+GPL-3 / GPL-2
+  * metalite - https://merck.github.io/metalite/LICENSE.html
+  * metalite.ae - https://merck.github.io/metalite.ae/LICENSE.html
+  * htmltools - https://cran.r-project.org/web/licenses/GPL-3
+  * brew - https://cran.r-project.org/web/licenses/GPL-2

@@ -1,0 +1,24 @@
+---
+title: "An Introduction to the forestly Package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{An Introduction to the forestly Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Here is only a minimal example:
+
+```{r, eval = FALSE}
+library(forestly)
+
+meta_forestly(
+  dataset_adsl = forestly_adsl,
+  dataset_adae = forestly_adae,
+  population_term = "apat",
+  observation_term = "wk12"
+) |>
+  prepare_ae_forestly(parameter = "any;rel;ser") |>
+  format_ae_forestly() |>
+  ae_forestly()
+```

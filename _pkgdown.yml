@@ -1,0 +1,47 @@
+destination: docs
+
+url: https://elong0527.github.io/forestly/
+
+template:
+  bootstrap: 5
+  bslib:
+    primary: "#00857c"
+    navbar-light-brand-color: "#fff"
+    navbar-light-brand-hover-color: "#fff"
+    navbar-light-color: "#fff"
+    navbar-light-hover-color: "#fff"
+    navbar-light-active-color: "#fff"
+    dropdown-link-hover-color: "#fff"
+    dropdown-link-hover-bg: "#00857c"
+
+footer:
+  structure:
+    left: [developed_by, built_with, legal]
+    right: [blank]
+
+articles:
+- title: Get started
+  contents:
+  - forestly
+  - forestly-cran
+- title: Examples
+  navbar: ~
+  contents:
+  - layout
+- title: Package design
+  contents:
+  - design-pattern
+
+reference:
+- title: Adverse event analysis
+  contents:
+  - "meta_forestly"
+  - "prepare_ae_forestly"
+  - "format_ae_forestly"
+  - "ae_forestly"
+- title: Example data
+  contents:
+  - "forestly_adsl"
+  - "forestly_adsl_3grp"
+  - "forestly_adae"
+  - "forestly_adae_3grp"

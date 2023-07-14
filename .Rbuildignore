@@ -1,0 +1,16 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+
+^_pkgdown\.yml$
+^pkgdown$
+^docs$
+
+^LICENSE.md$
+^LICENSES_THIRD_PARTY$
+^\.github$
+^codecov\.yml$
+^tests/testthat/_snaps$
+
+^vignettes/design-pattern.Rmd$
+^vignettes/forestly.Rmd$
+^vignettes/layout.Rmd$

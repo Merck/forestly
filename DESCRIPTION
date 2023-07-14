@@ -1,0 +1,37 @@
+Package: forestly
+Title: Interactive Forest Plot
+Version: 0.0.1
+Authors@R: c(
+    person("Yilong", "Zhang", role = c("aut")),
+    person("Benjamin", "Wang", email = "benjamin.wang@merck.com", role = c("aut", "cre")),
+    person("Yujie", "Zhao", role = c("aut")),
+    person("Nan", "Xiao", role = c("ctb")),
+    person("Xuan", "Deng", role = c("ctb"))
+    )
+Description: Interactive forest plot using 'reactable' and 'plotly'.
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 4.1)
+Imports:
+    brew,
+    crosstalk,
+    glue,
+    htmltools,
+    metalite,
+    metalite.ae,
+    reactable,
+    reactR,
+    rlang
+Suggests:
+    covr,
+    dplyr,
+    knitr,
+    r2rtf,
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3

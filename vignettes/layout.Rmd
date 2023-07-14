@@ -1,0 +1,123 @@
+---
+title: "Controlling Layout"
+output:
+  rmarkdown::html_document:
+    self_contained: no
+    number_sections: yes
+    code_folding: hide
+vignette: |
+  %\VignetteIndexEntry{Controlling Layout}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r}
+library(forestly)
+library(metalite)
+```
+
+# Overview
+
+The forestly package controls forest plot layouts in a simple and effective approach.
+To illustrate the idea, we use ADSL (`forestly_adsl_3grp`) and
+ADAE (`forestly_adae_3grp`) datasets in the forestly package
+that contain three treatment groups.
+
+The first step is to create the required metadata using `meta_forestly()`.
+Then we use `prepare_ae_forestly()` to prepare the input datasets for an interactive forest plot.
+The `outdata` contains all the parameters required to generate the interactive forest plot.
+
+```{r}
+metadata <- meta_forestly(
+  dataset_adsl = forestly_adsl_3grp,
+  dataset_adae = forestly_adae_3grp,
+  population_term = "apat",
+  observation_term = "wk12"
+)
+
+outdata <- metadata |> prepare_ae_forestly(parameter = "any;rel;ser")
+
+outdata
+```
+
+The interactive forest plot with default style can be generated.
+
+```{r}
+outdata |>
+  format_ae_forestly() |>
+  ae_forestly()
+```
+
+# Change color
+
+By default, forestly is using teal for treatment group and plum for control group.
+If user wants to change the color,
+the `color` argument in the `format_ae_forestly()` function can be used.
+Here is an example for an interactive forest plot using black and grey.
+
+```{r}
+outdata |>
+  format_ae_forestly(color = c("black", "grey60", "grey40")) |>
+  ae_forestly()
+```
+
+# Display different columns
+
+By using the display argument in format_ae_forestly(), we can display the total column.
+
+```{r}
+outdata |>
+  format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff", "total")) |>
+  ae_forestly()
+```
+
+We can also display risk difference columns in a similar approach.
+
+```{r}
+outdata |>
+  format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff", "diff")) |>
+  ae_forestly()
+```
+
+# Control column width
+
+We can control column width to customize the layout.
+
+```{r}
+outdata |>
+  format_ae_forestly(
+    width_fig = 230,
+    footer_space = 110
+  ) |>
+  ae_forestly(width = 1000)
+```
+
+# Change variable listed in drill-down table
+
+Users can explore AE listing by clicking $\blacktriangleright$ of each row
+after we specify column names in `ae_listing_display`.
+
+```{r}
+listing_var <- c(
+  "SEX", "RACE", "AGE",
+  "SITEID", "AESEV", "STUDYID",
+  "AESER", "AEREL", "ASTDT", "AENDT"
+)
+
+metadata |>
+  prepare_ae_forestly(
+    parameter = "any;rel;ser",
+    ae_listing_display = listing_var
+  ) |>
+  format_ae_forestly() |>
+  ae_forestly()
+```
