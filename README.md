@@ -1,7 +1,7 @@
 # forestly <img src="man/figures/logo.png" align="right" width="120" />
 
 <!-- badges: start -->
-
+[![R-CMD-check](https://github.com/Merck/forestly/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Merck/forestly/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 ## Overview
