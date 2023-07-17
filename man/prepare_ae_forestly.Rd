@@ -39,6 +39,13 @@ An \code{outdata} object.
 Prepare datasets for interactive forest plot
 }
 \examples{
-meta <- metalite.ae::meta_ae_example()
-prepare_ae_forestly(meta, "apat", "wk12", "any;rel")
+adsl <- forestly_adsl[1:100,]
+adae <- forestly_adae[1:100,]
+meta_forestly(
+  dataset_adsl = adsl,
+  dataset_adae = adae,
+  population_term = "apat",
+  observation_term = "wk12"
+) |>
+  prepare_ae_forestly(parameter = "any;rel")
 }
