@@ -2,6 +2,7 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/Merck/forestly/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Merck/forestly/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/elong0527/forestly/branch/master/graph/badge.svg)](https://app.codecov.io/gh/elong0527/forestly?branch=master)
 <!-- badges: end -->
 
 ## Overview
@@ -12,6 +13,10 @@ The forestly package creates interactive forest plots for clinical trial analysi
   - Specific adverse events analysis
 - Efficacy analysis (future work)
   - Subgroup analysis
+
+<video src="https://user-images.githubusercontent.com/85646030/238364424-b93e8b04-5791-4c24-90ea-cfb7832442db.mp4" data-canonical-src="https://user-images.githubusercontent.com/85646030/238364424-b93e8b04-5791-4c24-90ea-cfb7832442db.mp4" controls="controls" muted="muted" class="d-block rounded-bottom-2 width-fit" style="max-height:640px;max-width:60%;">
+
+</video>
 
 We assume ADaM datasets are ready for analysis and
 leverage [metalite](https://merck.github.io/metalite/) data structure to define
