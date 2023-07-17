@@ -1,14 +1,20 @@
 Package: forestly
 Title: Interactive Forest Plot
-Version: 0.0.1
+Version: 0.1.0
 Authors@R: c(
     person("Yilong", "Zhang", role = c("aut")),
     person("Benjamin", "Wang", email = "benjamin.wang@merck.com", role = c("aut", "cre")),
     person("Yujie", "Zhao", role = c("aut")),
     person("Nan", "Xiao", role = c("ctb")),
-    person("Xuan", "Deng", role = c("ctb"))
+    person("Xuan", "Deng", role = c("ctb")),
+    person("Merck Sharp & Dohme Corp", role = "cph")
     )
-Description: Interactive forest plot using 'reactable' and 'plotly'.
+Description: Interactive forest plot for clinical trial safety analysis
+    using 'metalite', 'reactable', 'plotly', and Analysis Data Model (ADaM)
+    datasets. Includes functionality for adverse event filtering,
+    incidence-based group filtering, hover-over reveals, and search and sort
+    operations. The workflow allows for metadata construction, data preparation,
+    output formatting, and interactive plot generation.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
