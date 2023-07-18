@@ -20,15 +20,17 @@ An AE forest plot saved as a \code{shiny.tag.list} object.
 Display interactive forest plot
 }
 \examples{
-adsl <- forestly_adsl[1:100,]
-adae <- forestly_adae[1:100,]
-meta_forestly(
-  dataset_adsl = adsl,
-  dataset_adae = adae,
-  population_term = "apat",
-  observation_term = "wk12"
-) |>
-  prepare_ae_forestly(parameter = "any;rel") |>
-  format_ae_forestly() |>
-  ae_forestly()
+adsl <- forestly_adsl[1:100, ]
+adae <- forestly_adae[1:100, ]
+if (interactive()) {
+  meta_forestly(
+    dataset_adsl = adsl,
+    dataset_adae = adae,
+    population_term = "apat",
+    observation_term = "wk12"
+  ) |>
+    prepare_ae_forestly(parameter = "any;rel") |>
+    format_ae_forestly() |>
+    ae_forestly()
+}
 }
