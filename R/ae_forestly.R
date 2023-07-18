@@ -27,17 +27,19 @@
 #' @export
 #'
 #' @examples
-#' adsl <- forestly_adsl[1:100,]
-#' adae <- forestly_adae[1:100,]
-#' meta_forestly(
-#'   dataset_adsl = adsl,
-#'   dataset_adae = adae,
-#'   population_term = "apat",
-#'   observation_term = "wk12"
-#' ) |>
-#'   prepare_ae_forestly(parameter = "any;rel") |>
-#'   format_ae_forestly() |>
-#'   ae_forestly()
+#' adsl <- forestly_adsl[1:100, ]
+#' adae <- forestly_adae[1:100, ]
+#' if (interactive()) {
+#'   meta_forestly(
+#'     dataset_adsl = adsl,
+#'     dataset_adae = adae,
+#'     population_term = "apat",
+#'     observation_term = "wk12"
+#'   ) |>
+#'     prepare_ae_forestly(parameter = "any;rel") |>
+#'     format_ae_forestly() |>
+#'     ae_forestly()
+#' }
 ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
   filter <- match.arg(filter)
   filter_range <- c(0, 100)
