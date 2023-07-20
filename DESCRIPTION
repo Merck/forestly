@@ -7,7 +7,7 @@ Authors@R: c(
     person("Yujie", "Zhao", role = c("aut")),
     person("Nan", "Xiao", role = c("ctb")),
     person("Xuan", "Deng", role = c("ctb")),
-    person("Merck Sharp & Dohme Corp", role = "cph")
+    person("Merck & Co., Inc., Rahway, NJ, USA and its affiliates", role = "cph")
     )
 Description: Interactive forest plot for clinical trial safety analysis
     using 'metalite', 'reactable', 'plotly', and Analysis Data Model (ADaM)
@@ -16,6 +16,8 @@ Description: Interactive forest plot for clinical trial safety analysis
     operations. The workflow allows for metadata construction, data preparation,
     output formatting, and interactive plot generation.
 License: GPL (>= 3)
+URL: https://merck.github.io/forestly/, https://github.com/Merck/forestly
+BugReports: https://github.com/Merck/forestly/issues
 Encoding: UTF-8
 LazyData: true
 Depends:
