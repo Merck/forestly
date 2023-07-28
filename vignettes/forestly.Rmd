@@ -41,6 +41,12 @@ leverage [metalite](https://merck.github.io/metalite/) data structure to define
 inputs and outputs.
 
 ```{r}
+forestly_adsl$TRTA <- factor(forestly_adsl$TRT01A, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
+
+forestly_adae$TRTA <- factor(forestly_adae$TRTA, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
+```
+
+```{r}
 meta_forestly(
   dataset_adsl = forestly_adsl,
   dataset_adae = forestly_adae,
@@ -179,7 +185,7 @@ meta <- meta_adam(
   )) |>
   define_population(
     name = "apat",
-    group = "TRT01A",
+    group = "TRTA",
     subset = quote(SAFFL == "Y")
   ) |>
   define_observation(
