@@ -147,10 +147,12 @@ format_ae_listing <- function(outdata) {
   if ("ADURN" %in% toupper(names(res)) & "ADURU" %in% toupper(names(res))) {
     res$Duration <- paste(ifelse(is.na(res$ADURN), "", as.character(res$ADURN)), tools::toTitleCase(tolower(res$ADURU)), sep = " ") # AE duration with unit
 
-    for (i in 1:length(res$Duration)) {
-      if (is.na(res$ADURN[i])) {
-        res$Duration[i] <- ifelse(charmatch(toupper(res$AEOUT[i]), "RECOVERING/RESOLVING") > 0 |
-          charmatch(toupper(res$AEOUT[i]), "NOT RECOVERED/NOT RESOLVED") > 0, "Continuing", "Unknown")
+    if (length(res$Duration > 0)){
+      for (i in 1:length(res$Duration)) {
+        if (is.na(res$ADURN[i])) {
+          res$Duration[i] <- ifelse(charmatch(toupper(res$AEOUT[i]), "RECOVERING/RESOLVING") > 0 |
+            charmatch(toupper(res$AEOUT[i]), "NOT RECOVERED/NOT RESOLVED") > 0, "Continuing", "Unknown")
+        }
       }
     }
 
@@ -188,16 +190,20 @@ format_ae_listing <- function(outdata) {
 
   # Action taken
   if ("AEACN" %in% toupper(names(res))) {
-    for (i in 1:length(res$AEACN)) {
-      res$Action_Taken[i] <- switch(res$AEACN[i],
-        "DOSE NOT CHANGED" = "None",
-        "DOSE REDUCED" = "Reduced",
-        "DRUG INTERRUPTED" = "Interrupted",
-        "DOSE INCREASED" = "Increased",
-        "NOT APPLICABLE" = "N/A",
-        "UNKNOWN" = "Unknown",
-        tools::toTitleCase(tolower(res$AEACN[i]))
-      )
+    if (length(res$AEACN > 0)) {
+      for (i in 1:length(res$AEACN)) {
+        res$Action_Taken[i] <- switch(res$AEACN[i],
+          "DOSE NOT CHANGED" = "None",
+          "DOSE REDUCED" = "Reduced",
+          "DRUG INTERRUPTED" = "Interrupted",
+          "DOSE INCREASED" = "Increased",
+          "NOT APPLICABLE" = "N/A",
+          "UNKNOWN" = "Unknown",
+          tools::toTitleCase(tolower(res$AEACN[i]))
+        )
+      }
+    } else {
+      res$Action_Taken <- res$AEACN
     }
 
     cols_remove <- c(cols_remove, "AEACN")
@@ -205,14 +211,18 @@ format_ae_listing <- function(outdata) {
 
   # Outcome
   if ("AEOUT" %in% toupper(names(res))) {
-    for (i in 1:length(res$AEOUT)) {
-      res$Outcome[i] <- switch(res$AEOUT[i],
-        "RECOVERED/RESOLVED" = "Resolved",
-        "RECOVERING/RESOLVING" = "Resolving",
-        "RECOVERED/RESOLVED WITH SEQUELAE" = "Sequelae",
-        "NOT RECOVERED/NOT RESOLVED" = "Not Resolved",
-        tools::toTitleCase(tolower(res$AEOUT[i]))
-      )
+    if (length(res$AEOUT > 0)) {
+      for (i in 1:length(res$AEOUT)) {
+        res$Outcome[i] <- switch(res$AEOUT[i],
+          "RECOVERED/RESOLVED" = "Resolved",
+          "RECOVERING/RESOLVING" = "Resolving",
+          "RECOVERED/RESOLVED WITH SEQUELAE" = "Sequelae",
+          "NOT RECOVERED/NOT RESOLVED" = "Not Resolved",
+          tools::toTitleCase(tolower(res$AEOUT[i]))
+        )
+      }
+    } else {
+      res$Outcome <- res$AEOUT
     }
     cols_remove <- c(cols_remove, "AEOUT")
   }
@@ -222,37 +232,44 @@ format_ae_listing <- function(outdata) {
     res$ymd <- substring(res$AEDOSDUR, unlist(gregexpr("/P", res$AEDOSDUR)) + 2)
 
     res$Total_Dose_on_Day_of_AE_Onset <- ""
-    for (i in 1:length(res$AEDOSDUR)) {
-      if (unlist(gregexpr("Y", res$ymd[i])) > 0) {
-        val_year <- substring(res$ymd[i], 1, unlist(gregexpr("Y", res$ymd[i])) - 1)
-        if (as.numeric(val_year) != 1) {
-          res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], val_year, " years")
-        } else {
-          res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], "1 year")
+    print(length(res$AEDOSDUR))
+    print(nrow(res$AEDOSDUR))
+
+    if (length(res$AEDOSDUR) > 0){
+      for (i in 1:length(res$AEDOSDUR)) {
+        if (unlist(gregexpr("Y", res$ymd[i])) > 0) {
+          val_year <- substring(res$ymd[i], 1, unlist(gregexpr("Y", res$ymd[i])) - 1)
+          if (as.numeric(val_year) != 1) {
+            res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], val_year, " years")
+          } else {
+            res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], "1 year")
+          }
+
+          res$ymd[i] <- substring(res$ymd[i], unlist(gregexpr("Y", res$ymd[i])) + 1)
         }
+        if (unlist(gregexpr("M", res$ymd[i])) > 0) {
+          val_month <- substring(res$ymd[i], 1, unlist(gregexpr("M", res$ymd[i])) - 1)
 
-        res$ymd[i] <- substring(res$ymd[i], unlist(gregexpr("Y", res$ymd[i])) + 1)
-      }
-      if (unlist(gregexpr("M", res$ymd[i])) > 0) {
-        val_month <- substring(res$ymd[i], 1, unlist(gregexpr("M", res$ymd[i])) - 1)
+          if (as.numeric(val_month) != 1) {
+            res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], " ", val_month, " months")
+          } else {
+            res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], " 1 month")
+          }
 
-        if (as.numeric(val_month) != 1) {
-          res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], " ", val_month, " months")
-        } else {
-          res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], " 1 month")
+          res$ymd[i] <- substring(res$ymd[i], unlist(gregexpr("M", res$ymd[i])) + 1)
         }
+        if (unlist(gregexpr("D", res$ymd[i])) > 0) {
+          val_day <- substring(res$ymd[i], 1, unlist(gregexpr("D", res$ymd[i])) - 1)
 
-        res$ymd[i] <- substring(res$ymd[i], unlist(gregexpr("M", res$ymd[i])) + 1)
-      }
-      if (unlist(gregexpr("D", res$ymd[i])) > 0) {
-        val_day <- substring(res$ymd[i], 1, unlist(gregexpr("D", res$ymd[i])) - 1)
-
-        if (as.numeric(val_day) != 1) {
-          res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], " ", val_day, " days")
-        } else {
-          res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], " 1 day")
+          if (as.numeric(val_day) != 1) {
+            res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], " ", val_day, " days")
+          } else {
+            res$Total_Dose_on_Day_of_AE_Onset[i] <- paste0(res$Total_Dose_on_Day_of_AE_Onset[i], " 1 day")
+          }
         }
       }
+    } else {
+      res$Total_Dose_on_Day_of_AE_Onset <- res$AEDOSDUR
     }
     res <- res[, !(names(res) == "ymd"), drop = FALSE]
     cols_remove <- c(cols_remove, "AEDOSDUR")

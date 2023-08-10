@@ -50,6 +50,15 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
     FUN.VALUE = character(1)
   )
 
+  for (par in parameters[(!(parameters %in% unique(outdata$parameter_order)))]){
+    outdata$tbl <-
+      rbind(outdata$tbl, NA)
+    outdata$tbl$name <- ifelse(is.na(outdata$tbl$name), "No data to display", outdata$tbl$name)
+    outdata$tbl$parameter <-
+      factor(ifelse(is.na(outdata$tbl$parameter), par, as.character(outdata$tbl$parameter)),
+             levels(outdata$parameter_order))
+  }
+
   outdata$tbl$parameter <- factor(
     outdata$tbl$parameter,
     levels = parameters,

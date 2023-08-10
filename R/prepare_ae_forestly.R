@@ -79,8 +79,10 @@ prepare_ae_forestly <- function(
 
   ae_listing <- data.frame()
   for (i in 1:length(res)) {
-    res[[i]]$ae_listing$param <- res[[i]]$parameter
-    ae_listing <- rbind(ae_listing, res[[i]]$ae_listing)
+    if (nrow(res[[i]]$ae_listing) > 0){
+      res[[i]]$ae_listing$param <- res[[i]]$parameter
+      ae_listing <- rbind(ae_listing, res[[i]]$ae_listing)
+    }
   }
 
   # Arrange data frame
@@ -114,6 +116,13 @@ prepare_ae_forestly <- function(
   parameter_order <- unlist(Map(rep, x = parameters, each = attributes(info$order)$n))
   names(parameter_order) <- NULL
   parameter_order <- factor(parameter_order, levels = parameters)
+
+  # Display message if a specified-parameter is not included
+  if (any(!(parameters %in% unique(parameter_order)))){
+    warning(paste0('There is no record for the parameter "',
+                   parameters[!(parameters %in% unique(parameter_order))],
+                   '" to display.'))
+  }
 
   # Additional group information
   info1 <- do.call(data.frame, info)
