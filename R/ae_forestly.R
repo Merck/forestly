@@ -52,12 +52,11 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
 
   for (par in parameters[(!(parameters %in% unique(outdata$parameter_order)))]){
     outdata$tbl <-
-      rbind(outdata$tbl, NA) |>
-      dplyr::mutate(
-        name = ifelse(is.na(name), "No data to display", name),
-        parameter = factor(ifelse(is.na(parameter), par, as.character(parameter)),
-                           levels(outdata$parameter_order))
-      )
+      rbind(outdata$tbl, NA)
+    outdata$tbl$name <- ifelse(is.na(outdata$tbl$name), "No data to display", outdata$tbl$name)
+    outdata$tbl$parameter <-
+      factor(ifelse(is.na(outdata$tbl$parameter), par, as.character(outdata$tbl$parameter)),
+             levels(outdata$parameter_order))
   }
 
   outdata$tbl$parameter <- factor(
