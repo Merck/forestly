@@ -43,4 +43,4 @@ function filter_default() {
   }
 }
 
-window.onload = filter_default;
+window.addEventListener('load', filter_default);
