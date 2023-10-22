@@ -2,3 +2,8 @@
 
 - Initial version.
 - Added a `NEWS.md` file to track changes to the package.
+
+# forestly 0.1.1
+
+- Initial version.
+- Added a `NEWS.md` file to track changes to the package.
