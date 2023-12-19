@@ -2,7 +2,26 @@
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/Merck/forestly/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Merck/forestly/actions/workflows/R-CMD-check.yaml)
+[![Codecov test coverage](https://codecov.io/gh/Merck/forestly/branch/main/graph/badge.svg)](https://app.codecov.io/gh/Merck/forestly?branch=main)
+[![CRAN status](https://www.r-pkg.org/badges/version/forestly)](https://cran.r-project.org/package=forestly)
+[![CRAN Downloads](https://cranlogs.r-pkg.org/badges/forestly)](https://cran.r-project.org/package=forestly)
 <!-- badges: end -->
+
+## Installation
+
+The easiest way to get forestly is to install from CRAN:
+
+```r
+install.packages("forestly")
+```
+
+Alternatively, to use a new feature or get a bug fix,
+you can install the development version of forestly from GitHub:
+
+```r
+# install.packages("remotes")
+remotes::install_github("Merck/forestly")
+```
 
 ## Overview
 
