@@ -8,9 +8,10 @@ meta_forestly(
   dataset_adsl,
   dataset_adae,
   population_term,
-  population_subset = SAFFL == "Y",
   observation_term,
+  population_subset = SAFFL == "Y",
   observation_subset = SAFFL == "Y",
+  treatment_group = "TRTA",
   parameter_term = "any;rel;ser"
 )
 }
@@ -21,13 +22,15 @@ meta_forestly(
 
 \item{population_term}{A character value of population term name.}
 
+\item{observation_term}{A character value of observation term name.}
+
 \item{population_subset}{An unquoted condition for selecting the
 populations from ADSL dataset.}
 
-\item{observation_term}{A character value of observation term name.}
-
 \item{observation_subset}{An unquoted condition for selecting the
 observations from ADAE dataset.}
+
+\item{treatment_group}{A character value of treatment group name.}
 
 \item{parameter_term}{A character value of parameter term name.}
 }
