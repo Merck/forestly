@@ -48,8 +48,8 @@ meta_forestly <- function(
     observation_subset = SAFFL == "Y",
     parameter_term = "any;rel;ser") {
   meta <- metalite::meta_adam(
-    population = dataset_adsl,
-    observation = dataset_adae
+    population = as.data.frame(dataset_adsl),
+    observation = as.data.frame(dataset_adae)
   ) |>
     metalite::define_plan(plan = metalite::plan(
       analysis = "ae_forestly",
