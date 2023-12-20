@@ -101,6 +101,12 @@ outdata |>
   ae_forestly(width = 1000)
 ```
 
+# Horizontal scrolling
+
+Set `ae_forestly(..., width = NULL)` to make the element scrollable horizontally.
+This is particularly useful when embedding the plot in pages with responsive
+design, using frameworks such as Bootstrap.
+
 # Change variable listed in drill-down table
 
 Users can explore AE listing by clicking $\blacktriangleright$ of each row
@@ -121,3 +127,16 @@ metadata |>
   format_ae_forestly() |>
   ae_forestly()
 ```
+
+# Hide filters
+
+You can use simple CSS rules to hide the incidence rate filter element.
+For example, in an R Markdown document, use:
+
+````{verbatim, lang="css"}
+```{css, echo=FALSE}
+#filter_subject {
+  display: none;
+}
+```
+````
