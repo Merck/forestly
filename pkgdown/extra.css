@@ -27,3 +27,17 @@ footer {
 .sidebar {
     float: right;
 }
+
+/* hotfix for toc squeezed to bottom issue in vignettes with wide elements */
+@media (min-width: 1200px) {
+    .container {
+        width: 1320px !important;
+    }
+}
+
+@media (min-width: 576px) {
+    #toc {
+        position: relative;
+        top: 0;
+    }
+}
