@@ -1,5 +1,6 @@
 /* navbar background */
-.bg-light, .navbar-light {
+.bg-light,
+.navbar-light {
     background-color: #00857c !important;
 }
 
@@ -22,7 +23,7 @@ footer {
     padding-top: 1rem;
     padding-bottom: 1rem;
 }
-.sidebar{
-  float:right;
-}
 
+.sidebar {
+    float: right;
+}
