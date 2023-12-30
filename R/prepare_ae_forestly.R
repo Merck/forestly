@@ -33,20 +33,21 @@
 #'   dataset_adsl = adsl,
 #'   dataset_adae = adae,
 #'   population_term = "apat",
-#'   observation_term = "wk12"
+#'   observation_term = "wk12",
+#'   parameter = "any;rel"
 #' ) |>
-#'   prepare_ae_forestly(parameter = "any;rel")
+#'   prepare_ae_forestly()
 prepare_ae_forestly <- function(
     meta,
     population = NULL,
     observation = NULL,
-    parameter,
+    parameter = NULL,
     reference_group = NULL,
     ae_listing_display = c(
       "SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER",
       "AEREL", "AEACN", "AEOUT", "SITEID", "ADURN", "ADURU"
     )) {
-  parameters <- unlist(strsplit(parameter, ";"))
+
 
   if (is.null(population)) {
     if (length(meta$population) == 1) {
@@ -62,6 +63,12 @@ prepare_ae_forestly <- function(
     } else {
       stop("Observation term should be one selected from metadata.")
     }
+  }
+
+  if( is.null(parameter)){
+    parameters <- names(meta$parameter)
+  }else{
+    parameters <- unlist(strsplit(parameter, ";"))
   }
 
   res <- lapply(parameters, function(x) {

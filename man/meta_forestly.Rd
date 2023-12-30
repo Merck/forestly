@@ -9,10 +9,10 @@ meta_forestly(
   dataset_adae,
   population_term,
   observation_term,
+  parameter_term = "any;rel",
   population_subset = SAFFL == "Y",
   observation_subset = SAFFL == "Y",
-  treatment_group = "TRTA",
-  parameter_term = "any;rel;ser"
+  treatment_group = "TRTA"
 )
 }
 \arguments{
@@ -24,6 +24,8 @@ meta_forestly(
 
 \item{observation_term}{A character value of observation term name.}
 
+\item{parameter_term}{A character value of parameter term name.}
+
 \item{population_subset}{An unquoted condition for selecting the
 populations from ADSL dataset.}
 
@@ -31,8 +33,6 @@ populations from ADSL dataset.}
 observations from ADAE dataset.}
 
 \item{treatment_group}{A character value of treatment group name.}
-
-\item{parameter_term}{A character value of parameter term name.}
 }
 \value{
 A metalite object.
@@ -45,6 +45,7 @@ meta_forestly(
   forestly_adsl,
   forestly_adae,
   population_term = "apat",
-  observation_term = "wk12"
+  observation_term = "wk12",
+  parameter_term = "any;rel"
 )
 }

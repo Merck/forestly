@@ -38,17 +38,18 @@
 #'   forestly_adsl,
 #'   forestly_adae,
 #'   population_term = "apat",
-#'   observation_term = "wk12"
+#'   observation_term = "wk12",
+#'   parameter_term = "any;rel"
 #' )
 meta_forestly <- function(
     dataset_adsl,
     dataset_adae,
     population_term,
     observation_term,
+    parameter_term = "any;rel",
     population_subset = SAFFL == "Y",
     observation_subset = SAFFL == "Y",
-    treatment_group = "TRTA",
-    parameter_term = "any;rel;ser") {
+    treatment_group = "TRTA") {
   meta <- metalite::meta_adam(
     population = as.data.frame(dataset_adsl),
     observation = as.data.frame(dataset_adae)
