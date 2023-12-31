@@ -67,10 +67,10 @@
 <span>  <span class="va">dataset_adae</span>,</span>
 <span>  <span class="va">population_term</span>,</span>
 <span>  <span class="va">observation_term</span>,</span>
+<span>  parameter_term <span class="op">=</span> <span class="st">"any;rel"</span>,</span>
 <span>  population_subset <span class="op">=</span> <span class="va">SAFFL</span> <span class="op">==</span> <span class="st">"Y"</span>,</span>
 <span>  observation_subset <span class="op">=</span> <span class="va">SAFFL</span> <span class="op">==</span> <span class="st">"Y"</span>,</span>
-<span>  treatment_group <span class="op">=</span> <span class="st">"TRTA"</span>,</span>
-<span>  parameter_term <span class="op">=</span> <span class="st">"any;rel;ser"</span></span>
+<span>  treatment_group <span class="op">=</span> <span class="st">"TRTA"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -92,6 +92,10 @@
 <dd><p>A character value of observation term name.</p></dd>
 
 
+<dt>parameter_term</dt>
+<dd><p>A character value of parameter term name.</p></dd>
+
+
 <dt>population_subset</dt>
 <dd><p>An unquoted condition for selecting the
 populations from ADSL dataset.</p></dd>
@@ -104,10 +108,6 @@ observations from ADAE dataset.</p></dd>
 
 <dt>treatment_group</dt>
 <dd><p>A character value of treatment group name.</p></dd>
-
-
-<dt>parameter_term</dt>
-<dd><p>A character value of parameter term name.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -123,7 +123,8 @@ observations from ADAE dataset.</p></dd>
 <span class="r-in"><span>  <span class="va">forestly_adsl</span>,</span></span>
 <span class="r-in"><span>  <span class="va">forestly_adae</span>,</span></span>
 <span class="r-in"><span>  population_term <span class="op">=</span> <span class="st">"apat"</span>,</span></span>
-<span class="r-in"><span>  observation_term <span class="op">=</span> <span class="st">"wk12"</span></span></span>
+<span class="r-in"><span>  observation_term <span class="op">=</span> <span class="st">"wk12"</span>,</span></span>
+<span class="r-in"><span>  parameter_term <span class="op">=</span> <span class="st">"any;rel"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ADaM metadata: </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    .$data_population 	Population data with 170 subjects </span>
@@ -145,7 +146,6 @@ observations from ADAE dataset.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    name                         label                     subset</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 'any'          'any adverse events'                           </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 'rel' 'drug-related adverse events' toupper(AREL) == 'RELATED'</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 'ser'      'serious adverse events'               AESER == 'Y'</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Analysis function:</span>
