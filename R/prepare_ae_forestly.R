@@ -139,7 +139,7 @@ prepare_ae_forestly <- function(
     meta = meta,
     population = population,
     observation = observation,
-    parameter = parameter,
+    parameter = paste(parameters, collapse = ";"),
     n = values$n,
     order = info$order,
     parameter_order = parameter_order,
