@@ -41,10 +41,11 @@ metadata <- meta_forestly(
   dataset_adsl = forestly_adsl_3grp,
   dataset_adae = forestly_adae_3grp,
   population_term = "apat",
-  observation_term = "wk12"
+  observation_term = "wk12",
+  parameter_term = "any;rel;ser"
 )
 
-outdata <- metadata |> prepare_ae_forestly(parameter = "any;rel;ser")
+outdata <- metadata |> prepare_ae_forestly()
 
 outdata
 ```
@@ -121,7 +122,6 @@ listing_var <- c(
 
 metadata |>
   prepare_ae_forestly(
-    parameter = "any;rel;ser",
     ae_listing_display = listing_var
   ) |>
   format_ae_forestly() |>

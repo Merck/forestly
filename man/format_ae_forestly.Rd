@@ -65,8 +65,9 @@ meta_forestly(
   dataset_adsl = adsl,
   dataset_adae = adae,
   population_term = "apat",
-  observation_term = "wk12"
+  observation_term = "wk12",
+  parameter = "any;rel"
 ) |>
-  prepare_ae_forestly(parameter = "any;rel")|>
+  prepare_ae_forestly()|>
   format_ae_forestly()
 }

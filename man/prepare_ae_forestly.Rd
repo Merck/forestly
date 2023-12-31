@@ -8,7 +8,7 @@ prepare_ae_forestly(
   meta,
   population = NULL,
   observation = NULL,
-  parameter,
+  parameter = NULL,
   reference_group = NULL,
   ae_listing_display = c("SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER", "AEREL",
     "AEACN", "AEOUT", "SITEID", "ADURN", "ADURU")
@@ -45,7 +45,8 @@ meta_forestly(
   dataset_adsl = adsl,
   dataset_adae = adae,
   population_term = "apat",
-  observation_term = "wk12"
+  observation_term = "wk12",
+  parameter = "any;rel"
 ) |>
-  prepare_ae_forestly(parameter = "any;rel")
+  prepare_ae_forestly()
 }

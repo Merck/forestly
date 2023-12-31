@@ -51,9 +51,10 @@ meta_forestly(
   dataset_adsl = forestly_adsl,
   dataset_adae = forestly_adae,
   population_term = "apat",
-  observation_term = "wk12"
+  observation_term = "wk12",
+  parameter_term = "any;rel;ser"
 ) |>
-  prepare_ae_forestly(parameter = "any;rel;ser") |>
+  prepare_ae_forestly() |>
   format_ae_forestly() |>
   ae_forestly()
 ```
@@ -89,7 +90,8 @@ meta_forestly(
   dataset_adsl = forestly_adsl,
   dataset_adae = forestly_adae,
   population_term = "apat",
-  observation_term = "wk12"
+  observation_term = "wk12",
+  parameter_term = "any;rel;ser"
 )
 ```
 
