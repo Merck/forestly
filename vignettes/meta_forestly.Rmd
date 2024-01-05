@@ -1,0 +1,82 @@
+---
+title: "Closer look at `meta_forestly()`"
+output:
+  rmarkdown::html_document:
+    self_contained: no
+    number_sections: yes
+    code_folding: hide
+vignette: |
+  %\VignetteIndexEntry{Controlling Layout}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE,
+  eval = TRUE,
+  echo = TRUE
+)
+```
+
+```{r}
+library(forestly)
+library(metalite)
+```
+
+# Overview
+
+`meta_forestly()` is the first step in the Interactive Forest Plot generation workflow and is a wrapper of several functions from [metalite](https://merck.github.io/metalite/). In essence, it defines a metadata including adam datesets, population, observations and parameters to be used for a forest plot. Since the requirement for the parameters of interest might differ from deliverable to deliverable, `parameter_term` argument in `meta_forestly` includes several options as outlined in this [vignette](https://merck.github.io/forestly/articles/forestly.html#define-metadata)
+
+# `parameter_term` examples
+
+Prior to turning to the examples, just a reminder that the treatment group variable in the adam datasets should be set as a factor, otherwise a warning will be generated:
+```{r}
+forestly_adsl$TRTA <- factor(
+  forestly_adsl$TRT01A, 
+  levels = c("Xanomeline Low Dose", "Placebo"), 
+  labels = c("Low Dose", "Placebo")
+  )
+
+forestly_adae$TRTA <- factor(
+  forestly_adae$TRTA, 
+  levels = c("Xanomeline Low Dose", "Placebo"), 
+  labels = c("Low Dose", "Placebo")
+  )
+```
+
+
+If the deliverable requires a forest plot of any adverse events and serious adverse events, the following code could be used:
+
+```{r}
+meta_forestly(
+  dataset_adsl = forestly_adsl,
+  dataset_adae = forestly_adae,
+  population_term = "apat",
+  observation_term = "wk12",
+  parameter_term = "any;ser"
+) |>
+  prepare_ae_forestly() |>
+  format_ae_forestly() |>
+  ae_forestly()
+```
+
+If, however, serious drug-related adverse events need to be plotted as well, then this could be done using: 
+
+```{r}
+meta_forestly(
+  dataset_adsl = forestly_adsl,
+  dataset_adae = forestly_adae,
+  population_term = "apat",
+  observation_term = "wk12",
+  parameter_term = "any;ser;ser0rel"
+) |>
+  prepare_ae_forestly() |>
+  format_ae_forestly() |>
+  ae_forestly()
+```
