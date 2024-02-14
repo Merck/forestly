@@ -1,6 +1,3 @@
-library(metalite)
-library(metalite.ae)
-
 # Create input object
 adsl <- r2rtf::r2rtf_adsl |> dplyr::mutate(TRTA = TRT01A)
 adae <- r2rtf::r2rtf_adae

@@ -1,6 +1,3 @@
-library(metalite)
-library(metalite.ae)
-
 out <- metalite.ae::meta_ae_example() |>
   prepare_ae_forestly(
     population = "apat",
