@@ -1,6 +1,3 @@
-library(metalite)
-library(metalite.ae)
-
 # meta <-
 #   adsl <- r2rtf::r2rtf_adsl
 #   adsl$TRTA <- adsl$TRT01A
