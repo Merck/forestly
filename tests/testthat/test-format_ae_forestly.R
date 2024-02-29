@@ -1,11 +1,5 @@
-out <- metalite.ae::meta_ae_example() |>
-  prepare_ae_forestly(
-    population = "apat",
-    observation = "wk12",
-    parameter = "any;rel;ser"
-  )
-
 test_that("Set `display` to ('n', 'prop', 'diff') then one has an additional risk difference column", {
+  out <- test_format_ae_forestly()
   ae_frm <- format_ae_forestly(
     out,
     display = c("n", "prop", "diff"),
@@ -29,6 +23,7 @@ test_that("Set `display` to ('n', 'prop', 'diff') then one has an additional ris
 })
 
 test_that("Set `display` to ('n', 'prop', 'total') then one has total column", {
+  out <- test_format_ae_forestly()
   ae_frm <- format_ae_forestly(
     out,
     display = c("n", "prop", "total"),
@@ -53,6 +48,7 @@ test_that("Set `display` to ('n', 'prop', 'total') then one has total column", {
 
 test_that("1. Set `display` to ('n', 'prop', 'total', 'diff') and change column width using argument
            2. Change `diff_label` to 'MK-xxxx <- Favor -> Placebo' and 'footer_space' to change location of footer", {
+  out <- test_format_ae_forestly()
   ae_frm <- format_ae_forestly(
     out,
     display = c("n", "prop", "total", "diff", "fig_diff", "fig_prop"),
@@ -78,6 +74,7 @@ test_that("1. Set `display` to ('n', 'prop', 'total', 'diff') and change column 
 })
 
 test_that("Set `show` to TRUE then display column 'Type' and change color for tratment group", {
+  out <- test_format_ae_forestly()
   ae_frm <- format_ae_forestly(
     out,
     display = c("n", "prop", "total", "diff"),
@@ -97,6 +94,7 @@ test_that("Set `show` to TRUE then display column 'Type' and change color for tr
 })
 
 test_that("Add variable name not in n, prop, total, diff causes error", {
+  out <- test_format_ae_forestly()
   expect_error(
     format_ae_forestly(
       out,
