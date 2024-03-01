@@ -104,6 +104,19 @@ format_ae_listing <- function(outdata) {
   obs_id <- metalite::collect_adam_mapping(outdata$meta, outdata$observation)$id
   par_var <- metalite::collect_adam_mapping(outdata$meta, outdata$parameter)$var
 
+  new_name <- c("SITEID", "SITENUM", obs_id, "SEX", "RACE", "AGE", obs_group, "EPOCH",
+                "ASTDY", par_var, "ADURN", "AESEV", "AESER", "AEREL", "AREL", "AEACN",
+                "AEOUT", "AEDOSDUR")
+  name_mapping <- c("Site_Number", "Site_Number", "Participant_ID", "Gender", "Race", "Age", "Treatment_Group", "Onset_Epoch",
+                    "Relative_Day_of_Onset", "Adverse_Event", "Duration", "Intensity", "Serious", "Related", "Related", "Action_Taken",
+                    "Outcome", "Total_Dose_on_Day_of_AE_Onset")
+  names(name_mapping) <- new_name
+
+  res_columns <- lapply(names(res), function(x) {
+    if (x %in% names(name_mapping)) {name_mapping[[x]]}
+    else {x}
+  }) |> unlist()
+
   cols_remove <- c("SEX", "RACE", "AGE", obs_group, par_var, obs_id)
 
   # Site ID
@@ -277,10 +290,12 @@ format_ae_listing <- function(outdata) {
 
   # Customized variable will use label as column header in
   # drill down listing on interactive forest plot
-  outdata$ae_listing <- res[, !(colnames(res) %in% cols_remove), drop = FALSE]
+  outdata$ae_listing <- res[, res_columns]
+  # outdata$ae_listing <- res[, !(colnames(res) %in% cols_remove), drop = FALSE]
 
   # Get all labels from the un-subset data
   listing_label <- get_label(res)
+  listing_label <- gsub("_", " ", listing_label)
   # Assign labels
   outdata$ae_listing <- assign_label(
     data = outdata$ae_listing,
