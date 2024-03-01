@@ -132,6 +132,7 @@ format_ae_listing <- function(outdata) {
 
   # Participant ID
   res$Participant_ID <- res[[obs_id]]
+  attr(res$Participant_ID, "label") <- NULL
 
   res$Gender <- tools::toTitleCase(res$SEX)
 
@@ -139,6 +140,7 @@ format_ae_listing <- function(outdata) {
 
   res$Age <- res$AGE
   res$Treatment_Group <- res[[obs_group]]
+  attr(res$Treatment_Group, "label") <- NULL
 
   # Onset epoch
   if ("EPOCH" %in% toupper(names(res))) {
