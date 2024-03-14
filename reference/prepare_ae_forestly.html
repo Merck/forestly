@@ -68,8 +68,9 @@
 <span>  observation <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  parameter <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  reference_group <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  ae_listing_display <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SEX"</span>, <span class="st">"RACE"</span>, <span class="st">"AGE"</span>, <span class="st">"ASTDY"</span>, <span class="st">"AESEV"</span>, <span class="st">"AESER"</span>, <span class="st">"AEREL"</span>,</span>
-<span>    <span class="st">"AEACN"</span>, <span class="st">"AEOUT"</span>, <span class="st">"SITEID"</span>, <span class="st">"ADURN"</span>, <span class="st">"ADURU"</span><span class="op">)</span></span>
+<span>  ae_listing_display <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"USUBJID"</span>, <span class="st">"SEX"</span>, <span class="st">"RACE"</span>, <span class="st">"AGE"</span>, <span class="st">"ASTDY"</span>, <span class="st">"AESEV"</span>, <span class="st">"AESER"</span>,</span>
+<span>    <span class="st">"AEREL"</span>, <span class="st">"AEACN"</span>, <span class="st">"AEOUT"</span>, <span class="st">"SITEID"</span>, <span class="st">"ADURN"</span>, <span class="st">"ADURU"</span><span class="op">)</span>,</span>
+<span>  ae_listing_unique <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -101,6 +102,11 @@ Default is 2 if there are 2 groups, otherwise, the default is 1.</p></dd>
 
 <dt>ae_listing_display</dt>
 <dd><p>A vector of name of variables used to display
+on AE listing table.</p></dd>
+
+
+<dt>ae_listing_unique</dt>
+<dd><p>A logical value to display only unique records
 on AE listing table.</p></dd>
 
 </dl></div>
@@ -142,7 +148,7 @@ on AE listing table.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ ci_lower       :'data.frame':	60 obs. of  1 variable:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ ci_upper       :'data.frame':	60 obs. of  1 variable:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ p              :'data.frame':	60 obs. of  1 variable:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ ae_listing     :'data.frame':	151 obs. of  15 variables:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ ae_listing     :'data.frame':	151 obs. of  16 variables:</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
