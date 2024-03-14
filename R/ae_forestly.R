@@ -172,7 +172,14 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
       reactable::reactable(
         t_details,
         columns = col_defs,
-        width = "100%" # Adjust width as needed
+        width = "100%", # Adjust width as needed
+        resizable = TRUE,
+        filterable = TRUE,
+        searchable = TRUE,
+        showPageSizeOptions = TRUE,
+        borderless = TRUE,
+        striped = TRUE,
+        highlight = TRUE
       )
     },
     # Default sort variable

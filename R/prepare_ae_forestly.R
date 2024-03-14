@@ -21,6 +21,8 @@
 #' @inheritParams metalite.ae::prepare_ae_specific
 #' @param ae_listing_display A vector of name of variables used to display
 #'   on AE listing table.
+#' @param ae_listing_unique A logical value to display only unique records
+#'   on AE listing table.
 #'
 #' @return An `outdata` object.
 #'
@@ -44,9 +46,10 @@ prepare_ae_forestly <- function(
     parameter = NULL,
     reference_group = NULL,
     ae_listing_display = c(
-      "SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER",
+      "USUBJID", "SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER",
       "AEREL", "AEACN", "AEOUT", "SITEID", "ADURN", "ADURU"
-    )) {
+    ),
+    ae_listing_unique = FALSE) {
 
 
   if (is.null(population)) {
@@ -81,7 +84,7 @@ prepare_ae_forestly <- function(
     ) |>
       metalite.ae::extend_ae_specific_inference() |>
       collect_ae_listing(display = ae_listing_display) |>
-      format_ae_listing()
+      format_ae_listing(display_unique_records = ae_listing_unique)
   })
 
   ae_listing <- data.frame()
