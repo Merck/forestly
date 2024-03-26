@@ -32,7 +32,7 @@ The forestly package creates interactive forest plots for clinical trial analysi
 - Efficacy analysis (future work)
   - Subgroup analysis
 
-<video src="https://github.com/Merck/forestly/assets/85646030/45bee9a1-5bdf-4ea8-8206-6b10a4c02ad1" data-canonical-src="https://github.com/Merck/forestly/assets/85646030/45bee9a1-5bdf-4ea8-8206-6b10a4c02ad1" controls="controls" muted="muted" class="d-block rounded-bottom-2 width-fit" style="max-height:640px;max-width:60%;">
+<video src="https://github.com/Merck/forestly/assets/129398183/2a645ac6-86f3-42c8-bcba-1970da916fae" data-canonical-src="https://github.com/Merck/forestly/assets/129398183/2a645ac6-86f3-42c8-bcba-1970da916fae" controls="controls" muted="muted" class="d-block rounded-bottom-2 width-fit" style="max-height:640px;max-width:60%;">
 
 </video>
 
