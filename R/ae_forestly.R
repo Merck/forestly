@@ -182,6 +182,9 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
         highlight = TRUE
       )
     },
+
+    pageSizeOptions = if(nrow(outdata$n)<=100) c(10,25,50,100) else c(10, 25, 50, 100, if(nrow(outdata$n)<=200) 200 else c(200, ceiling(nrow(outdata$n)/100)*100)),
+
     # Default sort variable
     defaultSorted = c("parameter", names(outdata$diff)),
     defaultSortOrder = "desc"
