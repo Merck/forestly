@@ -35,11 +35,10 @@
 collect_ae_listing <- function(
     outdata,
     display = c(
-      "SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER",
+      "USUBJID", "SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER",
       "AEREL", "AEACN", "AEOUT", "SITEID", "ADURN", "ADURU"
     )) {
   obs_group <- metalite::collect_adam_mapping(outdata$meta, outdata$observation)$group
-  obs_id <- metalite::collect_adam_mapping(outdata$meta, outdata$observation)$id
   par_var <- metalite::collect_adam_mapping(outdata$meta, outdata$parameter)$var
 
   obs <- metalite::collect_observation_record(
@@ -47,11 +46,11 @@ collect_ae_listing <- function(
     outdata$population,
     outdata$observation,
     outdata$parameter,
-    var = c(par_var, obs_id, obs_group, display)
+    var = c(par_var, obs_group, display)
   )
 
   # Keep variable used to display only
-  outdata$ae_listing <- obs[, c(par_var, obs_id, obs_group, display)]
+  outdata$ae_listing <- obs[, c(par_var, obs_group, display)]
 
   # Get all labels from the un-subset data
   listing_label <- get_label(obs)
@@ -80,6 +79,8 @@ propercase <- function(x) paste0(toupper(substr(x, 1, 1)), tolower(substring(x, 
 #' Format AE listing analysis
 #'
 #' @param outdata An `outdata` object created by [prepare_ae_specific()].
+#' @param display_unique_records A logical value to display only unique records
+#'   on AE listing table.
 #'
 #' @return An `outdata` object after adding AE listing information.
 #'
@@ -90,35 +91,49 @@ propercase <- function(x) paste0(toupper(substr(x, 1, 1)), tolower(substring(x, 
 #' outdata <- metalite.ae::prepare_ae_specific(meta, "apat", "wk12", "rel") |>
 #'   collect_ae_listing(
 #'     c(
-#'       "SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER",
+#'       "USUBJID", "SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER",
 #'       "AEREL", "AEACN", "AEOUT", "SITEID", "ADURN", "ADURU", "AOCCPFL"
 #'     )
 #'   ) |>
 #'   format_ae_listing()
 #'
 #' lapply(outdata, head, 20)
-format_ae_listing <- function(outdata) {
+format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   res <- outdata$ae_listing
 
   obs_group <- metalite::collect_adam_mapping(outdata$meta, outdata$observation)$group
-  obs_id <- metalite::collect_adam_mapping(outdata$meta, outdata$observation)$id
   par_var <- metalite::collect_adam_mapping(outdata$meta, outdata$parameter)$var
 
-  cols_remove <- c("SEX", "RACE", "AGE", obs_group, par_var, obs_id)
+  new_name <- c("SITEID", "SITENUM", "USUBJID", "SUBJID", "SEX", "RACE", "AGE", obs_group, "EPOCH",
+                "ASTDY", par_var, "ADURN", "AESEV", "AESER", "AEREL", "AREL", "AEACN",
+                "AEOUT", "AEDOSDUR")
+  name_mapping <- c("Site_Number", "Site_Number", "Participant_ID", "Participant_ID", "Gender", "Race", "Age", "Treatment_Group", "Onset_Epoch",
+                    "Relative_Day_of_Onset", "Adverse_Event", "Duration", "Intensity", "Serious", "Related", "Related", "Action_Taken",
+                    "Outcome", "Total_Dose_on_Day_of_AE_Onset")
+  names(name_mapping) <- new_name
+
+  res_columns <- lapply(toupper(names(res)), function(x) {
+    if (x %in% names(name_mapping)) {name_mapping[[x]]}
+    else {x}
+  }) |> unlist()
 
   # Site ID
   if ("SITEID" %in% toupper(names(res))) {
     res$Site_Number <- propercase(res$SITEID)
-    cols_remove <- c(cols_remove, "SITEID")
   }
 
   if ("SITENUM" %in% toupper(names(res))) {
     res$Site_Number <- res$SITENUM
-    cols_remove <- c(cols_remove, "SITENUM")
   }
 
   # Participant ID
-  res$Participant_ID <- res[[obs_id]]
+  if ("USUBJID" %in% toupper(names(res))) {
+    res$Participant_ID <- res$USUBJID
+  }
+  if ("SUBJID" %in% toupper(names(res))) {
+    res$Participant_ID <- res$SUBJID
+  }
+  attr(res$Participant_ID, "label") <- NULL
 
   res$Gender <- tools::toTitleCase(res$SEX)
 
@@ -126,17 +141,16 @@ format_ae_listing <- function(outdata) {
 
   res$Age <- res$AGE
   res$Treatment_Group <- res[[obs_group]]
+  attr(res$Treatment_Group, "label") <- NULL
 
   # Onset epoch
   if ("EPOCH" %in% toupper(names(res))) {
     res$Onset_Epoch <- tools::toTitleCase(tolower(res$EPOCH)) # propcase the EPOCH
-    cols_remove <- c(cols_remove, "EPOCH")
   }
 
   # Relative day of onset (ASTDY)
   if ("ASTDY" %in% toupper(names(res))) {
     res$Relative_Day_of_Onset <- res$ASTDY
-    cols_remove <- c(cols_remove, "ASTDY")
   }
 
   # Adverse event
@@ -155,20 +169,16 @@ format_ae_listing <- function(outdata) {
         }
       }
     }
-
-    cols_remove <- c(cols_remove, "ADURN", "ADURU")
   }
 
   # Intensity
   if ("AESEV" %in% toupper(names(res))) {
     res$Intensity <- propercase(res$AESEV)
-    cols_remove <- c(cols_remove, "AESEV")
   }
 
   # Serious
   if ("AESER" %in% toupper(names(res))) {
     res$Serious <- propercase(res$AESER)
-    cols_remove <- c(cols_remove, "AESER")
   }
 
   # AE related
@@ -176,16 +186,12 @@ format_ae_listing <- function(outdata) {
     res$Related <- ifelse(res$AEREL == "RELATED", "Y", ifelse(
       toupper(res$AEREL) == "NOT RELATED", "N", tools::toTitleCase(tolower(res$AEREL))
     ))
-
-    cols_remove <- c(cols_remove, "AEREL")
   }
 
   if ("AREL" %in% toupper(names(res))) {
     res$Related <- ifelse(res$AREL == "RELATED", "Y", ifelse(
       toupper(res$AREL) == "NOT RELATED", "N", tools::toTitleCase(tolower(res$AREL))
     ))
-
-    cols_remove <- c(cols_remove, "AREL")
   }
 
   # Action taken
@@ -205,8 +211,6 @@ format_ae_listing <- function(outdata) {
     } else {
       res$Action_Taken <- res$AEACN
     }
-
-    cols_remove <- c(cols_remove, "AEACN")
   }
 
   # Outcome
@@ -224,7 +228,6 @@ format_ae_listing <- function(outdata) {
     } else {
       res$Outcome <- res$AEOUT
     }
-    cols_remove <- c(cols_remove, "AEOUT")
   }
 
   # Total dose on day of AE onset
@@ -272,15 +275,19 @@ format_ae_listing <- function(outdata) {
       res$Total_Dose_on_Day_of_AE_Onset <- res$AEDOSDUR
     }
     res <- res[, !(names(res) == "ymd"), drop = FALSE]
-    cols_remove <- c(cols_remove, "AEDOSDUR")
   }
 
   # Customized variable will use label as column header in
   # drill down listing on interactive forest plot
-  outdata$ae_listing <- res[, !(colnames(res) %in% cols_remove), drop = FALSE]
+  if (!display_unique_records) {
+    outdata$ae_listing <- res[, res_columns]
+  } else {
+    outdata$ae_listing <- res[, res_columns] |> unique()
+  }
 
   # Get all labels from the un-subset data
   listing_label <- get_label(res)
+  listing_label <- gsub("_", " ", listing_label)
   # Assign labels
   outdata$ae_listing <- assign_label(
     data = outdata$ae_listing,

@@ -66,7 +66,7 @@ meta_forestly(
   ae_forestly()
 ```
 
-If, however, serious drug-related adverse events need to be plotted as well, then this could be done using: 
+If, however, grade 3-5 adverse events need to be plotted as well, then this could be done using: 
 
 ```{r}
 meta_forestly(
@@ -74,9 +74,53 @@ meta_forestly(
   dataset_adae = forestly_adae,
   population_term = "apat",
   observation_term = "wk12",
-  parameter_term = "any;ser;ser0rel"
+  parameter_term = "any;ser;g35"
 ) |>
   prepare_ae_forestly() |>
   format_ae_forestly() |>
   ae_forestly()
 ```
+
+# Adding a new parameter
+
+Below we demonstrate how to add a new parameter to the `meta_forestly()`. Consider, for instance, that now we need to plot adverse events which resulted in dose reductions, a parameter that is currently not available in the predefined options of the `parameter_term`.
+
+```{r}
+meta_new <- meta_adam(
+  population = forestly_adsl,
+  observation = forestly_adae
+  ) |>
+  define_plan(plan = metalite::plan(
+    analysis = "ae_forestly",
+    population = "apat",
+    observation = "wk12",
+    parameter = "any;ser;g35;reduc"
+    )
+  ) |>
+  define_population(
+    name = "apat",
+    group = "TRTA",
+  ) |>
+  define_observation(
+    name = "wk12",
+    group = "TRTA",
+    label = "Weeks 0 to 24"
+  ) |>
+  define_parameter(
+    name = "reduc",
+    subset = AEACN == "DOSE REDUCED",
+    label = "adverse events resulting in dose reduction"
+  ) |>
+  define_analysis(
+    name = "ae_forestly",
+    label = "Interactive forest plot"
+  ) |>
+  meta_build()
+
+meta_new |>
+  prepare_ae_forestly(parameter = "any;ser;g35;reduc") |>
+  format_ae_forestly() |>
+  ae_forestly()
+```
+
+

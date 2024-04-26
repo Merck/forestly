@@ -135,19 +135,52 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
           (outdata$ae_listing$param == t_param)
       )
 
+      # Exclude 'param' column from t_details
+      t_details <- t_details[, !(names(t_details) == "param")]
+
+      # Get all labels from the un-subset data
+      listing_label <- get_label(outdata$ae_listing)
+
+      # Assign labels
+      t_details <- assign_label(
+        data = t_details,
+        var = names(t_details),
+        label = listing_label[match(names(t_details), names(listing_label))]
+      )
+
       row.names(t_details) <- NULL
-      t_details[, !(names(t_details) == "param")] |>
-        # eval(collect_adam_mapping(outdata$meta, t_param)$`subset`)) |>
-        # & param == as.character(t_param))
-        reactable2(
-          width = width,
-          col_def = reactable::colDef(
-            header = function(value) gsub("_", " ", value, fixed = TRUE),
+
+      # Extract labels for use in column definitions
+      labels <- lapply(t_details, function(x) attr(x, "label"))
+
+      # Create named column definitions using the labels
+      col_defs <- setNames(
+        lapply(names(t_details), function(name) {
+          # Use label from the list
+          label_name <- if(is.null(labels[[name]])) name else labels[[name]][[1]]
+          reactable::colDef(
+            header = label_name,  # Use header instead of name
             cell = function(value) format(value, nsmall = 1),
             align = "center",
             minWidth = 70
           )
-        )
+        }),
+        names(t_details)
+      )
+
+      # Create and return the reactable table for the nested view
+      reactable::reactable(
+        t_details,
+        columns = col_defs,
+        width = "100%", # Adjust width as needed
+        resizable = TRUE,
+        filterable = TRUE,
+        searchable = TRUE,
+        showPageSizeOptions = TRUE,
+        borderless = TRUE,
+        striped = TRUE,
+        highlight = TRUE
+      )
     },
     # Default sort variable
     defaultSorted = c("parameter", names(outdata$diff)),

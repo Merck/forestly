@@ -10,8 +10,9 @@ prepare_ae_forestly(
   observation = NULL,
   parameter = NULL,
   reference_group = NULL,
-  ae_listing_display = c("SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER", "AEREL",
-    "AEACN", "AEOUT", "SITEID", "ADURN", "ADURU")
+  ae_listing_display = c("USUBJID", "SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER",
+    "AEREL", "AEACN", "AEOUT", "SITEID", "ADURN", "ADURU"),
+  ae_listing_unique = FALSE
 )
 }
 \arguments{
@@ -30,6 +31,9 @@ The term name is used as key to link information.}
 Default is 2 if there are 2 groups, otherwise, the default is 1.}
 
 \item{ae_listing_display}{A vector of name of variables used to display
+on AE listing table.}
+
+\item{ae_listing_unique}{A logical value to display only unique records
 on AE listing table.}
 }
 \value{
