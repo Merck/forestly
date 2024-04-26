@@ -112,8 +112,8 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
                     "Outcome", "Total_Dose_on_Day_of_AE_Onset")
   names(name_mapping) <- new_name
 
-  res_columns <- lapply(toupper(names(res)), function(x) {
-    if (x %in% names(name_mapping)) {name_mapping[[x]]}
+  res_columns <- lapply(names(res), function(x) {
+    if (toupper(x) %in% names(name_mapping)) {name_mapping[[toupper(x)]]}
     else {x}
   }) |> unlist()
 
