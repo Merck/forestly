@@ -10,8 +10,8 @@ prepare_ae_forestly(
   observation = NULL,
   parameter = NULL,
   reference_group = NULL,
-  ae_listing_display = c("USUBJID", "SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER",
-    "AEREL", "AEACN", "AEOUT", "SITEID", "ADURN", "ADURU"),
+  ae_listing_display = c("USUBJID", "SITEID", "SEX", "RACE", "AGE", "ASTDY", "AESER",
+    "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"),
   ae_listing_unique = FALSE
 )
 }
