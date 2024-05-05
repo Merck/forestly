@@ -8,6 +8,7 @@ Authors@R: c(
     person("Nan", "Xiao", role = c("ctb")),
     person("Hiroaki", "Fukuda", role = c("ctb")),
     person("Xuan", "Deng", role = c("ctb")),
+    person("Yulia", "Sidi", role = c("ctb")),
     person("Merck & Co., Inc., Rahway, NJ, USA and its affiliates", role = "cph")
     )
 Description: Interactive forest plot for clinical trial safety analysis
@@ -32,13 +33,15 @@ Imports:
     metalite.ae,
     reactable,
     reactR,
-    rlang
+    rlang,
+    ggplot2
 Suggests:
     covr,
     dplyr,
     knitr,
     r2rtf,
     rmarkdown,
+    patchwork,
     testthat (>= 3.0.0)
 VignetteBuilder: knitr
 Config/testthat/edition: 3
