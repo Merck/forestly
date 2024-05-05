@@ -1,3 +1,60 @@
+
+#' @title Creating a dot plot
+#' @description `plot_dot` creates a dot plot by item. For instance, could be
+#' used to create AEs incidence plot by Preferred Term and treatment group,
+#' as part of a rainfall plot.
+#'
+#' @param tbl A data frame selected from input data set to display on this plot.
+#' y and x variables are required.
+#' @param y_var A character value, specifies a variable to be displayed on the
+#' y-axis.
+#' @param label A character vector of labels for each treatment group. The
+#' control group label should be specified as the last element of the vector.
+#' @param x_breaks A numeric vector for x-axis breaks. Default value is NULL,
+#' which uses a default ggplot2 x-axis breaks presentation.
+#' @param color Defines a color for each treatment group.
+#' @param shape Defines a shape for each treatment group. Default is circle and
+#' square. Input values could be either a character, e.g., "triangle" or numeric
+#'  value, e.g., 1. For details and examples see \code{vignette("example-color-shape-details", package = "mkvis")}.
+#' @param title A panel title. Default is "AE (%)".
+#' @param background_color A plot background color. Default is c("#69B8F7",
+#' "#FFFFFF"), which is pastel blue and white. The value of this argument is
+#' used as input for `background_color` argument in \code{\link{background_panel}}.
+#' @param background_alpha Controls the opacity of the background. Default is 0.3.
+#'   The value of this argument is the input for `background_alpha` argument in
+#'   \code{\link{background_panel}}.
+#' @param theme Controls panel theme, including y-axis text, ticks and plot
+#' margin. Default \code{theme_panel(show_text = TRUE, show_ticks = TRUE)}. For
+#' more details refer to \code{\link{theme_panel}}.
+#' @param legend_nrow An integer, sets a number of rows for a legend
+#' display. Must be `<=` the number of the treatment groups. To omit the legend
+#' set to NULL. Default is 1.
+#'
+#' @return AEs incidence plot by item and treatment group.
+#' @importFrom ggplot2 ggplot geom_point aes xlab ylab scale_y_discrete scale_colour_manual scale_shape_manual scale_x_continuous dup_axis guides guide_legend
+#' @export
+#' @examples
+#' library(dplyr)
+#' # Example 1: minimal example
+#' forestly_adsl$TRTA <- factor(forestly_adsl$TRT01A, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
+
+#' forestly_adae$TRTA <- factor(forestly_adae$TRTA, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
+
+#' meta <- meta_forestly(
+#'   dataset_adsl = forestly_adsl,
+#'   dataset_adae = forestly_adae,
+#'   population_term = "apat",
+#'   observation_term = "wk12",
+#'   parameter_term = "any;rel;ser"
+#' ) |>
+#'   prepare_ae_forestly() |>
+#'   format_ae_forestly()
+#'
+#' meta_any <- meta$tbl[1:20,] |>
+#' dplyr::filter(parameter == "any")
+#' meta_any |>
+#' dplyr::select(name, prop_1, prop_2) |>
+#' plot_dot("name", label = c("Treatment", "Placebo"))
 plot_dot <- function(tbl,
                      y_var,
                      label,
@@ -173,6 +230,59 @@ plot_dot <- function(tbl,
   g + theme
 }
 
+#' @title Creating plot to display risk difference
+#' @description `plot_errorbar` creates a plot to display a risk difference for
+#' each item
+#'
+#' @inheritParams plot_dot
+#' @param errbar_width A numeric value to define the error bar width. Default is
+#' 0.4. Value of this argument will be a half length of the error bar, e.g.,
+#' `errorbar_width = 0.2` means half of the error bar width is 0.2 unit length.
+#' If y = 4, the error bar will range from y = 3.8 to y = 4.2.
+#' @param grp_abbrev A character vector for displaying the treatment groups on a
+#'  favor bar. If grp_abbrev = "paired", treatment label on an error bar will be
+#'  same as in `label` argument. If grp_abbrev = "none", error bar will not be
+#'  shown. Also, for customized terms, a user can provide an alternative vector
+#'  of treatment labels. Default is "paired".
+#' @param favor_direction Defines the position of a favor label under the
+#' condition “comparison is treatment – control”. For AEs `favor_direction`
+#' should be "negative"; for efficacy `favor_direction` should be "positive".
+#' @param vline A vertical reference line position. Default is NULL. A user can
+#' define one or multiple numeric values in a vector as a reference line
+#' position.
+#' @param line_type A reference line type. Default is solid line. A user can
+#' define one or multiple line types in a vector (can be numeric such as 1, 2, 3
+#'  or character such as "solid", "dashed"). The value will be used recurrently
+#'  and order will be consistent with argument `vline`.
+#' @param title A title of this plot. Default is "Risk Diff. + 95% CI
+#' \\n (Percentage Points)".
+#'
+#' @return A risk difference plot for each item.
+#' @importFrom ggplot2 ggplot geom_point geom_vline geom_errorbar aes scale_x_continuous scale_y_discrete xlab ylab sec_axis guides guide_legend
+#' @export
+#' @examples
+#' library(dplyr)
+#' # Example 1: minimal example
+#' forestly_adsl$TRTA <- factor(forestly_adsl$TRT01A, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
+
+#' forestly_adae$TRTA <- factor(forestly_adae$TRTA, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
+
+#' meta <- meta_forestly(
+#'   dataset_adsl = forestly_adsl,
+#'   dataset_adae = forestly_adae,
+#'   population_term = "apat",
+#'   observation_term = "wk12",
+#'   parameter_term = "any;rel;ser"
+#' ) |>
+#'   prepare_ae_forestly() |>
+#'   format_ae_forestly()
+#'
+#' meta_any <- meta$tbl[1:20,] |>
+#' dplyr::filter(parameter == "any")
+#' meta_any |>
+#' dplyr::select(name, diff_1, lower_1, upper_1) |>
+#' plot_errorbar(y_var = "name",
+#'               label = c("Treatment", "Placebo"))
 plot_errorbar <- function(tbl,
                           y_var,
                           errbar_width = 0.4,
@@ -367,11 +477,63 @@ plot_errorbar <- function(tbl,
   }
   g + theme
 }
-
+#' Nudge around a unit
+#' @description `nudge_unit` nudges around a unit
+#' @param n A number of a group within a unit
+#' @return A nudge for unit
+#' @examples
+#' nudge_unit(10)
 nudge_unit <- function(n) {
   -0.5 + (1:n - 0.5) / n
 }
+#' @title Create table panel ggplot2 object for rainfall or forest plot
+#'
+#' @description `table_panel` creates a table panel ggplot2 object for rainfall or forest plot. Details about `table_panel()` are saved in vignettes/color_shape_details.Rmd
+#' @param tbl A data frame to be displayed in this table.
+#' @param y_var A string of a variable name from `tbl` for the y axis variable.
+#' @param x_label Labels displayed on the top of table for each column of table. Default is NULL, variable name will display as label.
+#' @param text_color Defines colors to display each treatment group.
+#' @param text_size A numeric font size for data on each column. Default is 8 for each column.
+#' @param text_format_by An option for formatting a data by columns or rows. Default is "column" and text color will be varied by column.
+#'   If text_format_by = "row" then text color will be varied by row. If text_format_by = "group" then text color will be varied by treatment group.
+#' @param background_color Color for the plot background. Default is c("#69B8F7", "#FFFFFF") which is pastel blue and white.
+#'   The value of this parameter will be input value for `background_color` parameter in \code{background_panel}. Please refer to
+#'   \code{\link{background_panel}} for more details.
+#' @param background_alpha Controls the opacity of the background. Default is 0.3.
+#'   The value of this parameter will be the input value for `background_alpha` parameter in \code{background_alpha}. Please refer to
+#'   \code{\link{background_panel}} for more details.
+#' @param theme Controls display of y axis text, ticks and plot margin. By default,
+#'   \code{theme_panel(show_text = TRUE, show_ticks = TRUE)} is used. The recommendation is to use \code{theme_panel}.
+#'   Please refer to \code{\link{theme_panel}} for more details.
+#'
+#' @return ggplot2 object for table panel
+#' @importFrom ggplot2 annotate scale_x_discrete scale_y_discrete xlab ylab
+#' @importFrom utils tail
+#' @export
+#' @examples
+#'
+#' library(dplyr)
+#' # Example 1: minimal example
+#' forestly_adsl$TRTA <- factor(forestly_adsl$TRT01A, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
 
+#' forestly_adae$TRTA <- factor(forestly_adae$TRTA, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
+
+#' meta <- meta_forestly(
+#'   dataset_adsl = forestly_adsl,
+#'   dataset_adae = forestly_adae,
+#'   population_term = "apat",
+#'   observation_term = "wk12",
+#'   parameter_term = "any;rel;ser"
+#' ) |>
+#'   prepare_ae_forestly() |>
+#'   format_ae_forestly()
+#'
+#' meta_any <- meta$tbl[1:20,] |>
+#' dplyr::filter(parameter == "any")
+#'
+#' meta_any |>
+#' dplyr::select(name, diff_1, lower_1, upper_1) |>
+#' table_panel(y_var = "name")
 table_panel <- function(tbl,
                         y_var,
                         x_label = NULL,
@@ -522,7 +684,24 @@ table_panel <- function(tbl,
   # add theme
   g + theme
 }
-
+#' @title Theme Function for plot with multiple panels
+#' @description `theme_panel` specifies theme for a plot with multiple panels
+#' @param show_ticks A logical value that controls ticks display on the y axis. Default is TRUE.
+#' @param show_text A logical value that controls a text display on the y axis. Default is TRUE.
+#'
+#' @return Theme for a specific panel
+#' @importFrom ggplot2 ggplot theme element_blank element_line margin element_rect element_text
+#' @export
+#' @examples
+#' library(dplyr)
+#' library(ggplot2)
+#'
+#' # Example
+#' plot1 <- ggplot(mpg, aes(displ, hwy, colour = class)) +
+#'   geom_point()
+#'
+#' plot1
+#' plot1 + theme_panel()
 theme_panel <- function(show_text = TRUE,
                         show_ticks = TRUE){
   # Control display of ticks
@@ -551,7 +730,34 @@ theme_panel <- function(show_text = TRUE,
       plot.margin = margin(0,0,0,0)
     )
 }
-
+#' @title Add background for creating plot with customized color
+#' @description `background_panel` creates colored background for panels of rainfall or forest plot
+#' @param g A ggplot object for adding colored background
+#' @param background_color A vector of colors for defining color for the plot background.
+#'   Default is c("#69B8F7", "#FFFFFF"), which is pastel blue and white.
+#'   The color will be used recurrently.
+#' @param background_alpha Controls the opacity of a geom. Default is 0.3.
+#'
+#' @return plot as a colored background to add panels for rainfall or forest plot
+#' @importFrom ggplot2 ggplot aes geom_rect
+#' @export
+#' @examples
+#' library(ggplot2)
+#' library(dplyr)
+#'
+#' df <- data.frame(
+#'   study = c("S1", "S2", "S3", "S4", "S5", "S6", "S7"),
+#'   item = as.factor(1:7),
+#'   effect = c(-.4, -.25, -.1, .1, .15, .2, .3),
+#'   lower = c(-.43, -.29, -.17, -.02, .04, .17, .27),
+#'   upper = c(-.37, -.21, -.03, .22, .24, .23, .33)
+#' )
+#'
+#' ggplot(data = df) %>%
+#' background_panel(background_color = c("grey", "white"), background_alpha = 0.4) +
+#'   geom_point(aes(y = item, x = effect)) +
+#'   geom_errorbar(aes(y = item, x = effect, xmin = lower, xmax = upper), width = 0.4) +
+#'   scale_y_discrete(name = "", breaks = 1:nrow(df), labels = df$study)
 background_panel <- function(g,
                              background_color = c("#69B8F7", "#FFFFFF"),
                              background_alpha = 0.3) {
