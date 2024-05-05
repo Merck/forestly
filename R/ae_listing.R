@@ -170,6 +170,8 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
         }
       }
     }
+    res <- res[,!(names(res) %in% "ADURU")]
+    res_columns <- res_columns[!(res_columns %in% "ADURU")]
   }
 
   # Intensity
