@@ -322,6 +322,8 @@ format_ae_forestly <- function(
   outdata$reactable_columns <- columns
   outdata$reactable_columns_group <- columnGroups
   outdata$display <- display
+  outdata$fig_prop_color <- fig_prop_color
+  outdata$fig_diff_color <- fig_diff_color
 
   outdata
 }
