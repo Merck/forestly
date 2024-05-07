@@ -37,6 +37,7 @@ Suggests:
     covr,
     dplyr,
     devtools,
+    ggplot2,
     knitr,
     r2rtf,
     rmarkdown,
