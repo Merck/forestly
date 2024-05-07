@@ -32,6 +32,7 @@ articles:
   navbar: ~
   contents:
   - layout
+  - create_static_forest_plot
 - title: Package design
   contents:
   - design-pattern
