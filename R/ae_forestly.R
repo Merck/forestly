@@ -194,14 +194,6 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400, max_page
 
     },
 
-
-#   pageSizeOptions = if(nrow(outdata$n)<=100) c(10,25,50,100) else c(10, 25, 50, 100, if(nrow(outdata$n)<=200) 200 else c(200, ceiling(nrow(outdata$n)/100)*100)),
-#   pageSizeOptions = if(sum(outdata$ae_listing$param == "any")<=100) c(10,25,50,100) else c(10, 25, 50, 100, sum(outdata$ae_listing$param == "any")),
-#   pageSizeOptions =c(10, 25, 50, 100, sum(df$param == "any")),
-#   pageSizeOptions =c(10, 25, 50, 100, nrow(df2), sum(df1$param == "any"), sum(df1$param == "rel"), sum(df2$param == "any")),
-#   pageSizeOptions =c(10, 25, 50, 100, sum(df2$param == "any"), nrow(outdata$n), nrow(outdata$tbl)),
-#   pageSizeOptions =c(10, 25, 50, 100, attr(outdata$tbl$name, "n")[1]),
-#   pageSizeOptions = if((attr(outdata$tbl$name, "n")[1])<=100) c(10,25,50,100) else c(10,25,50,100, ceiling((attr(outdata$tbl$name, "n")[1])/100)*100),
     pageSizeOptions = max_page,
     defaultSorted = c("parameter", names(outdata$diff)),
     defaultSortOrder = "desc"
