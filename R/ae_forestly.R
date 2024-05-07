@@ -45,8 +45,8 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400, max_page
   filter <- match.arg(filter)
   filter_range <- c(0, 100)
 
-  # Add max_page option with default value = NULL, this argument can control the max page number displayed in the interactive forest table
-  # By default will display the counts that rounding up to the nearest hundred
+  # Add max_page option with default value = NULL, this argument can control the max page number displayed in the interactive forest table.
+  # By default will display the counts that rounding up to the nearest hundred.
 
   if(is.null(max_page)){
     max_page = if((attr(outdata$tbl$name, "n")[1])<=100) c(10,25,50,100) else c(10,25,50,100, ceiling((attr(outdata$tbl$name, "n")[1])/100)*100)
