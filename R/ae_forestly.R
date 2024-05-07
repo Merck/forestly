@@ -41,9 +41,18 @@
 #'     format_ae_forestly() |>
 #'     ae_forestly()
 #' }
-ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
+ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400, max_page=NULL) {
   filter <- match.arg(filter)
   filter_range <- c(0, 100)
+
+  # Add max_page option with default value = NULL, this argument can control the max page number displayed in the interactive forest table
+  # By default will display the counts that rounding up to the nearest hundred
+
+  if(is.null(max_page)){
+    max_page = if((attr(outdata$tbl$name, "n")[1])<=100) c(10,25,50,100) else c(10,25,50,100, ceiling((attr(outdata$tbl$name, "n")[1])/100)*100)
+  } else {
+    max_page = if (max_page<=100) c(10,25,50,100) else c(10,25,50,100,max_page)
+  }
 
   parameters <- unlist(strsplit(outdata$parameter, ";"))
   par_label <- vapply(parameters,
@@ -135,6 +144,7 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
           (outdata$ae_listing$param == t_param)
       )
 
+
       # Exclude 'param' column from t_details
       t_details <- t_details[, !(names(t_details) == "param")]
 
@@ -181,13 +191,21 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
         striped = TRUE,
         highlight = TRUE
       )
+
     },
 
-    pageSizeOptions = if(nrow(outdata$n)<=100) c(10,25,50,100) else c(10, 25, 50, 100, if(nrow(outdata$n)<=200) 200 else c(200, ceiling(nrow(outdata$n)/100)*100)),
 
-    # Default sort variable
+#   pageSizeOptions = if(nrow(outdata$n)<=100) c(10,25,50,100) else c(10, 25, 50, 100, if(nrow(outdata$n)<=200) 200 else c(200, ceiling(nrow(outdata$n)/100)*100)),
+#   pageSizeOptions = if(sum(outdata$ae_listing$param == "any")<=100) c(10,25,50,100) else c(10, 25, 50, 100, sum(outdata$ae_listing$param == "any")),
+#   pageSizeOptions =c(10, 25, 50, 100, sum(df$param == "any")),
+#   pageSizeOptions =c(10, 25, 50, 100, nrow(df2), sum(df1$param == "any"), sum(df1$param == "rel"), sum(df2$param == "any")),
+#   pageSizeOptions =c(10, 25, 50, 100, sum(df2$param == "any"), nrow(outdata$n), nrow(outdata$tbl)),
+#   pageSizeOptions =c(10, 25, 50, 100, attr(outdata$tbl$name, "n")[1]),
+#   pageSizeOptions = if((attr(outdata$tbl$name, "n")[1])<=100) c(10,25,50,100) else c(10,25,50,100, ceiling((attr(outdata$tbl$name, "n")[1])/100)*100),
+    pageSizeOptions = max_page,
     defaultSorted = c("parameter", names(outdata$diff)),
     defaultSortOrder = "desc"
+
   )
 
   p <- suppressWarnings(
