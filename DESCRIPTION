@@ -7,6 +7,7 @@ Authors@R: c(
     person("Yujie", "Zhao", role = c("aut")),
     person("Nan", "Xiao", role = c("ctb")),
     person("Hiroaki", "Fukuda", role = c("ctb")),
+    person("Yulia", "Sidi", role = c("ctb")),
     person("Xuan", "Deng", role = c("ctb")),
     person("Merck & Co., Inc., Rahway, NJ, USA and its affiliates", role = "cph")
     )
@@ -32,7 +33,8 @@ Imports:
     metalite.ae,
     reactable,
     reactR,
-    rlang
+    rlang,
+    ggplot2
 Suggests:
     covr,
     dplyr,
