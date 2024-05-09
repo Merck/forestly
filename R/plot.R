@@ -481,6 +481,9 @@ plot_errorbar <- function(tbl,
 #' @description `nudge_unit` nudges around a unit
 #' @param n A number of a group within a unit
 #' @return A nudge for unit
+#'
+#' @noRd
+#'
 #' @examples
 #' nudge_unit(10)
 nudge_unit <- function(n) {
