@@ -35,14 +35,25 @@ library(metalite)
 
 # `parameter_term` examples
 
-Prior to turning to the examples, just a reminder that the treatment group variable in the adam datasets should be set as a factor, otherwise a warning will be generated:
+Prior to turning to the examples, just a reminder that the treatment group variable in the ADaM datasets should be set as a factor, otherwise a warning will be generated. 
+For example if this is your for you have in the `TRT01A` variable:
+```{r}
+unique(forestly_adsl$TRT01A)
+```
+
+You can easily turn it into a factor variable with the desired labels using the following code: 
+
 ```{r}
 forestly_adsl$TRTA <- factor(
   forestly_adsl$TRT01A, 
   levels = c("Xanomeline Low Dose", "Placebo"), 
   labels = c("Low Dose", "Placebo")
   )
+```
 
+A similar approach need to be applied to the ADAE as well:
+
+```{r}
 forestly_adae$TRTA <- factor(
   forestly_adae$TRTA, 
   levels = c("Xanomeline Low Dose", "Placebo"), 
@@ -50,15 +61,16 @@ forestly_adae$TRTA <- factor(
   )
 ```
 
-
-If the deliverable requires a forest plot of any adverse events and serious adverse events, the following code could be used:
+If the deliverable requires a forest plot of all adverse events and serious adverse events, the following code could be used:
 
 ```{r}
 meta_forestly(
   dataset_adsl = forestly_adsl,
   dataset_adae = forestly_adae,
   population_term = "apat",
-  observation_term = "wk12",
+  population_subset = SAFFL == "Y",
+  observation_term = "all",
+  observation_subset = SAFFL == "Y",
   parameter_term = "any;ser"
 ) |>
   prepare_ae_forestly() |>
@@ -73,7 +85,9 @@ meta_forestly(
   dataset_adsl = forestly_adsl,
   dataset_adae = forestly_adae,
   population_term = "apat",
-  observation_term = "wk12",
+  population_subset = SAFFL == "Y",
+  observation_term = "all",
+  observation_subset = SAFFL == "Y",
   parameter_term = "any;ser;g35"
 ) |>
   prepare_ae_forestly() |>
@@ -93,7 +107,7 @@ meta_new <- meta_adam(
   define_plan(plan = metalite::plan(
     analysis = "ae_forestly",
     population = "apat",
-    observation = "wk12",
+    observation = "all",
     parameter = "any;ser;g35;reduc"
     )
   ) |>
@@ -102,14 +116,20 @@ meta_new <- meta_adam(
     group = "TRTA",
   ) |>
   define_observation(
-    name = "wk12",
+    name = "all",
     group = "TRTA",
-    label = "Weeks 0 to 24"
+    label = "All AEs"
   ) |>
   define_parameter(
     name = "reduc",
     subset = AEACN == "DOSE REDUCED",
-    label = "adverse events resulting in dose reduction"
+    label = "adverse events resulting in dose reduction",
+    var = "AEDECOD",
+    soc = "AEBODSYS",
+    seq = 900,
+    term1 = "",
+    term2 = "Result in Dose Reduction",
+    summ_row = "dose reduction"
   ) |>
   define_analysis(
     name = "ae_forestly",
