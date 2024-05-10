@@ -693,7 +693,7 @@ table_panel <- function(tbl,
 #' @param show_text A logical value that controls a text display on the y axis. Default is TRUE.
 #'
 #' @return Theme for a specific panel
-#' @importFrom ggplot2 ggplot theme element_blank element_line margin element_rect element_text
+#' @importFrom ggplot2 ggplot theme element_blank element_line margin element_rect element_text theme_minimal
 #' @export
 #' @examples
 #' library(dplyr)
