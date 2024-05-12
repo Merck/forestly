@@ -50,8 +50,6 @@ forestly_adae$TRTA <- factor(forestly_adae$TRTA, levels = c("Xanomeline Low Dose
 meta_forestly(
   dataset_adsl = forestly_adsl,
   dataset_adae = forestly_adae,
-  population_term = "apat",
-  observation_term = "wk12",
   parameter_term = "any;rel;ser"
 ) |>
   prepare_ae_forestly() |>
@@ -89,8 +87,6 @@ to generate the interactive forest plot.
 meta_forestly(
   dataset_adsl = forestly_adsl,
   dataset_adae = forestly_adae,
-  population_term = "apat",
-  observation_term = "wk12",
   parameter_term = "any;rel;ser"
 )
 ```

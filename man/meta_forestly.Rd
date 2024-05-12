@@ -7,8 +7,8 @@
 meta_forestly(
   dataset_adsl,
   dataset_adae,
-  population_term,
-  observation_term,
+  population_term = "apat",
+  observation_term = "safety",
   parameter_term = "any;rel",
   population_subset = SAFFL == "Y",
   observation_subset = SAFFL == "Y",
@@ -45,7 +45,7 @@ meta_forestly(
   forestly_adsl,
   forestly_adae,
   population_term = "apat",
-  observation_term = "wk12",
+  observation_term = "safety",
   parameter_term = "any;rel"
 )
 }
