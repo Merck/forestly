@@ -44,7 +44,7 @@ reference:
   - "prepare_ae_forestly"
   - "format_ae_forestly"
   - "ae_forestly"
-- title: Static forest plot
+- title: Static plot
   contents:
   - "background_panel"
   - "plot_dot"
