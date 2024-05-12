@@ -40,8 +40,6 @@ The `outdata` contains all the parameters required to generate the interactive f
 metadata <- meta_forestly(
   dataset_adsl = forestly_adsl_3grp,
   dataset_adae = forestly_adae_3grp,
-  population_term = "apat",
-  observation_term = "wk12",
   parameter_term = "any;rel;ser"
 )
 

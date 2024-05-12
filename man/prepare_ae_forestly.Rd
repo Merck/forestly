@@ -47,10 +47,7 @@ adsl <- forestly_adsl[1:100,]
 adae <- forestly_adae[1:100,]
 meta_forestly(
   dataset_adsl = adsl,
-  dataset_adae = adae,
-  population_term = "apat",
-  observation_term = "wk12",
-  parameter = "any;rel"
+  dataset_adae = adae
 ) |>
   prepare_ae_forestly()
 }
