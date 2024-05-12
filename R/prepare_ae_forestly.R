@@ -67,8 +67,33 @@ prepare_ae_forestly <- function(
 
   if( is.null(parameter)){
     parameters <- names(meta$parameter)
+
+    meta$parameter
   }else{
     parameters <- unlist(strsplit(parameter, ";"))
+  }
+
+  for(i in seq_along(parameters)){
+    para <- meta$parameter[[parameters[i]]]
+    if(is.null(para$var)){
+      para$var <- "AEDECOD"
+    }
+    if(is.null(para$soc)){
+      para$soc <- "AEBODSYS"
+    }
+    if(is.null(para$seq)){
+      para$seq <- sample(1e5:2e5, size = 1)
+    }
+    if(is.null(para$term1)){
+      para$term1 <- ""
+    }
+    if(is.null(para$term2)){
+      para$term2 <- ""
+    }
+    if(is.null(para$summ_row)){
+      para$summ_row <- ""
+    }
+    meta$parameter[[parameters[i]]] <- para
   }
 
   res <- lapply(parameters, function(x) {
