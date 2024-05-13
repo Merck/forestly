@@ -101,7 +101,7 @@ prepare_ae_forestly <- function(
     metalite.ae::prepare_ae_specific(meta,
       population = population, observation = observation,
       parameter = x,
-      components = "par",
+      components = c("soc", "par"),
       reference_group = reference_group
     ) |>
       metalite.ae::extend_ae_specific_inference() |>
@@ -142,7 +142,7 @@ prepare_ae_forestly <- function(
     tmp
   }
 
-  name <- c("order", "name")
+  name <- name <- c("order", "name", "soc_name")
   info <- lapply(name, foo)
   names(info) <- name
   parameter_order <- unlist(Map(rep, x = parameters, each = attributes(info$order)$n))
@@ -174,6 +174,7 @@ prepare_ae_forestly <- function(
     diff = values$diff,
     n_pop = res[[1]]$n_pop,
     name = info$name,
+    soc_name = info$soc_name,
     ci_lower = values$ci_lower,
     ci_upper = values$ci_upper,
     p = values$p,

@@ -105,6 +105,7 @@ format_ae_forestly <- function(
   tbl <- data.frame(
     parameter = outdata$parameter_order,
     name = outdata$name,
+    soc_name = outdata$soc_name,
     prop_fig = NA,
     diff_fig = NA,
     outdata$n[, 1:m_group],
@@ -224,6 +225,11 @@ format_ae_forestly <- function(
     name = reactable::colDef(
       header = "Adverse Events",
       minWidth = width_term, align = "right"
+    ),
+    soc_name = reactable::colDef(
+      header = "SOC Name",
+      minWidth = width_term, align = "right",
+      show = F
     )
   )
 
@@ -314,6 +320,20 @@ format_ae_forestly <- function(
     col_prop_fig, col_diff_fig
   )
 
+  # column hidden
+  hidden_item <- character()
+  for (item in seq_along(columns)) {
+    if(!"show" %in% names(columns[[item]])){
+      columns[[item]]$show <- TRUE
+    }
+    if (!columns[[item]]$show) {
+      hidden_item <- c(hidden_item, names(columns)[item])
+    }
+  }
+
+  hidden_item <- hidden_item[!hidden_item %in% "soc_name"]
+  # hidden_item <-  paste0("'", hidden_item, "'", collapse = ", ")
+
   # Create outdata
   outdata$tbl <- tbl
   outdata$reactable_columns <- columns
@@ -321,6 +341,7 @@ format_ae_forestly <- function(
   outdata$display <- display
   outdata$fig_prop_color <- fig_prop_color
   outdata$fig_diff_color <- fig_diff_color
+  outdata$hidden_column <- hidden_item
 
   outdata
 }

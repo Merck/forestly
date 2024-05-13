@@ -121,6 +121,7 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
     tbl,
     columns = outdata$reactable_columns,
     columnGroups = outdata$reactable_columns_group,
+    hidden_item = paste0("'", outdata$hidden_column, "'", collapse = ", "),
     width = width,
     details = function(index) {
       t_row <- outdata$tbl$name[index]
