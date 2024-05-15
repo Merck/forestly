@@ -10,6 +10,9 @@
     <loc>https://merck.github.io/forestly/articles/design-pattern.html</loc>
   </url>
   <url>
+    <loc>https://merck.github.io/forestly/articles/forest-plot-static.html</loc>
+  </url>
+  <url>
     <loc>https://merck.github.io/forestly/articles/forestly-cran.html</loc>
   </url>
   <url>
@@ -34,6 +37,9 @@
     <loc>https://merck.github.io/forestly/reference/ae_forestly.html</loc>
   </url>
   <url>
+    <loc>https://merck.github.io/forestly/reference/background_panel.html</loc>
+  </url>
+  <url>
     <loc>https://merck.github.io/forestly/reference/forestly_adae.html</loc>
   </url>
   <url>
@@ -55,6 +61,18 @@
     <loc>https://merck.github.io/forestly/reference/meta_forestly.html</loc>
   </url>
   <url>
+    <loc>https://merck.github.io/forestly/reference/plot_dot.html</loc>
+  </url>
+  <url>
+    <loc>https://merck.github.io/forestly/reference/plot_errorbar.html</loc>
+  </url>
+  <url>
     <loc>https://merck.github.io/forestly/reference/prepare_ae_forestly.html</loc>
+  </url>
+  <url>
+    <loc>https://merck.github.io/forestly/reference/table_panel.html</loc>
+  </url>
+  <url>
+    <loc>https://merck.github.io/forestly/reference/theme_panel.html</loc>
   </url>
 </urlset>
