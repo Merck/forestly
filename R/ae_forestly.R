@@ -154,7 +154,7 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
       labels <- lapply(t_details, function(x) attr(x, "label"))
 
       # Create named column definitions using the labels
-      col_defs <- setNames(
+      col_defs <- stats::setNames(
         lapply(names(t_details), function(name) {
           # Use label from the list
           label_name <- if(is.null(labels[[name]])) name else labels[[name]][[1]]

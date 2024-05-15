@@ -135,10 +135,8 @@ plot_dot <- function(
   names_col <- names(tbl)
   names(tbl) <- paste0("x", 1:ncol(tbl))
 
-  # Transfer to factor
-  if (class(item) != "factor") {
-    item <- factor(item, levels = unique(item))
-  }
+  # Encode as factor
+  if (!is.factor(item)) item <- factor(item, levels = unique(item))
 
   # Define display order, make the first item display on the top
   item <- factor(item, levels = rev(levels(item)))
@@ -401,10 +399,8 @@ plot_errorbar <- function(
   names_col <- names(tbl)
   names(tbl) <- paste0("x", 1:ncol(tbl))
 
-  # Transfer to factor
-  if (class(item) != "factor") {
-    item <- factor(item, levels = unique(item))
-  }
+  # Encode as factor
+  if (!is.factor(item)) item <- factor(item, levels = unique(item))
 
   # Define display order, make the first item display on the top
   item <- factor(item, levels = rev(levels(item)))
@@ -685,10 +681,8 @@ table_panel <- function(
   names_col <- names(tbl)
   names(tbl) <- paste0("x", 1:ncol(tbl))
 
-  # Transfer to factor
-  if (class(item) != "factor") {
-    item <- factor(item, levels = unique(item))
-  }
+  # Encode as factor
+  if (!is.factor(item)) item <- factor(item, levels = unique(item))
 
   # Define Default Values
   if (is.null(x_label)) x_label <- names_col
