@@ -11,23 +11,22 @@ background_panel(
 )
 }
 \arguments{
-\item{g}{A ggplot object for adding colored background}
+\item{g}{A ggplot object for adding colored background.}
 
-\item{background_color}{A vector of colors for defining color for the plot background.
-Default is c("#69B8F7", "#FFFFFF"), which is pastel blue and white.
-The color will be used recurrently.}
+\item{background_color}{A vector of colors that defines the color for the
+plot background. Default is c("#69B8F7", "#FFFFFF"),
+which are pastel blue and white. The colors will be recycled.}
 
-\item{background_alpha}{Controls the opacity of a geom. Default is 0.3.}
+\item{background_alpha}{Opacity of a geom. Default is 0.3.}
 }
 \value{
-plot as a colored background to add panels for rainfall or forest plot
+Plot as a colored background to add panels for rainfall or forest plot.
 }
 \description{
-\code{background_panel} creates colored background for panels of rainfall or forest plot
+Creates colored background for panels of rainfall or forest plot.
 }
 \examples{
 library(ggplot2)
-library(dplyr)
 
 df <- data.frame(
   study = c("S1", "S2", "S3", "S4", "S5", "S6", "S7"),
@@ -37,8 +36,8 @@ df <- data.frame(
   upper = c(-.37, -.21, -.03, .22, .24, .23, .33)
 )
 
-ggplot(data = df) \%>\%
-background_panel(background_color = c("grey", "white"), background_alpha = 0.4) +
+ggplot(data = df) |>
+  background_panel(background_color = c("grey", "white"), background_alpha = 0.4) +
   geom_point(aes(y = item, x = effect)) +
   geom_errorbar(aes(y = item, x = effect, xmin = lower, xmax = upper), width = 0.4) +
   scale_y_discrete(name = "", breaks = 1:nrow(df), labels = df$study)

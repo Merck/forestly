@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.R
 \name{plot_errorbar}
 \alias{plot_errorbar}
-\title{Creating plot to display risk difference}
+\title{Plot to display risk difference}
 \usage{
 plot_errorbar(
   tbl,
@@ -27,76 +27,88 @@ plot_errorbar(
 \item{tbl}{A data frame selected from input data set to display on this plot.
 y and x variables are required.}
 
-\item{y_var}{A character value, specifies a variable to be displayed on the
-y-axis.}
+\item{y_var}{A character string that specifies a variable to be displayed
+on the y-axis.}
 
-\item{errbar_width}{A numeric value to define the error bar width. Default is
-0.4. Value of this argument will be a half length of the error bar, e.g.,
-\code{errorbar_width = 0.2} means half of the error bar width is 0.2 unit length.
-If y = 4, the error bar will range from y = 3.8 to y = 4.2.}
+\item{errbar_width}{A numeric value to define the error bar width.
+Default is 0.4. Value of this argument will be a half length of the
+error bar, for example, \code{errorbar_width = 0.2} means half of the error bar
+width is 0.2 unit length. If y = 4, the error bar will range from
+y = 3.8 to y = 4.2.}
 
-\item{color}{Defines a color for each treatment group.}
+\item{color}{Color for each treatment group.}
 
-\item{shape}{Defines a shape for each treatment group. Default is circle and
-square. Input values could be either a character, e.g., "triangle" or numeric
-value, e.g., 1. For details and examples see \code{vignette("example-color-shape-details", package = "mkvis")}.}
+\item{shape}{Shape for each treatment group. Default is circle and square.
+Input values could be either a character or numeric value, For details,
+see \url{https://ggplot2.tidyverse.org/articles/ggplot2-specs.html}.}
 
-\item{label}{A character vector of labels for each treatment group. The
-control group label should be specified as the last element of the vector.}
+\item{label}{A character vector of labels for each treatment group.
+The control group label should be specified as the last element
+of the vector.}
 
-\item{x_breaks}{A numeric vector for x-axis breaks. Default value is NULL,
+\item{x_breaks}{A numeric vector for x-axis breaks. Default is \code{NULL},
 which uses a default ggplot2 x-axis breaks presentation.}
 
-\item{grp_abbrev}{A character vector for displaying the treatment groups on a
-favor bar. If grp_abbrev = "paired", treatment label on an error bar will be
-same as in \code{label} argument. If grp_abbrev = "none", error bar will not be
-shown. Also, for customized terms, a user can provide an alternative vector
-of treatment labels. Default is "paired".}
+\item{grp_abbrev}{A character vector for displaying the treatment groups
+on a favor bar.
+If \code{grp_abbrev = "paired"}, treatment label on the error bar will be
+the same as in the \code{label} argument.
+If \code{grp_abbrev = "none"}, the error bar will not be shown.
+Also, for customized terms, users can provide an alternative vector
+of treatment labels.
+Default is \code{"paired"}.}
 
-\item{favor_direction}{Defines the position of a favor label under the
-condition “comparison is treatment – control”. For AEs \code{favor_direction}
-should be "negative"; for efficacy \code{favor_direction} should be "positive".}
+\item{favor_direction}{The position of a favor label under the condition
+"comparison is treatment – control". For AEs, \code{favor_direction} should be
+\code{"negative"}; for efficacy, \code{favor_direction} should be \code{"positive"}.}
 
-\item{vline}{A vertical reference line position. Default is NULL. A user can
-define one or multiple numeric values in a vector as a reference line
-position.}
+\item{vline}{Vertical reference line position. Default is \code{NULL}.
+Users can define one or multiple numeric values in a vector as a
+reference line position.}
 
-\item{line_type}{A reference line type. Default is solid line. A user can
-define one or multiple line types in a vector (can be numeric such as 1, 2, 3
-or character such as "solid", "dashed"). The value will be used recurrently
-and order will be consistent with argument \code{vline}.}
+\item{line_type}{Reference line type. Default is solid line.
+Users can define one or multiple line types in a vector
+(can be numeric such as 1, 2, 3 or character such as \code{"solid"}, \code{"dashed"}).
+The values will be recycled and the order will be consistent with the
+argument \code{vline}.}
 
-\item{title}{A title of this plot. Default is "Risk Diff. + 95\% CI
-\\n (Percentage Points)".}
+\item{title}{Plot title. Default is \code{"Risk Diff. + 95\% CI \\\\n (Percentage Points)"}.}
 
-\item{background_color}{A plot background color. Default is c("#69B8F7",
-"#FFFFFF"), which is pastel blue and white. The value of this argument is
-used as input for \code{background_color} argument in \code{\link{background_panel}}.}
+\item{background_color}{Plot background color. Default is
+\code{c("#69B8F7", "#FFFFFF")}, which are pastel blue and white.
+The value of this argument is used as input for the \code{background_color}
+argument in \code{\link[=background_panel]{background_panel()}}.}
 
-\item{background_alpha}{Controls the opacity of the background. Default is 0.3.
+\item{background_alpha}{Opacity of the background. Default is 0.3.
 The value of this argument is the input for \code{background_alpha} argument in
-\code{\link{background_panel}}.}
+\code{\link[=background_panel]{background_panel()}}.}
 
-\item{theme}{Controls panel theme, including y-axis text, ticks and plot
-margin. Default \code{theme_panel(show_text = TRUE, show_ticks = TRUE)}. For
-more details refer to \code{\link{theme_panel}}.}
+\item{theme}{Panel theme, including the y-axis text, ticks, and plot margin.
+Default is \code{theme_panel(show_text = TRUE, show_ticks = TRUE)}.
+For more details, refer to \code{\link{theme_panel}}.}
 
-\item{legend_nrow}{An integer, sets a number of rows for a legend
-display. Must be \code{<=} the number of the treatment groups. To omit the legend
-set to NULL. Default is 1.}
+\item{legend_nrow}{Integer, the number of rows for a legend display.
+Must be smaller than or equal to the number of the treatment groups.
+To omit the legend, set this to \code{NULL}. Default is 1.}
 }
 \value{
 A risk difference plot for each item.
 }
 \description{
-\code{plot_errorbar} creates a plot to display a risk difference for
-each item
+Create a plot to display risk difference for each item.
 }
 \examples{
-library(dplyr)
-# Example 1: minimal example
-forestly_adsl$TRTA <- factor(forestly_adsl$TRT01A, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
-forestly_adae$TRTA <- factor(forestly_adae$TRTA, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
+forestly_adsl$TRTA <- factor(
+  forestly_adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+forestly_adae$TRTA <- factor(
+  forestly_adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+
 meta <- meta_forestly(
   dataset_adsl = forestly_adsl,
   dataset_adae = forestly_adae,
@@ -107,10 +119,11 @@ meta <- meta_forestly(
   prepare_ae_forestly() |>
   format_ae_forestly()
 
-meta_any <- meta$tbl[1:20,] |>
-dplyr::filter(parameter == "any")
+meta_any <- meta$tbl[1:20, ] |> dplyr::filter(parameter == "any")
 meta_any |>
-dplyr::select(name, diff_1, lower_1, upper_1) |>
-plot_errorbar(y_var = "name",
-              label = c("Treatment", "Placebo"))
+  dplyr::select(name, diff_1, lower_1, upper_1) |>
+  plot_errorbar(
+    y_var = "name",
+    label = c("Treatment", "Placebo")
+  )
 }

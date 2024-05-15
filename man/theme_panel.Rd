@@ -2,29 +2,29 @@
 % Please edit documentation in R/plot.R
 \name{theme_panel}
 \alias{theme_panel}
-\title{Theme Function for plot with multiple panels}
+\title{Theme function for plot with multiple panels}
 \usage{
 theme_panel(show_text = TRUE, show_ticks = TRUE)
 }
 \arguments{
-\item{show_text}{A logical value that controls a text display on the y axis. Default is TRUE.}
+\item{show_text}{A logical value that controls text display on the y axis.
+Default is \code{TRUE}.}
 
-\item{show_ticks}{A logical value that controls ticks display on the y axis. Default is TRUE.}
+\item{show_ticks}{A logical value that controls ticks display on the y axis.
+Default is \code{TRUE}.}
 }
 \value{
-Theme for a specific panel
+Theme for a specific panel.
 }
 \description{
-\code{theme_panel} specifies theme for a plot with multiple panels
+Specifies theme for a plot with multiple panels.
 }
 \examples{
-library(dplyr)
 library(ggplot2)
 
-# Example
-plot1 <- ggplot(mpg, aes(displ, hwy, colour = class)) +
+p <- ggplot(mpg, aes(displ, hwy, colour = class)) +
   geom_point()
 
-plot1
-plot1 + theme_panel()
+p
+p + theme_panel()
 }

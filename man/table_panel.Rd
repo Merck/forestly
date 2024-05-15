@@ -21,39 +21,50 @@ table_panel(
 
 \item{y_var}{A string of a variable name from \code{tbl} for the y axis variable.}
 
-\item{x_label}{Labels displayed on the top of table for each column of table. Default is NULL, variable name will display as label.}
+\item{x_label}{Labels displayed on the top of table for each column of table.
+Default is \code{NULL}, variable name will display as label.}
 
 \item{text_color}{Defines colors to display each treatment group.}
 
-\item{text_size}{A numeric font size for data on each column. Default is 8 for each column.}
+\item{text_size}{Numeric font size for data on each column.
+Default is 8 for each column.}
 
-\item{text_format_by}{An option for formatting a data by columns or rows. Default is "column" and text color will be varied by column.
-If text_format_by = "row" then text color will be varied by row. If text_format_by = "group" then text color will be varied by treatment group.}
+\item{text_format_by}{An option for formatting a data by columns or rows.
+Default is \code{"column"} and text color will be varied by column.
+If \code{text_format_by = "row"}, then text color will be varied by row.
+If \code{text_format_by = "group"}, then text color will be varied by treatment group.}
 
-\item{background_color}{Color for the plot background. Default is c("#69B8F7", "#FFFFFF") which is pastel blue and white.
-The value of this parameter will be input value for \code{background_color} parameter in \code{background_panel}. Please refer to
-\code{\link{background_panel}} for more details.}
+\item{background_color}{Color for the plot background.
+Default is \code{c("#69B8F7", "#FFFFFF")} which are pastel blue and white.
+The value of this argument will be the input value for the
+\code{background_color} argument in \code{\link[=background_panel]{background_panel()}}.}
 
-\item{theme}{Controls display of y axis text, ticks and plot margin. By default,
-\code{theme_panel(show_text = TRUE, show_ticks = TRUE)} is used. The recommendation is to use \code{theme_panel}.
-Please refer to \code{\link{theme_panel}} for more details.}
+\item{theme}{Controls display of y axis text, ticks and plot margin.
+By default, \code{theme_panel(show_text = TRUE, show_ticks = TRUE)} is used.
+Users are suggested to use \code{\link[=theme_panel]{theme_panel()}}.}
 
-\item{background_alpha}{Controls the opacity of the background. Default is 0.3.
-The value of this parameter will be the input value for \code{background_alpha} parameter in \code{background_alpha}. Please refer to
-\code{\link{background_panel}} for more details.}
+\item{background_alpha}{Opacity of the background. Default is 0.3.
+The value of this argument will be the input value for the
+\code{background_alpha} argument in \code{\link[=background_panel]{background_panel()}}.}
 }
 \value{
-ggplot2 object for table panel
+A ggplot2 object for table panel.
 }
 \description{
-\code{table_panel} creates a table panel ggplot2 object for rainfall or forest plot. Details about \code{table_panel()} are saved in vignettes/color_shape_details.Rmd
+Creates a table panel ggplot2 object for rainfall or forest plot.
 }
 \examples{
+forestly_adsl$TRTA <- factor(
+  forestly_adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+forestly_adae$TRTA <- factor(
+  forestly_adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
 
-library(dplyr)
-# Example 1: minimal example
-forestly_adsl$TRTA <- factor(forestly_adsl$TRT01A, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
-forestly_adae$TRTA <- factor(forestly_adae$TRTA, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
 meta <- meta_forestly(
   dataset_adsl = forestly_adsl,
   dataset_adae = forestly_adae,
@@ -64,10 +75,9 @@ meta <- meta_forestly(
   prepare_ae_forestly() |>
   format_ae_forestly()
 
-meta_any <- meta$tbl[1:20,] |>
-dplyr::filter(parameter == "any")
+meta_any <- meta$tbl[1:20, ] |> dplyr::filter(parameter == "any")
 
 meta_any |>
-dplyr::select(name, diff_1, lower_1, upper_1) |>
-table_panel(y_var = "name")
+  dplyr::select(name, diff_1, lower_1, upper_1) |>
+  table_panel(y_var = "name")
 }
