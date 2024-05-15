@@ -31,7 +31,7 @@ articles:
 - title: Examples
   navbar: ~
   contents:
-  - create_static_forest_plot
+  - forest-plot-static
   - layout
 - title: Package design
   contents:
