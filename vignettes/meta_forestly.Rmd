@@ -123,13 +123,7 @@ meta_new <- meta_adam(
   define_parameter(
     name = "reduc",
     subset = AEACN == "DOSE REDUCED",
-    label = "adverse events resulting in dose reduction",
-    var = "AEDECOD",
-    soc = "AEBODSYS",
-    seq = 900,
-    term1 = "",
-    term2 = "Result in Dose Reduction",
-    summ_row = "dose reduction"
+    label = "adverse events resulting in dose reduction"
   ) |>
   define_analysis(
     name = "ae_forestly",
