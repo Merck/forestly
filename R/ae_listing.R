@@ -106,14 +106,14 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
 
   new_name <- c("SITEID", "SITENUM", "USUBJID", "SUBJID", "SEX", "RACE", "AGE", obs_group, "EPOCH",
                 "ASTDY", par_var, "ADURN", "AESEV", "AESER", "AEREL", "AREL", "AEACN",
-                "AEOUT", "AEDOSDUR")
-  name_mapping <- c("Site_Number", "Site_Number", "Participant_ID", "Participant_ID", "Gender", "Race", "Age", "Treatment_Group", "Onset_Epoch",
+                "AEOUT", "AEDOSDUR", "ATOXGRN")
+  name_mapping <- c("Site_Number", "Site_Number", "Unique_Participant_ID", "Participant_ID", "Gender", "Race", "Age", "Treatment_Group", "Onset_Epoch",
                     "Relative_Day_of_Onset", "Adverse_Event", "Duration", "Intensity", "Serious", "Related", "Related", "Action_Taken",
-                    "Outcome", "Total_Dose_on_Day_of_AE_Onset")
+                    "Outcome", "Total_Dose_on_Day_of_AE_Onset", "Maximum_Toxicity_Grade")
   names(name_mapping) <- new_name
 
-  res_columns <- lapply(toupper(names(res)), function(x) {
-    if (x %in% names(name_mapping)) {name_mapping[[x]]}
+  res_columns <- lapply(names(res), function(x) {
+    if (toupper(x) %in% names(name_mapping)) {name_mapping[[toupper(x)]]}
     else {x}
   }) |> unlist()
 
@@ -128,7 +128,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
 
   # Participant ID
   if ("USUBJID" %in% toupper(names(res))) {
-    res$Participant_ID <- res$USUBJID
+    res$Unique_Participant_ID <- res$USUBJID
   }
   if ("SUBJID" %in% toupper(names(res))) {
     res$Participant_ID <- res$SUBJID
@@ -140,6 +140,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   res$Race <- tools::toTitleCase(tolower(res$RACE))
 
   res$Age <- res$AGE
+
   res$Treatment_Group <- res[[obs_group]]
   attr(res$Treatment_Group, "label") <- NULL
 
@@ -169,11 +170,18 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
         }
       }
     }
+    res <- res[,!(names(res) %in% "ADURU")]
+    res_columns <- res_columns[!(res_columns %in% "ADURU")]
   }
 
   # Intensity
   if ("AESEV" %in% toupper(names(res))) {
     res$Intensity <- propercase(res$AESEV)
+  }
+
+  # Maximum toxicity grade
+  if ("ATOXGRN" %in% toupper(names(res))) {
+    res$Maximum_Toxicity_Grade <- res$ATOXGRN
   }
 
   # Serious

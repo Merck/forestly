@@ -33,10 +33,7 @@
 #' adae <- forestly_adae[1:100,]
 #' meta_forestly(
 #'   dataset_adsl = adsl,
-#'   dataset_adae = adae,
-#'   population_term = "apat",
-#'   observation_term = "wk12",
-#'   parameter = "any;rel"
+#'   dataset_adae = adae
 #' ) |>
 #'   prepare_ae_forestly()
 prepare_ae_forestly <- function(
@@ -46,8 +43,8 @@ prepare_ae_forestly <- function(
     parameter = NULL,
     reference_group = NULL,
     ae_listing_display = c(
-      "USUBJID", "SEX", "RACE", "AGE", "ASTDY", "AESEV", "AESER",
-      "AEREL", "AEACN", "AEOUT", "SITEID", "ADURN", "ADURU"
+      "USUBJID", "SITEID", "SEX", "RACE", "AGE", "ASTDY", "AESER",
+      "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"
     ),
     ae_listing_unique = FALSE) {
 
@@ -70,8 +67,33 @@ prepare_ae_forestly <- function(
 
   if( is.null(parameter)){
     parameters <- names(meta$parameter)
+
+    meta$parameter
   }else{
     parameters <- unlist(strsplit(parameter, ";"))
+  }
+
+  for(i in seq_along(parameters)){
+    para <- meta$parameter[[parameters[i]]]
+    if(is.null(para$var)){
+      para$var <- "AEDECOD"
+    }
+    if(is.null(para$soc)){
+      para$soc <- "AEBODSYS"
+    }
+    if(is.null(para$seq)){
+      para$seq <- sample(1e5:2e5, size = 1)
+    }
+    if(is.null(para$term1)){
+      para$term1 <- ""
+    }
+    if(is.null(para$term2)){
+      para$term2 <- ""
+    }
+    if(is.null(para$summ_row)){
+      para$summ_row <- ""
+    }
+    meta$parameter[[parameters[i]]] <- para
   }
 
   res <- lapply(parameters, function(x) {

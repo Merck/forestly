@@ -31,6 +31,7 @@ articles:
 - title: Examples
   navbar: ~
   contents:
+  - forest-plot-static
   - layout
 - title: Package design
   contents:
@@ -43,6 +44,13 @@ reference:
   - "prepare_ae_forestly"
   - "format_ae_forestly"
   - "ae_forestly"
+- title: Static plot
+  contents:
+  - "background_panel"
+  - "plot_dot"
+  - "plot_errorbar"
+  - "table_panel"
+  - "theme_panel"
 - title: Example data
   contents:
   - "forestly_adsl"

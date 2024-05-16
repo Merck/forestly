@@ -56,9 +56,7 @@ library("forestly")
 
 meta_forestly(
   forestly_adsl,
-  forestly_adae,
-  population_term = "apat",
-  observation_term = "wk12"
+  forestly_adae
 ) |>
   prepare_ae_forestly(parameter = "any;rel;ser") |>
   format_ae_forestly() |>

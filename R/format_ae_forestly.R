@@ -46,10 +46,7 @@
 #' adae <- forestly_adae[1:100,]
 #' meta_forestly(
 #'   dataset_adsl = adsl,
-#'   dataset_adae = adae,
-#'   population_term = "apat",
-#'   observation_term = "wk12",
-#'   parameter = "any;rel"
+#'   dataset_adae = adae
 #' ) |>
 #'   prepare_ae_forestly()|>
 #'   format_ae_forestly()
@@ -322,6 +319,8 @@ format_ae_forestly <- function(
   outdata$reactable_columns <- columns
   outdata$reactable_columns_group <- columnGroups
   outdata$display <- display
+  outdata$fig_prop_color <- fig_prop_color
+  outdata$fig_diff_color <- fig_diff_color
 
   outdata
 }
