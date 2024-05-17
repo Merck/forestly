@@ -61,13 +61,11 @@ outdata |>
 By default, it will display the counts that rounding up to the nearest hundred displayed in the interactive forest table. 
 It can be adjusted by adding "max_page =xx" argument to ae_forestly() function. 
 
-````{r}
+```{r}
 outdata |>
   format_ae_forestly() |>
   ae_forestly(max_page=280)
-
 ```
-
 
 # Change color
 
@@ -151,3 +149,4 @@ For example, in an R Markdown document, use:
 }
 ```
 ````
+
