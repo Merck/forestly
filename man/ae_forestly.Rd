@@ -4,7 +4,7 @@
 \alias{ae_forestly}
 \title{Display interactive forest plot}
 \usage{
-ae_forestly(outdata, filter = c("prop", "n"), width = 1400)
+ae_forestly(outdata, filter = c("prop", "n"), width = 1400, max_page = NULL)
 }
 \arguments{
 \item{outdata}{An \code{outdata} object created by \code{\link[=format_ae_forestly]{format_ae_forestly()}}.}
@@ -12,6 +12,8 @@ ae_forestly(outdata, filter = c("prop", "n"), width = 1400)
 \item{filter}{A character value of the filter variable.}
 
 \item{width}{A numeric value of width of the table in pixels.}
+
+\item{max_page}{A numeric value of max page number showed in table.}
 }
 \value{
 An AE forest plot saved as a \code{shiny.tag.list} object.
