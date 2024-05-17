@@ -21,6 +21,7 @@
 #' @param outdata An `outdata` object created by [format_ae_forestly()].
 #' @param filter A character value of the filter variable.
 #' @param width A numeric value of width of the table in pixels.
+#' @param max_page A numeric value of max page number showed in table.
 #'
 #' @return An AE forest plot saved as a `shiny.tag.list` object.
 #'
