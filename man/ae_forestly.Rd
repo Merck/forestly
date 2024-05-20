@@ -4,10 +4,17 @@
 \alias{ae_forestly}
 \title{Display interactive forest plot}
 \usage{
-ae_forestly(outdata, filter = c("prop", "n"), width = 1400)
+ae_forestly(
+  outdata,
+  display_soc_toggle = TRUE,
+  filter = c("prop", "n"),
+  width = 1400
+)
 }
 \arguments{
 \item{outdata}{An \code{outdata} object created by \code{\link[=format_ae_forestly]{format_ae_forestly()}}.}
+
+\item{display_soc_toggle}{A boolean value to display SOC toggle button.}
 
 \item{filter}{A character value of the filter variable.}
 
