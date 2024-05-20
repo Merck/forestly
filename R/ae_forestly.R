@@ -19,6 +19,7 @@
 #' Display interactive forest plot
 #'
 #' @param outdata An `outdata` object created by [format_ae_forestly()].
+#' @param display_soc_toggle A boolean value to display SOC toggle button.
 #' @param filter A character value of the filter variable.
 #' @param width A numeric value of width of the table in pixels.
 #'
@@ -38,7 +39,10 @@
 #'     format_ae_forestly() |>
 #'     ae_forestly()
 #' }
-ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
+ae_forestly <- function(outdata,
+                        display_soc_toggle = TRUE,
+                        filter = c("prop", "n"),
+                        width = 1400) {
   filter <- match.arg(filter)
   filter_range <- c(0, 100)
 
@@ -73,7 +77,7 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
   # Set default to be the first item
   default_param <- as.character(unique(outdata$tbl$parameter)[1])
 
-  random_id <- paste0("filter_ae_", sample(1:9999, 1), "|", default_param)
+  random_id <- paste0("filter_ae_", uuid::UUIDgenerate(), "|", default_param)
   filter_ae <- crosstalk::filter_select(
     id = random_id,
     label = "AE Criteria",
@@ -122,6 +126,7 @@ ae_forestly <- function(outdata, filter = c("prop", "n"), width = 1400) {
     columns = outdata$reactable_columns,
     columnGroups = outdata$reactable_columns_group,
     hidden_item = paste0("'", outdata$hidden_column, "'", collapse = ", "),
+    soc_toggle = display_soc_toggle,
     width = width,
     details = function(index) {
       t_row <- outdata$tbl$name[index]

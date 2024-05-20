@@ -32,7 +32,8 @@ Imports:
     metalite.ae,
     reactable,
     reactR,
-    rlang
+    rlang,
+    uuid
 Suggests:
     covr,
     dplyr,
