@@ -63,13 +63,22 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ae_forestly</span><span class="op">(</span><span class="va">outdata</span>, filter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"prop"</span>, <span class="st">"n"</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">1400</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ae_forestly</span><span class="op">(</span></span>
+<span>  <span class="va">outdata</span>,</span>
+<span>  display_soc_toggle <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  filter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"prop"</span>, <span class="st">"n"</span><span class="op">)</span>,</span>
+<span>  width <span class="op">=</span> <span class="fl">1400</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>outdata</dt>
 <dd><p>An <code>outdata</code> object created by <code><a href="format_ae_forestly.html">format_ae_forestly()</a></code>.</p></dd>
+
+
+<dt>display_soc_toggle</dt>
+<dd><p>A boolean value to display SOC toggle button.</p></dd>
 
 
 <dt>filter</dt>
