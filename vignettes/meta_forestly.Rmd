@@ -1,5 +1,5 @@
 ---
-title: "Closer look at `meta_forestly()`"
+title: "A closer look at meta_forestly()"
 output:
   rmarkdown::html_document:
     self_contained: no
@@ -9,8 +9,6 @@ vignette: |
   %\VignetteIndexEntry{Controlling Layout}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
-  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -31,17 +29,18 @@ library(metalite)
 
 # Overview
 
-`meta_forestly()` is the first step in the Interactive Forest Plot generation workflow and is a wrapper of several functions from [metalite](https://merck.github.io/metalite/). In essence, it defines a metadata including adam datesets, population, observations and parameters to be used for a forest plot. Since the requirement for the parameters of interest might differ from deliverable to deliverable, `parameter_term` argument in `meta_forestly` includes several options as outlined in this [vignette](https://merck.github.io/forestly/articles/forestly.html#define-metadata)
+`meta_forestly()` is the first step in the Interactive Forest Plot generation workflow and is a wrapper of several [metalite](https://merck.github.io/metalite/) functions. Specifically, it defines a metadata, including adam datesets, population, observations and parameters to be used in the forest plot. 
+In this [vignette](https://merck.github.io/forestly/articles/forestly.html#define-metadata) we will take a closer look at the `parameter_term` argument in `meta_forestly()` to better understand how to generate the forest plot for different parameters of interest.
 
 # `parameter_term` examples
 
 Prior to turning to the examples, just a reminder that the treatment group variable in the ADaM datasets should be set as a factor, otherwise a warning will be generated. 
-For example if this is your for you have in the `TRT01A` variable:
+For example, if this is what you have in the `ADSL.TRT01A`:
 ```{r}
 unique(forestly_adsl$TRT01A)
 ```
 
-You can easily turn it into a factor variable with the desired labels using the following code: 
+you can easily turn it into a factor variable with the desired labels using the following code: 
 
 ```{r}
 forestly_adsl$TRTA <- factor(
@@ -51,7 +50,7 @@ forestly_adsl$TRTA <- factor(
   )
 ```
 
-A similar approach need to be applied to the ADAE as well:
+A similar approach needs to be applied to the `ADAE.TRTA`:
 
 ```{r}
 forestly_adae$TRTA <- factor(
@@ -61,7 +60,7 @@ forestly_adae$TRTA <- factor(
   )
 ```
 
-If the deliverable requires a forest plot of all adverse events and serious adverse events, the following code could be used:
+If the deliverable requires a forest plot of all adverse events and serious adverse events, then the following code could be used with`any` and `ser` parameters in `parameter_term` argument respectively:
 
 ```{r}
 meta_forestly(
@@ -78,7 +77,7 @@ meta_forestly(
   ae_forestly()
 ```
 
-If, however, grade 3-5 adverse events need to be plotted as well, then this could be done using: 
+However, if grade 3-5 adverse events need to be plotted as well, we can add `g35` parameter in the `parameter_term`. Click on the AE criteria below to see that a forest plot for grade 3-5 adverse events was added.
 
 ```{r}
 meta_forestly(
@@ -97,7 +96,9 @@ meta_forestly(
 
 # Adding a new parameter
 
-Below we demonstrate how to add a new parameter to the `meta_forestly()`. Consider, for instance, that now we need to plot adverse events which resulted in dose reductions, a parameter that is currently not available in the predefined options of the `parameter_term`.
+Below we demonstrate how to add a new parameter to the `meta_forestly()`. Consider, for instance, that now we need to plot adverse events which resulted in dose reductions, a parameter that is currently not available in the [predefined options](https://merck.github.io/forestly/articles/forestly.html) of the `parameter_term`. Instead of using `meta_forestly()` directly, we will define `meta_new` object using [metalite](https://merck.github.io/metalite/) core functions as demonstrated below. 
+
+Specifically, `define_parameter()` is where the new parameter `reduc` is defined by filtering `forestly_adae` with `AEACN == "DOSE REDUCED"` condition in order to identify the adverse events of interest:
 
 ```{r}
 meta_new <- meta_adam(
@@ -130,9 +131,13 @@ meta_new <- meta_adam(
     label = "Interactive forest plot"
   ) |>
   meta_build()
+```
 
+Now, similar to the originally generated forest plot above, we need to apply `prepare_ae_forestly()`, `format_ae_forestly()`, and `ae_forestly()` to generate the plot that will include adverse events which resulted in dose reductions:
+
+```{r}
 meta_new |>
-  prepare_ae_forestly(parameter = "any;ser;g35;reduc") |>
+  prepare_ae_forestly() |>
   format_ae_forestly() |>
   ae_forestly()
 ```
