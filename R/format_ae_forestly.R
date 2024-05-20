@@ -229,7 +229,7 @@ format_ae_forestly <- function(
     soc_name = reactable::colDef(
       header = "SOC Name",
       minWidth = width_term, align = "right",
-      show = F
+      show = FALSE
     )
   )
 
@@ -321,18 +321,14 @@ format_ae_forestly <- function(
   )
 
   # column hidden
-  hidden_item <- character()
-  for (item in seq_along(columns)) {
-    if(!"show" %in% names(columns[[item]])){
-      columns[[item]]$show <- TRUE
+  columns <- lapply(columns, function (x) {
+    if (!"show" %in% names(x)) {
+      x$show <- TRUE
     }
-    if (!columns[[item]]$show) {
-      hidden_item <- c(hidden_item, names(columns)[item])
-    }
-  }
+    return(x)
+  })
 
-  hidden_item <- hidden_item[!hidden_item %in% "soc_name"]
-  # hidden_item <-  paste0("'", hidden_item, "'", collapse = ", ")
+  hidden_item <- names(columns)[(!names(columns) %in% "soc_name") & (sapply(columns, function(x) {return(!x$show)}))]
 
   # Create outdata
   outdata$tbl <- tbl
