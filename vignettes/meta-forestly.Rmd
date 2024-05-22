@@ -6,9 +6,9 @@ output:
     number_sections: yes
     code_folding: hide
 vignette: |
-  %\VignetteIndexEntry{Controlling Layout}
-  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{A closer look at meta_forestly()}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r, warning=FALSE, message=FALSE}
+```{r}
 library(forestly)
 library(metalite)
 ```
