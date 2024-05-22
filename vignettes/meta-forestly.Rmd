@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 library(forestly)
 library(metalite)
 ```
@@ -66,10 +66,6 @@ If the deliverable requires a forest plot of all adverse events and serious adve
 meta_forestly(
   dataset_adsl = forestly_adsl,
   dataset_adae = forestly_adae,
-  population_term = "apat",
-  population_subset = SAFFL == "Y",
-  observation_term = "all",
-  observation_subset = SAFFL == "Y",
   parameter_term = "any;ser"
 ) |>
   prepare_ae_forestly() |>
@@ -83,10 +79,6 @@ However, if grade 3-5 adverse events need to be plotted as well, we can add `g35
 meta_forestly(
   dataset_adsl = forestly_adsl,
   dataset_adae = forestly_adae,
-  population_term = "apat",
-  population_subset = SAFFL == "Y",
-  observation_term = "all",
-  observation_subset = SAFFL == "Y",
   parameter_term = "any;ser;g35"
 ) |>
   prepare_ae_forestly() |>

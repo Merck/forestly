@@ -33,7 +33,7 @@ articles:
   contents:
   - forest-plot-static
   - layout
-  - meta_forestly
+  - meta-forestly
 - title: Package design
   contents:
   - design-pattern
