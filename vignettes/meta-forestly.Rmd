@@ -29,13 +29,13 @@ library(metalite)
 
 # Overview
 
-`meta_forestly()` is the first step in the Interactive Forest Plot generation workflow and is a wrapper of several [metalite](https://merck.github.io/metalite/) functions. Specifically, it defines a metadata, including adam datesets, population, observations and parameters to be used in the forest plot. 
-In this [vignette](https://merck.github.io/forestly/articles/forestly.html#define-metadata) we will take a closer look at the `parameter_term` argument in `meta_forestly()` to better understand how to generate the forest plot for different parameters of interest.
+`meta_forestly()` is the first step in the interactive forest plot generation workflow and is a wrapper of several functions from [metalite](https://merck.github.io/metalite/). Specifically, it defines a metadata, including ADaM datesets, population, observations and parameters to be used in the forest plot. 
+In this vignette we will take a closer look at the `parameter_term` argument in `meta_forestly()` to better understand how to generate the forest plot for different parameters of interest.
 
 # `parameter_term` examples
 
 Prior to turning to the examples, just a reminder that the treatment group variable in the ADaM datasets should be set as a factor, otherwise a warning will be generated. 
-For example, if this is what you have in the `ADSL.TRT01A`:
+For example, if this is what you have in the `TRT01A`:
 ```{r}
 unique(forestly_adsl$TRT01A)
 ```
@@ -50,7 +50,7 @@ forestly_adsl$TRTA <- factor(
   )
 ```
 
-A similar approach needs to be applied to the `ADAE.TRTA`:
+A similar approach needs to be applied to the `TRTA`:
 
 ```{r}
 forestly_adae$TRTA <- factor(
@@ -60,7 +60,7 @@ forestly_adae$TRTA <- factor(
   )
 ```
 
-If the deliverable requires a forest plot of all adverse events and serious adverse events, then the following code could be used with`any` and `ser` parameters in `parameter_term` argument respectively:
+If the deliverable requires a forest plot of all adverse events and serious adverse events, then the following code could be used with `any` and `ser` parameters in `parameter_term` argument respectively:
 
 ```{r}
 meta_forestly(
@@ -133,5 +133,3 @@ meta_new |>
   format_ae_forestly() |>
   ae_forestly()
 ```
-
-
