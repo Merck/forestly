@@ -34,7 +34,8 @@ Imports:
     reactable,
     reactR,
     rlang,
-    ggplot2
+    ggplot2,
+    uuid
 Suggests:
     covr,
     dplyr,

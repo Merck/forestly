@@ -47,6 +47,8 @@
 #' @param col_def An alternative argument for `defaultColDef`.
 #' @param label A logical value to display label as a hover text.
 #' @param download A logical value to display download button.
+#' @param soc_toggle A logical value to display SOC toggle button.
+#' @param hidden_item Vector for hidden columns.
 #' @param ... Additional arguments passed to [reactable::reactable()].
 #' @inheritParams reactable::reactable
 #'
@@ -73,6 +75,8 @@ reactable2 <- function(
     wrap = FALSE,
     download = TRUE,
     col_def = NULL,
+    soc_toggle = TRUE,
+    hidden_item = NULL,
     ...) {
   # Display variable label as hover text
   if (label & is.null(col_def)) {
@@ -105,6 +109,27 @@ reactable2 <- function(
     elementId = element_id,
     ...
   )
+
+  if (soc_toggle) {
+    on_click2 <- paste0("function control_column(hidden_columns) {",
+                        "  if (hidden_columns.includes('soc_name')) {",
+                        "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
+                             return prevColumns.length === 0 ? ['soc_name']:[", hidden_item ,"]})",
+                        "  } else {",
+                        "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
+                             return prevColumns.length === 0 ? [ ]: ['soc_name',",  hidden_item, "]})",
+                        "  }",
+                        "}",
+                        "control_column(Reactable.getState('", element_id, "').hiddenColumns);")
+
+    tbl <- htmltools::tagList(
+      htmltools::tags$button(
+        "Show/Hide SOC column",
+        onclick = on_click2
+      ),
+      tbl
+    )
+  }
 
   if (download) {
     on_click <- paste0("Reactable.downloadDataCSV('", element_id, "')")
