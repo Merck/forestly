@@ -27,6 +27,12 @@ library(forestly)
 library(metalite)
 ```
 
+```{r, echo = FALSE}
+data(forestly_adsl)
+data(forestly_adae)
+```
+
+
 # Overview
 
 `meta_forestly()` is the first step in the interactive forest plot generation workflow and is a wrapper of several functions from [metalite](https://merck.github.io/metalite/). Specifically, it defines a metadata, including ADaM datesets, population, observations and parameters to be used in the forest plot. 
