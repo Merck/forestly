@@ -1,3 +1,2 @@
 *.html
 *.R
-^vignettes/meta-forestly.Rmd$
