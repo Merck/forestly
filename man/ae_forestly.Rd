@@ -8,7 +8,8 @@ ae_forestly(
   outdata,
   display_soc_toggle = TRUE,
   filter = c("prop", "n"),
-  width = 1400
+  width = 1400,
+  max_page = NULL
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ ae_forestly(
 \item{filter}{A character value of the filter variable.}
 
 \item{width}{A numeric value of width of the table in pixels.}
+
+\item{max_page}{A numeric value of max page number shown in the table.}
 }
 \value{
 An AE forest plot saved as a \code{shiny.tag.list} object.

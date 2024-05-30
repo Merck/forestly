@@ -56,6 +56,17 @@ outdata |>
   ae_forestly()
 ```
 
+# Maximum page options
+
+By default, it will display the counts that round up to the nearest hundred displayed in the interactive forest plot table.
+This can be adjusted by using the `max_page` argument in `ae_forestly()`.
+
+```{r}
+outdata |>
+  format_ae_forestly() |>
+  ae_forestly(max_page = 280)
+```
+
 # Change color
 
 By default, forestly is using teal for treatment group and plum for control group.
@@ -138,3 +149,4 @@ For example, in an R Markdown document, use:
 }
 ```
 ````
+
