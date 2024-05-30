@@ -56,15 +56,15 @@ outdata |>
   ae_forestly()
 ```
 
-# Maximum Page Options 
+# Maximum page options
 
-By default, it will display the counts that rounding up to the nearest hundred displayed in the interactive forest table. 
-It can be adjusted by adding "max_page =xx" argument to ae_forestly() function. 
+By default, it will display the counts that round up to the nearest hundred displayed in the interactive forest plot table.
+This can be adjusted by using the `max_page` argument in `ae_forestly()`.
 
 ```{r}
 outdata |>
   format_ae_forestly() |>
-  ae_forestly(max_page=280)
+  ae_forestly(max_page = 280)
 ```
 
 # Change color

@@ -22,7 +22,7 @@
 #' @param display_soc_toggle A boolean value to display SOC toggle button.
 #' @param filter A character value of the filter variable.
 #' @param width A numeric value of width of the table in pixels.
-#' @param max_page A numeric value of max page number showed in table.
+#' @param max_page A numeric value of max page number shown in the table.
 #'
 #' @return An AE forest plot saved as a `shiny.tag.list` object.
 #'
@@ -45,20 +45,17 @@ ae_forestly <- function(outdata,
                         display_soc_toggle = TRUE,
                         filter = c("prop", "n"),
                         width = 1400,
-                        max_page=NULL) {
-
+                        max_page = NULL) {
   filter <- match.arg(filter)
   filter_range <- c(0, 100)
 
-  # Add max_page option with default value = NULL, this argument can control the max page number displayed in the interactive forest table.
-  # By default will display the counts that rounding up to the nearest hundred.
-
-  if(is.null(max_page)){
-    max_page = if(max(attr(outdata$tbl$name, "n"))<=100) c(10,25,50,100) else c(10,25,50,100, ceiling(max(attr(outdata$tbl$name, "n"))/100)*100)
+  # `max_page` controls the maximum page number displayed in the interactive forest table.
+  # By default (`NULL`), it will display the counts that round up to the nearest hundred.
+  if (is.null(max_page)) {
+    max_page <- if (max(attr(outdata$tbl$name, "n")) <= 100) c(10, 25, 50, 100) else c(10, 25, 50, 100, ceiling(max(attr(outdata$tbl$name, "n")) / 100) * 100)
   } else {
-    max_page = if (max_page<=100) c(10,25,50,100) else c(10,25,50,100,max_page)
+    max_page <- if (max_page <= 100) c(10, 25, 50, 100) else c(10, 25, 50, 100, max_page)
   }
-
 
   parameters <- unlist(strsplit(outdata$parameter, ";"))
   par_label <- vapply(parameters,

@@ -21,7 +21,7 @@ ae_forestly(
 
 \item{width}{A numeric value of width of the table in pixels.}
 
-\item{max_page}{A numeric value of max page number showed in table.}
+\item{max_page}{A numeric value of max page number shown in the table.}
 }
 \value{
 An AE forest plot saved as a \code{shiny.tag.list} object.
