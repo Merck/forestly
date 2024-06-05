@@ -40,17 +40,18 @@ collect_ae_listing <- function(
     )) {
   obs_group <- metalite::collect_adam_mapping(outdata$meta, outdata$observation)$group
   par_var <- metalite::collect_adam_mapping(outdata$meta, outdata$parameter)$var
+  par_var_soc <- metalite::collect_adam_mapping(outdata$meta, outdata$parameter)$soc
 
   obs <- metalite::collect_observation_record(
     outdata$meta,
     outdata$population,
     outdata$observation,
     outdata$parameter,
-    var = c(par_var, obs_group, display)
+    var = c(par_var, par_var_soc, obs_group, display)
   )
 
   # Keep variable used to display only
-  outdata$ae_listing <- obs[, c(par_var, obs_group, display)]
+  outdata$ae_listing <- obs[, c(par_var, par_var_soc, obs_group, display)]
 
   # Get all labels from the un-subset data
   listing_label <- get_label(obs)
@@ -103,12 +104,13 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
 
   obs_group <- metalite::collect_adam_mapping(outdata$meta, outdata$observation)$group
   par_var <- metalite::collect_adam_mapping(outdata$meta, outdata$parameter)$var
+  par_var_soc <- metalite::collect_adam_mapping(outdata$meta, outdata$parameter)$soc
 
   new_name <- c("SITEID", "SITENUM", "USUBJID", "SUBJID", "SEX", "RACE", "AGE", obs_group, "EPOCH",
-                "ASTDY", par_var, "ADURN", "AESEV", "AESER", "AEREL", "AREL", "AEACN",
+                "ASTDY", par_var, par_var_soc, "ADURN", "AESEV", "AESER", "AEREL", "AREL", "AEACN",
                 "AEOUT", "AEDOSDUR", "ATOXGRN")
   name_mapping <- c("Site_Number", "Site_Number", "Unique_Participant_ID", "Participant_ID", "Gender", "Race", "Age", "Treatment_Group", "Onset_Epoch",
-                    "Relative_Day_of_Onset", "Adverse_Event", "Duration", "Intensity", "Serious", "Related", "Related", "Action_Taken",
+                    "Relative_Day_of_Onset", "Adverse_Event", "SOC_Name", "Duration", "Intensity", "Serious", "Related", "Related", "Action_Taken",
                     "Outcome", "Total_Dose_on_Day_of_AE_Onset", "Maximum_Toxicity_Grade")
   names(name_mapping) <- new_name
 
@@ -153,6 +155,9 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   if ("ASTDY" %in% toupper(names(res))) {
     res$Relative_Day_of_Onset <- res$ASTDY
   }
+
+  # SOC
+  res$SOC_Name <- res[[par_var_soc]]
 
   # Adverse event
   res$Adverse_Event <- propercase(res[[par_var]])

@@ -134,12 +134,14 @@ ae_forestly <- function(outdata,
 
       t_details <- subset(
         outdata$ae_listing,
-        (toupper(outdata$ae_listing$Adverse_Event) %in% toupper(t_row)) &
-          (outdata$ae_listing$param == t_param)
+        ((toupper(outdata$ae_listing$Adverse_Event) %in% toupper(t_row)) &
+          (outdata$ae_listing$param == t_param)) |
+        ((toupper(outdata$ae_listing$SOC_Name) %in% toupper(t_row)) &
+           (outdata$ae_listing$param == t_param))
       )
 
       # Exclude 'param' column from t_details
-      t_details <- t_details[, !(names(t_details) == "param")]
+      t_details <- t_details[, !(names(t_details) %in% c("param", "SOC_Name"))]
 
       # Get all labels from the un-subset data
       listing_label <- get_label(outdata$ae_listing)
