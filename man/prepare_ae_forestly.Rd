@@ -9,7 +9,7 @@ prepare_ae_forestly(
   population = NULL,
   observation = NULL,
   parameter = NULL,
-  components = "soc",
+  components = "par",
   reference_group = NULL,
   ae_listing_display = c("USUBJID", "SITEID", "SEX", "RACE", "AGE", "ASTDY", "AESER",
     "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"),
