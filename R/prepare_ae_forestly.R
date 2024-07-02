@@ -41,6 +41,7 @@ prepare_ae_forestly <- function(
     population = NULL,
     observation = NULL,
     parameter = NULL,
+    components = "par",
     reference_group = NULL,
     ae_listing_display = c(
       "USUBJID", "SITEID", "SEX", "RACE", "AGE", "ASTDY", "AESER",
@@ -101,7 +102,7 @@ prepare_ae_forestly <- function(
     metalite.ae::prepare_ae_specific(meta,
       population = population, observation = observation,
       parameter = x,
-      components = c("soc", "par"),
+      components = components,
       reference_group = reference_group
     ) |>
       metalite.ae::extend_ae_specific_inference() |>
