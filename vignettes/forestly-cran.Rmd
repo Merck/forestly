@@ -18,7 +18,9 @@ forestly_adae$TRTA <- factor(forestly_adae$TRTA, levels = c("Xanomeline Low Dose
 
 meta_forestly(
   dataset_adsl = forestly_adsl,
-  dataset_adae = forestly_adae
+  dataset_adae = forestly_adae,
+  population_subset = SAFFL == "Y",
+  observation_subset = SAFFL == "Y"
 ) |>
   prepare_ae_forestly(parameter = "any;rel;ser") |>
   format_ae_forestly() |>

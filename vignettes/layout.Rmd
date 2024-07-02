@@ -40,7 +40,9 @@ The `outdata` contains all the parameters required to generate the interactive f
 metadata <- meta_forestly(
   dataset_adsl = forestly_adsl_3grp,
   dataset_adae = forestly_adae_3grp,
-  parameter_term = "any;rel;ser"
+  parameter_term = "any;rel;ser",
+  population_subset = SAFFL == "Y",
+  observation_subset = SAFFL == "Y"
 )
 
 outdata <- metadata |> prepare_ae_forestly()
