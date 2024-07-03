@@ -70,8 +70,8 @@
 <span>  population_term <span class="op">=</span> <span class="st">"apat"</span>,</span>
 <span>  observation_term <span class="op">=</span> <span class="st">"safety"</span>,</span>
 <span>  parameter_term <span class="op">=</span> <span class="st">"any;rel"</span>,</span>
-<span>  population_subset <span class="op">=</span> <span class="va">SAFFL</span> <span class="op">==</span> <span class="st">"Y"</span>,</span>
-<span>  observation_subset <span class="op">=</span> <span class="va">SAFFL</span> <span class="op">==</span> <span class="st">"Y"</span>,</span>
+<span>  <span class="va">population_subset</span>,</span>
+<span>  <span class="va">observation_subset</span>,</span>
 <span>  treatment_group <span class="op">=</span> <span class="st">"TRTA"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -135,13 +135,13 @@ observations from ADAE dataset.</p></dd>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Analysis population type:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>     name        id  group var       subset label</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 'apat' 'USUBJID' 'TRTA'     SAFFL == 'Y'    ''</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     name        id  group var label</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 'apat' 'USUBJID' 'TRTA'        ''</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Analysis observation type:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       name        id  group var       subset label</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 'safety' 'USUBJID' 'TRTA'     SAFFL == 'Y'    ''</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       name        id  group var label</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 'safety' 'USUBJID' 'TRTA'        ''</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   Analysis parameter type:</span>
