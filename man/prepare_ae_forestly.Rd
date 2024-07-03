@@ -9,6 +9,7 @@ prepare_ae_forestly(
   population = NULL,
   observation = NULL,
   parameter = NULL,
+  components = "par",
   reference_group = NULL,
   ae_listing_display = c("USUBJID", "SITEID", "SEX", "RACE", "AGE", "ASTDY", "AESER",
     "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"),
@@ -26,6 +27,8 @@ The term name is used as key to link information.}
 
 \item{parameter}{A character value of parameter term name.
 The term name is used as key to link information.}
+
+\item{components}{A character vector of components name.}
 
 \item{reference_group}{An integer to indicate reference group.
 Default is 2 if there are 2 groups, otherwise, the default is 1.}

@@ -47,8 +47,8 @@ meta_forestly <- function(
     population_term = "apat",
     observation_term = "safety",
     parameter_term = "any;rel",
-    population_subset = SAFFL == "Y",
-    observation_subset = SAFFL == "Y",
+    population_subset,
+    observation_subset,
     treatment_group = "TRTA") {
   meta <- metalite::meta_adam(
     population = as.data.frame(dataset_adsl),
