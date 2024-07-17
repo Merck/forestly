@@ -55,8 +55,11 @@ Here is a quick example
 library("forestly")
 
 meta_forestly(
-  forestly_adsl,
-  forestly_adae
+  dataset_adsl = forestly_adsl,
+  dataset_adae = forestly_adae,
+  parameter_term = "any;rel;ser",
+  population_subset = SAFFL == "Y",
+  observation_subset = SAFFL == "Y"
 ) |>
   prepare_ae_forestly(parameter = "any;rel;ser") |>
   format_ae_forestly() |>
