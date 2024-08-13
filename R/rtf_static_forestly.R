@@ -197,21 +197,6 @@ rtf_static_forestly <- function(
   }
 
   # Prepare output
-  rtf_output(outdata, path_outdata, path_outtable, doc_type = "figure")
-}
-
-#' Save outputs for RTF generation
-#'
-#' @param outdata An `outdata` object.
-#' @param path_outdata A character string of file path to save the outdata.
-#' @param pat_outtable A character string of file path to save the RTF table.
-#'
-#' @noRd
-rtf_output <- function(
-    outdata,
-    path_outdata,
-    path_outtable,
-    doc_type = "table") {
   if (!is.null(path_outdata)) {
     save(outdata, file = path_outdata)
     message("The outdata is saved in ", normalizePath(path_outdata))
@@ -219,7 +204,7 @@ rtf_output <- function(
 
   if (!is.null(path_outtable)) {
     outdata$rtf |>
-      r2rtf::rtf_encode(doc_type = doc_type) |>
+      r2rtf::rtf_encode(doc_type = "figure") |>
       r2rtf::write_rtf(file = path_outtable)
     message("The output is saved in ", normalizePath(path_outtable))
   }
