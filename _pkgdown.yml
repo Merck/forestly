@@ -52,6 +52,7 @@ reference:
   - "plot_errorbar"
   - "table_panel"
   - "theme_panel"
+  - "rtf_static_forestly"
 - title: Example data
   contents:
   - "forestly_adsl"
