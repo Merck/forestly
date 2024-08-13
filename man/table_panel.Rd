@@ -6,6 +6,8 @@
 \usage{
 table_panel(
   tbl,
+  n_cols = c("n_1", "n_2"),
+  prop_cols = c("prop_1", "prop_2"),
   y_var,
   x_label = NULL,
   text_color = NULL,
@@ -18,6 +20,10 @@ table_panel(
 }
 \arguments{
 \item{tbl}{A data frame to be displayed in this table.}
+
+\item{n_cols}{A character vector of columns for subject count to be used for a plot.}
+
+\item{prop_cols}{A character vector of proportion columns to be used for a plot.}
 
 \item{y_var}{A string of a variable name from \code{tbl} for the y axis variable.}
 
@@ -78,6 +84,5 @@ meta <- meta_forestly(
 meta_any <- meta$tbl[1:20, ] |> dplyr::filter(parameter == "any")
 
 meta_any |>
-  dplyr::select(name, diff_1, lower_1, upper_1) |>
   table_panel(y_var = "name")
 }
