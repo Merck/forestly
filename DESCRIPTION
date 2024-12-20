@@ -32,7 +32,7 @@ Imports:
     metalite,
     metalite.ae,
     reactable,
-    reactR (<= 0.5.0),
+    reactR,
     rlang,
     ggplot2,
     uuid
