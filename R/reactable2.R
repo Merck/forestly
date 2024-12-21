@@ -97,7 +97,7 @@ reactable2 <- function(
     filterable = filterable,
     searchable = searchable,
     defaultPageSize = defaultPageSize,
-    defaultColDef = col_def,
+    #defaultColDef = col_def,
     showPageSizeOptions = showPageSizeOptions,
     borderless = borderless,
     striped = striped,
