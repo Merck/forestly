@@ -97,7 +97,7 @@ reactable2 <- function(
     filterable = filterable,
     searchable = searchable,
     defaultPageSize = defaultPageSize,
-    #defaultColDef = col_def,
+    # defaultColDef = col_def, # This breaks rendering under reactR >= 0.6.0
     showPageSizeOptions = showPageSizeOptions,
     borderless = borderless,
     striped = striped,
