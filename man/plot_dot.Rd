@@ -6,6 +6,7 @@
 \usage{
 plot_dot(
   tbl,
+  prop_cols = c("prop_1", "prop_2"),
   y_var,
   label,
   x_breaks = NULL,
@@ -21,6 +22,8 @@ plot_dot(
 \arguments{
 \item{tbl}{A data frame selected from input data set to display on this plot.
 y and x variables are required.}
+
+\item{prop_cols}{A character vector of proportion columns to be used for a plot.}
 
 \item{y_var}{A character string that specifies a variable to be displayed
 on the y-axis.}
@@ -89,6 +92,5 @@ meta <- meta_forestly(
 
 meta_any <- meta$tbl[1:20, ] |> dplyr::filter(parameter == "any")
 meta_any |>
-  dplyr::select(name, prop_1, prop_2) |>
-  plot_dot("name", label = c("Treatment", "Placebo"))
+  plot_dot("name", prop_cols = c("prop_1", "prop_2"), label = c("Treatment", "Placebo"))
 }
