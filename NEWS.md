@@ -1,3 +1,7 @@
+# forestly 0.1.2
+- Fix bug relative to dependency `reactR` 0.6.0
+- Add new argument to control slider bar label.
+
 # forestly 0.1.1
 
 - Add button to display SOC column for subset
