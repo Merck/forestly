@@ -21,6 +21,7 @@
 #' @param outdata An `outdata` object created by [format_ae_forestly()].
 #' @param display_soc_toggle A boolean value to display SOC toggle button.
 #' @param filter A character value of the filter variable.
+#' @param filter_label A character value of the label for slider bar.
 #' @param width A numeric value of width of the table in pixels.
 #' @param max_page A numeric value of max page number shown in the table.
 #'
@@ -44,10 +45,17 @@
 ae_forestly <- function(outdata,
                         display_soc_toggle = TRUE,
                         filter = c("prop", "n"),
+                        filter_label = NULL,
                         width = 1400,
                         max_page = NULL) {
   filter <- match.arg(filter)
   filter_range <- c(0, 100)
+
+  if(is.null(filter_label)) {
+    filter_label <- ifelse(filter == "prop",
+                           "Incidence (%) in One or More Treatment Groups",
+                           "Number of AE in One or More Treatment Groups")
+  }
 
   # `max_page` controls the maximum page number displayed in the interactive forest table.
   # By default (`NULL`), it will display the counts that round up to the nearest hundred.
@@ -102,7 +110,7 @@ ae_forestly <- function(outdata,
   if (filter == "prop") {
     filter_subject <- crosstalk::filter_slider(
       id = "filter_subject",
-      label = "Incidence (%) in One or More Treatment Groups",
+      label = filter_label,
       sharedData = tbl,
       column = ~hide_prop, # whose values will be used for this slider
       step = 1, # specifies interval between each select-able value on the slider
@@ -115,13 +123,13 @@ ae_forestly <- function(outdata,
   if (filter == "n") {
     filter_subject <- crosstalk::filter_slider(
       id = "filter_subject",
-      label = "Number of AE in One or More Treatment Groups",
+      label = filter_label,
       sharedData = tbl,
       column = ~hide_n,
       step = 1,
       width = 250,
-      min = filter_range[1],
-      max = filter_range[2]
+      min = filter_range[1], # the leftmost value of the slider
+      max = filter_range[2] # the rightmost value of the slider
     )
   }
 
