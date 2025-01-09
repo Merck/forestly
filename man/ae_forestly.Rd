@@ -8,6 +8,7 @@ ae_forestly(
   outdata,
   display_soc_toggle = TRUE,
   filter = c("prop", "n"),
+  filter_label = NULL,
   width = 1400,
   max_page = NULL
 )
@@ -18,6 +19,8 @@ ae_forestly(
 \item{display_soc_toggle}{A boolean value to display SOC toggle button.}
 
 \item{filter}{A character value of the filter variable.}
+
+\item{filter_label}{A character value of the label for slider bar.}
 
 \item{width}{A numeric value of width of the table in pixels.}
 
