@@ -1,38 +1,19 @@
-
-library(arsenal)
-library(stringr)
-
+library(dplyr)
 
 adsl <- r2rtf::r2rtf_adsl
 
-
-
-
-load("~/forestly/data/forestly_adsl_3grp.rda")
-
-
-
-source("~/forestly/R/function_dataset0compare.R")
-
-
-#Compare ADSL dataset
-
-freq <- forestly_adsl_3grp %>% count(TRT01A, TRTA) %>%
-  arrange(desc(n))
-print(freq)
-
-# Derive TRTA from existing AEREL
-adsl <- adsl %>%
+# Derive TRTA
+forestly_adsl_3grp <- adsl |>
   mutate(
-   TRTA = str_replace_all(as.character(TRT01A), "Xanomeline ", "") %>% as.factor()  # Remove "Xanomeline " and convert to factor
+   TRTA = TRT01A |> as.factor()
   )
 
 # Define the desired order of levels
-desired_levels <- c("Placebo", "Low Dose", "High Dose")
+desired_levels <- c("Placebo", "Xanomeline Low Dose", "Xanomeline High Dose")
 
 # Standardize TRTA in adae
-adsl$TRTA <- factor(adsl$TRTA, levels = desired_levels)
-
-
-# Save the adae  dataset as an .rda file
-save(adsl, file = "~/forestly/data-raw/forestly_adsl.rda")
+forestly_adsl_3grp$TRTA <- factor(forestly_adsl_3grp$TRTA, levels = desired_levels)
+usethis::use_data(forestly_adsl_3grp, overwrite = TRUE)
+# Keep two treatment group
+forestly_adsl <- forestly_adsl_3grp[forestly_adsl_3grp$TRTA %in% c("Placebo", "Xanomeline Low Dose"),]
+usethis::use_data(forestly_adsl, overwrite = TRUE)
