@@ -245,8 +245,6 @@ if ("AEDOSDUR" %in% toupper(names(res))) {
   res[["ymd"]] <- substring(res[["AEDOSDUR"]], unlist(gregexpr("/P", res[["AEDOSDUR"]])) + 2)
 
   res[["Total_Dose_on_Day_of_AE_Onset"]] <- ""
-  print(length(res[["AEDOSDUR"]]))
-  print(nrow(res[["AEDOSDUR"]]))
 
   if (length(res[["AEDOSDUR"]]) > 0) {
     for (i in 1:length(res[["AEDOSDUR"]])) {
