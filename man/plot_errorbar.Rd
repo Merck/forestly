@@ -6,6 +6,7 @@
 \usage{
 plot_errorbar(
   tbl,
+  ci_cols = c("diff_1", "lower_1", "upper_1"),
   y_var,
   errbar_width = 0.4,
   color = NULL,
@@ -26,6 +27,9 @@ plot_errorbar(
 \arguments{
 \item{tbl}{A data frame selected from input data set to display on this plot.
 y and x variables are required.}
+
+\item{ci_cols}{A character vector of columns for a risk difference to be used for a plot.
+Need 3 columns, risk difference, lower bound, and upper bound.}
 
 \item{y_var}{A character string that specifies a variable to be displayed
 on the y-axis.}
@@ -124,6 +128,7 @@ meta_any |>
   dplyr::select(name, diff_1, lower_1, upper_1) |>
   plot_errorbar(
     y_var = "name",
+    ci_cols = c("diff_1", "lower_1", "upper_1"),
     label = c("Treatment", "Placebo")
   )
 }
