@@ -32,6 +32,10 @@
 #' @param width_prop Width in px for "(%)" columns.
 #' @param width_diff Width in px for risk difference columns.
 #' @param footer_space Space in px for footer to display legend.
+#' @param prop_range A vector of lower and upper limit of x-axis
+#'   for proportion figure.
+#' @param diff_range A vector of lower and upper limit of x-axis
+#'   for risk difference figure.
 #' @param color A vector of colors for analysis groups.
 #'   Default value supports up to 4 groups.
 #' @param diff_label x-axis label for risk difference.
