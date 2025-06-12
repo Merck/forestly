@@ -60,6 +60,8 @@ format_ae_forestly <- function(
     width_prop = 60,
     width_diff = 80,
     footer_space = 90,
+    prop_range = NULL,
+    diff_range = NULL,
     color = NULL,
     diff_label = "Treatment <- Favor -> Placebo",
     show_ae_parameter = FALSE) {
@@ -128,7 +130,15 @@ format_ae_forestly <- function(
   y[-outdata$reference_group] <- 1:n_group1
 
   # Calculate the range of the forest plot
-  fig_prop_range <- round(range(tbl_prop, na.rm = TRUE) + c(-2, 2))
+  if (is.null(prop_range)) {
+    fig_prop_range <- round(range(tbl_prop, na.rm = TRUE) + c(-2, 2))
+  } else {
+    if (prop_range[1] > range(tbl_prop, na.rm = TRUE)[1] |
+        prop_range[2] < range(tbl_prop, na.rm = TRUE)[2]) {
+      warning("There are data points outside the specified range for proportion.")
+    }
+    fig_prop_range <- prop_range
+  }
   fig_prop_color <- color[1:n_group]
 
   # Function to create proportion of subjects figure
@@ -166,7 +176,15 @@ format_ae_forestly <- function(
 
   # Function to create proportion difference figure
   tbl_diff <- data.frame(outdata$diff, outdata$ci_lower, outdata$ci_upper)
-  fig_diff_range <- round(range(tbl_diff, na.rm = TRUE) + c(-2, 2))
+  if (is.null(diff_range)) {
+    fig_diff_range <- round(range(tbl_diff, na.rm = TRUE) + c(-2, 2))
+  } else {
+    if (diff_range[1] > range(tbl_diff, na.rm = TRUE)[1] |
+        diff_range[2] < range(tbl_diff, na.rm = TRUE)[2]) {
+      warning("There are data points outside the specified range for difference.")
+    }
+    fig_diff_range <- diff_range
+  }
   fig_diff_color <- fig_prop_color[index_diff]
 
   iter <- 1:ncol(outdata$diff) - 1
@@ -287,6 +305,8 @@ format_ae_forestly <- function(
     header = "AE Proportion (%)",
     width = ifelse("fig_prop" %in% display, width_fig, 0),
     align = "center",
+    sortable = FALSE,
+    filterable = FALSE,
     cell = reactable::JS(js_prop_fig_cell),
     footer = reactable::JS(js_prop_fig_footer),
     html = TRUE,
@@ -300,6 +320,8 @@ format_ae_forestly <- function(
     defaultSortOrder = "desc",
     width = ifelse("fig_diff" %in% display, width_fig, 0),
     align = "center",
+    sortable = FALSE,
+    filterable = FALSE,
     cell = reactable::JS(js_diff_fig_cell),
     footer = reactable::JS(js_diff_fig_footer),
     html = TRUE,
