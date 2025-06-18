@@ -147,6 +147,7 @@ ae_forestly <- function(outdata,
     hidden_item = paste0("'", outdata$hidden_column, "'", collapse = ", "),
     soc_toggle = display_soc_toggle,
     width = width,
+    searchable = FALSE,
     details = function(index) {
       t_row <- outdata$tbl$name[index]
       t_param <- outdata$tbl$parameter[index]

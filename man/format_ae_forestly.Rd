@@ -14,6 +14,8 @@ format_ae_forestly(
   width_prop = 60,
   width_diff = 80,
   footer_space = 90,
+  prop_range = NULL,
+  diff_range = NULL,
   color = NULL,
   diff_label = "Treatment <- Favor -> Placebo",
   show_ae_parameter = FALSE
@@ -44,6 +46,12 @@ risk difference.}
 \item{width_diff}{Width in px for risk difference columns.}
 
 \item{footer_space}{Space in px for footer to display legend.}
+
+\item{prop_range}{A vector of lower and upper limit of x-axis
+for proportion figure.}
+
+\item{diff_range}{A vector of lower and upper limit of x-axis
+for risk difference figure.}
 
 \item{color}{A vector of colors for analysis groups.
 Default value supports up to 4 groups.}
