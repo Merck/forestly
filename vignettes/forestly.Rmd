@@ -1,5 +1,6 @@
 ---
-title: "Interactive Forest Plot"
+title: "Creating Interactive Forest Plots: A Step-by-Step Guide"
+authors: "Yujie Zhao"
 output:
   rmarkdown::html_document:
     self_contained: no
@@ -22,224 +23,118 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Introduction
+
+The `forestly` R package creates interactive forest plots for clinical trial analysis and reporting. The interactive forest plots include:
+- AE-specific tables along with the AE proportion difference and its confidence interval visualized.
+- AE listing tables corresponding to a selected AE.
+
+Through its interactive features, users can:
+- **Search** for the AE PT term or SOC term of interest.
+- **Filter** AEs with an incidence greater than a specified percentage in one or more arms.
+- **Sort** AEs from the smallest proportion or proportion difference to the largest.
+- **Switch** between different AE-specific tables.
+- **Drill down** to listings for subjects with the selected AE.
+
+# Procedure to generate interactive forest plot
+
+## Step 1: read the ADAM data
+
+In the example presented in this vignette, we utilize the ADAM data from the `forestly` R package. We further factorize the actual arm variable, `TRTA`, to enable the `forestly` R package to identify which arm serves as the reference group.
 ```{r, message=FALSE}
 library(metalite)
 library(forestly)
+
+adsl <- forestly_adsl
+adae <- forestly_adae
+
+adsl$TRTA <- factor(forestly_adsl$TRT01A, 
+                    levels = c("Xanomeline Low Dose", "Placebo"), 
+                    labels = c("Low Dose", "Placebo"))
+adae$TRTA <- factor(forestly_adae$TRTA, 
+                    levels = c("Xanomeline Low Dose", "Placebo"), 
+                    labels = c("Low Dose", "Placebo"))
 ```
 
-# Overview
+## Step 2: build the metadata
 
-The forestly package creates interactive forest plots for clinical trial analysis & reporting.
+We use the [metalite](https://merck.github.io/metalite/) R package to generate a minimal metadata for the generation of the interactive forest plot.
 
-- Safety analysis
-  - Specific adverse events analysis
-- Efficacy analysis (future work)
-  - Subgroup analysis
-
-We assume ADaM datasets are ready for analysis and
-leverage [metalite](https://merck.github.io/metalite/) data structure to define
-inputs and outputs.
-
+To begin, we input the `adsl` data as the population data and the `adae` data as the observation data. 
 ```{r}
-forestly_adsl$TRTA <- factor(forestly_adsl$TRT01A, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
-
-forestly_adae$TRTA <- factor(forestly_adae$TRTA, levels = c("Xanomeline Low Dose", "Placebo"), labels = c("Low Dose", "Placebo"))
+meta <- meta_adam(population = adsl, observation = adae)
 ```
 
+Without loss of generality, our plan is to generate the following four AE-specific tables:
+- Any AE (we give it a short name/nickname as `"any"`)
+- Drug-related AE (we give it a short name/nickname as `"drug-related"`)
+- Serious AE (we give it a short name/nickname as `"serious"`)
+- Drug-related serious AE (we give it a short name/nickname as `"drug-related-serious"`)
+However, users are allowed to add more AE-specific tables as needed. For the above 4 AE specific tables, we take the APaT for both observation and observation. 
 ```{r}
-meta_forestly(
-  dataset_adsl = forestly_adsl,
-  dataset_adae = forestly_adae,
-  parameter_term = "any;rel;ser",
-  population_subset = SAFFL == "Y",
-  observation_subset = SAFFL == "Y"
-) |>
+meta <- meta |>
+  define_plan(plan = plan(analysis = "ae_forestly", 
+                          population = "apat",
+                          observation = "apat", 
+                          parameter = "any;drug-related;serious;drug-related-serious")) 
+```
+
+Following the definition of the analysis plan, we further specify the details of `analysis = "ae_forestly"` by providing its label for display.
+```{r}
+meta <- meta |>
+  define_analysis(name = "ae_forestly", label = "Interactive Forest Plot") 
+```
+
+We then define the related population (`population = "apat"`) and observation (`observation = "apat"`) by specifying their grouping variable (`group = ...`), subject ID (`id = ...`), population flag (`subset = ...`) and label (`label = ...`). If users wish to use different population flags, grouping variables, or labels, they can make changes as needed.
+```{r}
+meta <- meta |>
+  define_population(name = "apat", group = "TRTA", id = "USUBJID",
+                    subset = SAFFL == "Y", label = "All Patient as Treated") |>
+  define_observation(name = "apat", group = "TRTA", 
+                     subset = SAFFL == "Y", label = "All Patient as Treated") 
+```
+
+Next, we specify the details of `parameter = "any;drug-related;serious;drug-related-serious"`. For any AEs (`"any"`), their is no filter applied. 
+```{r}
+meta <- meta |>
+  define_parameter(name = "any", 
+                   subset = NULL,
+                   label = "Any AEs", 
+                   var = "AEDECOD", soc = "AEBODSYS")
+```
+For drug related AEs (`"drug-related"`), its filter is `AEREL %in% c("PROBABLE", "POSSIBLE")`.
+```{r}
+meta <- meta |>
+  define_parameter(name = "drug-related", 
+                   subset = toupper(AREL) == "RELATED",
+                   label = "Drug-related AEs", 
+                   var = "AEDECOD", soc = "AEBODSYS") 
+```
+Similarly, we define serious AE and drug related serious AEs.
+```{r}
+meta <- meta |>
+  define_parameter(name = "serious", 
+                   subset = AESER == "Y",
+                   label = "Serious AEs", 
+                   var = "AEDECOD", soc = "AEBODSYS") |>
+  define_parameter(name = "drug-related-serious", 
+                   subset = AESER == "Y" & AEREL %in% c("PROBABLE", "POSSIBLE"),
+                   label = "Drug-related serious AEs", 
+                   var = "AEDECOD", soc = "AEBODSYS") 
+```
+
+Finally, we build the metadata by running the `meta_build()` function.
+```{r}
+meta <- meta |>  meta_build()
+```
+
+## Step 3: generate the interative AE forest plot
+
+With the `meta` built as described above, users can generate the interactive AE forest seamlessly through a few simple function calls connected with the pipe operator (`|>`). The `prepare_ae_forestly()` prepares datasets (i.e., calculate all to-be-reported numbers). The `format_ae_forestly()` takes care of formating, and the `ae_forestly()` function realize the interactivity.
+```{r}
+meta |>
   prepare_ae_forestly() |>
   format_ae_forestly() |>
   ae_forestly()
 ```
 
-# Interactive features
-
-The interactive features of the example include:
-
-- Select different AE criteria.
-- Filter by incidence of AE in one more more group.
-- Revealed information by hovering the mouse over a point.
-- Search bars to find subjects with selected adverse events (AE).
-- Sort value by click the column header.
-- Drill-down listing by clicking $\blacktriangleright$.
-
-# Workflow
-
-The general workflow is:
-
-1. `meta_forestly()` constructs input metadata for treatment analysis from ADaM datasets.
-1. `prepare_ae_forestly()` prepares datasets for interactive forest plot.
-1. `format_ae_forestly()` formats output layout.
-1. `ae_forestly()` generates an interactive forest plot.
-
-Here `meta_forestly()` is a wrapper function of the metalite package.
-The function is for users to simplify the process to define input parameters required
-to generate the interactive forest plot.
-
-`meta_forestly` function require `dataset_adsl`, `dataset_adae`, `observation_term` and `population_term` arguments. `dataset_adsl`, `dataset_adae` are the input ADaM dataset for population and observation. In this example, we will use "apat" for `population_term` and "wk12" for `observation_term`. For subset creteria for both terms, we are using `SAFFL == "Y"` by default in `meta_forestly()`.
-
-```{r}
-meta_forestly(
-  dataset_adsl = forestly_adsl,
-  dataset_adae = forestly_adae,
-  parameter_term = "any;rel;ser",
-  population_subset = SAFFL == "Y",
-  observation_subset = SAFFL == "Y"
-)
-```
-
-If user wants to customize these definitions of terms or define new terms, more tutorials can be found at this link.
-
-For paramter level metadata, `parameter_term` is selected from predefined terms listed below. By default, we choose three parameter terms `rel`, `any` and `ser` and use ";" to concatenate them to allow the three types of AE to be displayed in one interactive forest plot.
-
-| Term         | Subset Criteria | Label |
-| :------------- |:------------- | :-----|
-| `any`      | `NULL` | any adverse events |
-| `rel`      | `toupper(AREL) == "RELATED"` | drug-related adverse events |
-| `g34` | `ATOXGRN %in% c(3, 4)`| grade 3-4 adverse events |
-| `g340rel` | `ATOXGRN %in% c(3, 4) & AREL == "Y"`| drug-related grade 3-4 adverse events |
-| `g35` | `ATOXGRN %in% c(3, 4, 5)`| grade 3-5 adverse events |
-| `g350rel` | `ATOXGRN %in% c(3, 4, 5) & AREL == "Y"`| drug-related grade 3-5 adverse events |
-| `nonser` | `AESER != "Y" | is.na(AESER)`| non-serious adverse events |
-| `ser` | `AESER == "Y"`| serious adverse events |
-| `ser0rel` | `AESER == "Y" & AREL == "Y"`| serious drug-related adverse events |
-| `mod` | `toupper(AEACN) %in% c("DOSE REDUCED", "DRUG INTERRUPTED", "DRUG WITHDRAWN")`| adverse events result in dose modification |
-| `dth` | `AESDTH == "Y"`| adverse events result in death |
-| `dtc0rel` | `AESDTH == "Y" & AREL == "Y"`| drug-related adverse events result in death |
-| `disc` | `toupper(AEACN) == "DRUG WITHDRAWN"`| adverse events resulting in discontinuation |
-| `disc0drel` | `toupper(AEACN) == "DRUG WITHDRAWN" & AREL == "Y"`| drug-related adverse events resulting in discontinuation |
-| `disc0ser` | `toupper(AEACN) == "DRUG WITHDRAWN" & AESER == "Y"`| serious adverse events resulting in discontinuation |
-| `disc0ser0rel` | `toupper(AEACN) == "DRUG WITHDRAWN" & AESER == "Y" & AREL == "Y"`| serious drug-related adverse events resulting in discontinuations |
-| `inj` | `toupper(AECAT) == "I"`| injection-site |
-| `noninj` | `toupper(AECAT) != "I" | is.na(AECAT)` | non-injection-site|
-| `inj0rel` | `toupper(AECAT) == "I" & AREL == "Y"` | drug-related injection-site |
-| `noninj0rel` | `(toupper(AECAT) == "I" | is.na(AECAT)) & AREL == "Y"` | drug-related non-injection-site |
-
-In the following example, we define `ITT` with subset criteria `ITTFL == "Y"`for population and `TEAE` with subset criteria `TRTEMFL == "Y"` for observation. For parameter, we choose `ser` and `nonser` from pre-defined parameter list.
-
-```{r}
-meta <- meta_forestly(
-  dataset_adsl = forestly_adsl,
-  dataset_adae = forestly_adae,
-  population_term = "ITT",
-  population_subset = ITTFL == "Y",
-  observation_term = "TEAE",
-  observation_subset = TRTEMFL == "Y",
-  parameter_term = "any;ser;nonser;rel"
-)
-meta
-```
-
-After the metadata is defined, we can create an interactive forest plot as below.
-
-In this section, we calculate statistics and prepare plotting dataset using `prepare_ae_forestly()`. Argument `parameter` is required since we can select parameter from the one we defined in metadata.
-
-Then we could use `format_ae_forestly()` to format the output and `ae_forestly()` to create the interactive forest plot. Default value is used for all arguments in these two functions.
-
-In the first example, we select `any`, `ser` and `nonser`.
-
-```{r}
-meta |>
-  prepare_ae_forestly(parameter = "any;ser;nonser") |>
-  format_ae_forestly() |>
-  ae_forestly()
-```
-
-In this example we select `any`, `rel` and `ser`.
-
-```{r}
-meta |>
-  prepare_ae_forestly(parameter = "any;rel;ser") |>
-  format_ae_forestly() |>
-  ae_forestly()
-```
-
-# Define metadata
-
-```{r}
-library(metalite)
-```
-
-In order to provide more flexibility for different analysis,
-The forestly package also allows other way to construct metadata.
-We only show a simplified example for the metalite package.
-More details can be found in the [**metalite**](https://merck.github.io/metalite/articles/index.html) package website.
-
-Then we start to construct a metadata using `metalite`. The output metadata contains two observation `wk12` and `period1` as illustration purpose. Also, for parameter, the subset criteria is `AEREL %in% c("POSSIBLE", "PROBABLE")` instead of `toupper(AREL) == "RELATED"` in order to fit the observation dataset.
-
-```{r}
-meta <- meta_adam(
-  population = forestly_adsl,
-  observation = forestly_adae
-) |>
-  define_plan(plan = plan(
-    analysis = "ae_forestly",
-    population = "apat",
-    observation = c("wk12", "period1"),
-    parameter = "any;rel;ser"
-  )) |>
-  define_population(
-    name = "apat",
-    group = "TRTA",
-    subset = quote(SAFFL == "Y")
-  ) |>
-  define_observation(
-    name = "wk12",
-    group = "TRTA",
-    subset = quote(SAFFL == "Y"),
-    label = "Weeks 0 to 12"
-  ) |>
-  define_observation(
-    name = "period1",
-    group = "TRTA",
-    var = "AEDECOD",
-    subset = quote(TRTEMFL == "Y" & SAFFL == "Y"),
-    label = "Period 1"
-  ) |>
-  define_parameter(
-    name = "rel",
-    subset = quote(AEREL %in% c("POSSIBLE", "PROBABLE"))
-  ) |>
-  define_analysis(
-    name = "ae_forestly",
-    label = "Interactive forest plot"
-  ) |>
-  meta_build()
-```
-
-```{r}
-meta
-```
-
-After the metadata is defined, we can create an interactive forest plot for `wk12` as below.
-
-```{r}
-meta |>
-  prepare_ae_forestly(
-    population = "apat",
-    observation = "wk12",
-    parameter = "any;rel;ser"
-  ) |>
-  format_ae_forestly() |>
-  ae_forestly()
-```
-
-Using similar approach, we could create an interactive forest plot for `period1`.
-
-```{r}
-meta |>
-  prepare_ae_forestly(
-    population = "apat",
-    observation = "period1",
-    parameter = "any;rel;ser"
-  ) |>
-  format_ae_forestly() |>
-  ae_forestly()
-```
