@@ -4,11 +4,9 @@ pkgdown_sha: ~
 articles:
   design-pattern: design-pattern.html
   forest-plot-static: forest-plot-static.html
-  forestly-cran: forestly-cran.html
   forestly: forestly.html
   layout: layout.html
-  meta-forestly: meta-forestly.html
-last_built: 2025-06-24T18:12Z
+last_built: 2025-06-25T18:05Z
 urls:
   reference: https://merck.github.io/forestly/reference
   article: https://merck.github.io/forestly/articles
