@@ -1,5 +1,5 @@
 ---
-title: "Creating Interactive Forest Plots: A Step-by-Step Guide"
+title: "Generate Interactive AE Forest Plots with Drill Down to AE Listing"
 authors: "Yujie Zhao"
 output:
   rmarkdown::html_document:
@@ -7,7 +7,7 @@ output:
     number_sections: yes
     code_folding: hide
 vignette: |
-  %\VignetteIndexEntry{Interactive Forest Plot}
+  %\VignetteIndexEntry{Generate Interactive AE Forest Plots with Drill Down to AE Listing}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

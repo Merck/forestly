@@ -1,8 +1,8 @@
 ---
-title: "Design Plan of R Package forestly"
+title: "Design Plan of the forestly Package"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Design Plan of R Package forestly}
+  %\VignetteIndexEntry{Design Plan of the forestly Package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
