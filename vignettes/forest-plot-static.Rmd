@@ -1,8 +1,8 @@
 ---
-title: "Static Forest Plot"
+title: "Generate Static AE Forest Plots"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Static Forest Plot}
+  %\VignetteIndexEntry{Generate Static AE Forest Plots}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

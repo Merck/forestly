@@ -1,12 +1,12 @@
 ---
-title: "Controlling Layout"
+title: "Control the Layout"
 output:
   rmarkdown::html_document:
     self_contained: no
     number_sections: yes
     code_folding: hide
 vignette: |
-  %\VignetteIndexEntry{Controlling Layout}
+  %\VignetteIndexEntry{Control the Layout}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

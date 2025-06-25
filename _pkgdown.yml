@@ -24,17 +24,16 @@ footer:
     blank: "<span></span>"
 
 articles:
-- title: Get started
-  contents:
-  - forestly
-  - forestly-cran
-- title: Examples
+- title: Generate AE Forest Plot
   navbar: ~
   contents:
   - forest-plot-static
+  - forestly
+- title: Customize AE Forest Plot
+  navbar: ~
+  contents:
   - layout
-  - meta-forestly
-- title: Package design
+- title: Developer Notes
   contents:
   - design-pattern
 
