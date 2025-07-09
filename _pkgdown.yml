@@ -29,10 +29,16 @@ articles:
   contents:
   - forest-plot-static
   - forestly
-- title: Customize AE Forest Plot
+- title: Customize the Interactive AE Forest Plot
   navbar: ~
   contents:
-  - layout
+  - customize-listing-columns
+  - customize-digits
+  - customize-color
+  - customize-ae-specific-columns
+  - customize-diff-label
+  - customize-xlimit
+  - customize-width
 - title: Developer Notes
   contents:
   - design-pattern
