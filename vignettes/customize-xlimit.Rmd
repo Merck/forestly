@@ -1,0 +1,81 @@
+---
+title: "Customizing Plot Limits for AE Proportions and Differences"
+authors: "Yujie Zhao"
+output:
+  rmarkdown::html_document:
+    self_contained: no
+    number_sections: yes
+    code_folding: hide
+vignette: |
+  %\VignetteIndexEntry{Customizing Plot Limits for AE Proportions and Differences}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r}
+library(forestly)
+library(metalite)
+```
+
+The interactive AE forest plots include AE-specific tables. In this vignette, we demonstrate how users can customize the limits when plotting AE proportions, their differences, and corresponding confidence intervals.
+
+# Step 1: build your metadata
+
+Building interactive AE forest plots starts with constructing the metadata. The detailed procedure for building metadata is covered in the vignette [Generate Interactive AE Forest Plots with Drill Down to AE Listing](https://merck.github.io/forestly/articles/forestly.html). Therefore, in this vignette, we will skip those details and directly use the metadata created there. 
+
+```{r}
+adsl <- forestly_adsl
+adae <- forestly_adae
+
+adsl$TRTA <- factor(forestly_adsl$TRT01A, 
+                    levels = c("Xanomeline Low Dose", "Placebo"), 
+                    labels = c("Low Dose", "Placebo"))
+adae$TRTA <- factor(forestly_adae$TRTA, 
+                    levels = c("Xanomeline Low Dose", "Placebo"), 
+                    labels = c("Low Dose", "Placebo"))
+
+meta <- meta_adam(population = adsl, observation = adae) |>
+  define_plan(plan = plan(analysis = "ae_forestly", 
+                          population = "apat",
+                          observation = "apat", 
+                          parameter = "any;drug-related")) |>
+  define_analysis(name = "ae_forestly", label = "Interactive Forest Plot") |>
+  define_population(name = "apat", group = "TRTA", id = "USUBJID",
+                    subset = SAFFL == "Y", label = "All Patient as Treated") |>
+  define_observation(name = "apat", group = "TRTA", 
+                     subset = SAFFL == "Y", label = "All Patient as Treated") |>
+  define_parameter(name = "any", 
+                   subset = NULL,
+                   label = "Any AEs", 
+                   var = "AEDECOD", soc = "AEBODSYS") |>
+  define_parameter(name = "drug-related", 
+                   subset = toupper(AREL) == "RELATED",
+                   label = "Drug-related AEs", 
+                   var = "AEDECOD", soc = "AEBODSYS") |>  
+  meta_build()
+```
+
+
+# Step 2: customize limits for AE proportion/difference plotting
+
+Users can control these limits by specifying the `prop_range = ...` and `diff_range = ...` arguments within the `format_ae_forestly()` function. Specifically, `prop_range` sets the limits for AE proportions, while `diff_range` defines the limits for AE proportion differences and their confidence intervals.
+
+By default, the limits are set based on the minimum and maximum values observed across all AEs, rounded and extended by ±2 units for better visualization.
+
+In the example below, we modify the AE proportion limits to range from -0.5 to 30, and the AE proportion difference limits from -10 to 35. Please note that if the specified range does not fully encompass the observed minimum or maximum values, a warning message will be displayed.
+
+```{r}
+meta |>
+  prepare_ae_forestly() |>
+  format_ae_forestly(prop_range = c(-0.5, 30), diff_range = c(-10, 35)) |>
+  ae_forestly()
+```

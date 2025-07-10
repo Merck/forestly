@@ -66,6 +66,7 @@ meta <- meta_adam(population = adsl, observation = adae)
 ```
 
 Without loss of generality, our plan is to generate the following four AE-specific tables:
+
 - Any AE (we give it a short name/nickname as `"any"`)
 - Drug-related AE (we give it a short name/nickname as `"drug-related"`)
 - Serious AE (we give it a short name/nickname as `"serious"`)

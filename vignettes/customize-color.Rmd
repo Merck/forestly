@@ -1,0 +1,79 @@
+---
+title: "Personalized Color Choices in Data Visualization"
+authors: "Yujie Zhao"
+output:
+  rmarkdown::html_document:
+    self_contained: no
+    number_sections: yes
+    code_folding: hide
+vignette: |
+  %\VignetteIndexEntry{Personalized Color Choices in Data Visualization}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r}
+library(forestly)
+library(metalite)
+```
+
+The interactive AE forest plots include AE-specific tables that visualize AE proportions, differences, and confidence intervals (CI). In this vignette, we introduce how to customize the plotting colors.
+
+# Step 1: build your metadata
+
+Building interactive AE forest plots starts with constructing the metadata. The detailed procedure for building metadata is covered in the vignette [Generate Interactive AE Forest Plots with Drill Down to AE Listing](https://merck.github.io/forestly/articles/forestly.html). Therefore, in this vignette, we will skip those details and directly use the metadata created there. 
+
+```{r}
+adsl <- forestly_adsl
+adae <- forestly_adae
+
+adsl$TRTA <- factor(forestly_adsl$TRT01A, 
+                    levels = c("Xanomeline Low Dose", "Placebo"), 
+                    labels = c("Low Dose", "Placebo"))
+adae$TRTA <- factor(forestly_adae$TRTA, 
+                    levels = c("Xanomeline Low Dose", "Placebo"), 
+                    labels = c("Low Dose", "Placebo"))
+
+meta <- meta_adam(population = adsl, observation = adae) |>
+  define_plan(plan = plan(analysis = "ae_forestly", 
+                          population = "apat",
+                          observation = "apat", 
+                          parameter = "any;drug-related")) |>
+  define_analysis(name = "ae_forestly", label = "Interactive Forest Plot") |>
+  define_population(name = "apat", group = "TRTA", id = "USUBJID",
+                    subset = SAFFL == "Y", label = "All Patient as Treated") |>
+  define_observation(name = "apat", group = "TRTA", 
+                     subset = SAFFL == "Y", label = "All Patient as Treated") |>
+  define_parameter(name = "any", 
+                   subset = NULL,
+                   label = "Any AEs", 
+                   var = "AEDECOD", soc = "AEBODSYS") |>
+  define_parameter(name = "drug-related", 
+                   subset = toupper(AREL) == "RELATED",
+                   label = "Drug-related AEs", 
+                   var = "AEDECOD", soc = "AEBODSYS") |>  
+  meta_build()
+```
+
+
+# Step 2: personalized color choices
+
+Users can specify custom colors by using the `color = ...` argument within the `format_ae_forestly()` function. By default, the color scheme is based on the branding of Merck & Co., Inc., Rahway, NJ, USA.
+
+In the example below, we modify the colors to `c("black", "grey60", "grey40")` to represent the three arms in the plot. The default color palette supports up to 4 arms; for studies with more than 4 arms, we recommend users define their own color settings to ensure clear visualization.
+
+```{r}
+meta |>
+  prepare_ae_forestly() |>
+  format_ae_forestly(color = c("black", "grey60", "grey40")) |>
+  ae_forestly()
+```
