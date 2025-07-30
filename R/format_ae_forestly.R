@@ -24,7 +24,7 @@
 #'   - `prop`: Proportion of subjects with AE.
 #'   - `total`: Total columns.
 #'   - `diff`: Risk difference.
-#' @param digits A value of digits to be displayed for proportion and
+#' @param digits A number of digits after decimal point to be displayed for proportion and
 #'   risk difference.
 #' @param width_term Width in px for AE term column.
 #' @param width_fig Width in px for proportion and risk difference figure.
@@ -271,7 +271,7 @@ format_ae_forestly <- function(
       minWidth = width_prop, align = "center",
       format = reactable::colFormat(
         prefix = "(",
-        digits = 1,
+        digits = digits,
         suffix = ")"
       )
     )
@@ -288,7 +288,7 @@ format_ae_forestly <- function(
         header = outdata$group[i],
         minWidth = width_diff,
         show = display_diff,
-        format = reactable::colFormat(digits = 1)
+        format = reactable::colFormat(digits = digits)
       )
     }
   )
