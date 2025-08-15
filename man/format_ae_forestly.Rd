@@ -32,7 +32,7 @@ format_ae_forestly(
 \item \code{diff}: Risk difference.
 }}
 
-\item{digits}{A value of digits to be displayed for proportion and
+\item{digits}{A number of digits after decimal point to be displayed for proportion and
 risk difference.}
 
 \item{width_term}{Width in px for AE term column.}
