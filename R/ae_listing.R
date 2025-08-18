@@ -136,9 +136,15 @@ if ("SUBJID" %in% toupper(names(res))) {
 }
 attr(res[["Participant_ID"]], "label") <- NULL
 
-res[["Gender"]] <- propercase(res[["SEX"]])
+res[["Gender"]] <- lapply(res[["SEX"]],function(x){
+  if(is.factor(x)){
+    tools::toTitleCase(as.character(x))
+  } else{
+    tools::toTitleCase(x)
+  }
+})
 
-res[["Race"]] <- propercase(tolower(res[["RACE"]]))
+res[["Race"]] <- tools::toTitleCase(tolower(res[["RACE"]]))
 
 res[["Age"]] <- res[["AGE"]]
 
@@ -148,7 +154,7 @@ attr(res[["Treatment_Group"]], "label") <- NULL
 
 # Onset epoch
 if ("EPOCH" %in% toupper(names(res))) {
-  res[["Onset_Epoch"]] <- propercase(tolower(res[["EPOCH"]])) # propcase the EPOCH
+  res[["Onset_Epoch"]] <- tools::toTitleCase(tolower(res[["EPOCH"]])) # propcase the EPOCH
 }
 
 
@@ -167,7 +173,7 @@ res <- res[, !(names(res) == par_var)]
 # Duration
 if ("ADURN" %in% toupper(names(res)) & "ADURU" %in% toupper(names(res))) {
   res[["Duration"]] <- paste(ifelse(is.na(res[["ADURN"]]), "", as.character(res[["ADURN"]])),
-                             propercase(tolower(res[["ADURU"]])),
+                             tools::toTitleCase(tolower(res[["ADURU"]])),
                              sep = " ") # AE duration with unit
 
   if (length(res[["Duration"]]) > 0) {
@@ -201,7 +207,7 @@ if ("AESER" %in% toupper(names(res))) {
 # AE related
 if ("AEREL" %in% toupper(names(res))) {
   res[["Related"]] <- ifelse(res[["AEREL"]] == "RELATED", "Y", ifelse(
-    toupper(res[["AEREL"]]) == "NOT RELATED", "N", propercase(tolower(res[["AEREL"]]))
+    toupper(res[["AEREL"]]) == "NOT RELATED", "N", tools::toTitleCase(tolower(res[["AEREL"]]))
   ))
 }
 
@@ -216,7 +222,7 @@ if ("AEACN" %in% toupper(names(res))) {
                                          "DOSE INCREASED" = "Increased",
                                          "NOT APPLICABLE" = "N/A",
                                          "UNKNOWN" = "Unknown",
-                                         propercase(tolower(res[["AEACN"]][i]))
+                                         tools::toTitleCase(tolower(res[["AEACN"]][i]))
       )
     }
   } else {
@@ -233,7 +239,7 @@ if ("AEOUT" %in% toupper(names(res))) {
                                     "RECOVERING/RESOLVING" = "Resolving",
                                     "RECOVERED/RESOLVED WITH SEQUELAE" = "Sequelae",
                                     "NOT RECOVERED/NOT RESOLVED" = "Not Resolved",
-                                    propercase(tolower(res[["AEOUT"]][i]))
+                                    tools::toTitleCase(tolower(res[["AEOUT"]][i]))
       )
     }
   } else {
