@@ -77,6 +77,28 @@ collect_ae_listing <- function(
 #' propercase("AbCDe FGha")
 propercase <- function(x) paste0(toupper(substr(x, 1, 1)), tolower(substring(x, 2)))
 
+#' Convert character strings or factor to title case
+#'
+#' @param x A character vector or factor.
+#'
+#' @return A character vector.
+#'
+#' @noRd
+#'
+#' @examples
+#' titlecase(tolower(c("american indian or alaska native","WHITE"))) #char vector
+#' titlecase(tolower(factor(c("tHEre is oNe", "tHAt is tWo", "heRe is tHRee")))) #factor
+#' titlecase(c("F","M")) #char vector
+#' titlecase(factor(c("F","M"))) #factor
+titlecase <- function(x) {
+  if(is.factor(x)){
+    levels(x) <- tools::toTitleCase(levels(x))
+  } else if (is.character(x)){
+    x <- tools::toTitleCase(x)
+  }
+  return(as.character(x))
+}
+
 #' Format AE listing analysis
 #'
 #' @param outdata An `outdata` object created by [prepare_ae_specific()].
@@ -136,13 +158,7 @@ if ("SUBJID" %in% toupper(names(res))) {
 }
 attr(res[["Participant_ID"]], "label") <- NULL
 
-res[["Gender"]] <- lapply(res[["SEX"]],function(x){
-  if(is.factor(x)){
-    tools::toTitleCase(as.character(x))
-  } else{
-    tools::toTitleCase(x)
-  }
-})
+res[["Gender"]] <- titlecase(res[["SEX"]])
 
 res[["Race"]] <- tools::toTitleCase(tolower(res[["RACE"]]))
 
