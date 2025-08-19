@@ -77,6 +77,8 @@ format_ae_forestly <- function(
     several.ok = TRUE
   )
 
+  display_n <- "n" %in% display
+  display_prop <- "prop" %in% display
   display_total <- "total" %in% display
   display_diff <- "diff" %in% display
 
@@ -259,7 +261,8 @@ format_ae_forestly <- function(
   col_n <- lapply(name_n, function(x) {
     reactable::colDef(
       header = "n", defaultSortOrder = "desc",
-      minWidth = width_n, align = "center"
+      minWidth = width_n, align = "center",
+      show = display_n
     )
   })
   names(col_n) <- name_n
@@ -269,6 +272,7 @@ format_ae_forestly <- function(
     reactable::colDef(
       header = "(%)", defaultSortOrder = "desc",
       minWidth = width_prop, align = "center",
+      show = display_prop,
       format = reactable::colFormat(
         prefix = "(",
         digits = digits,
