@@ -50,13 +50,13 @@
 #' @export
 #'
 #' @examples
-#' adsl <- forestly_adsl[1:100,]
-#' adae <- forestly_adae[1:100,]
+#' adsl <- forestly_adsl[1:100, ]
+#' adae <- forestly_adae[1:100, ]
 #' meta_forestly(
 #'   dataset_adsl = adsl,
 #'   dataset_adae = adae
 #' ) |>
-#'   prepare_ae_forestly()|>
+#'   prepare_ae_forestly() |>
 #'   format_ae_forestly()
 format_ae_forestly <- function(
     outdata,
@@ -158,7 +158,7 @@ format_ae_forestly <- function(
     fig_prop_range <- round(range(tbl_prop, na.rm = TRUE) + c(-2, 2))
   } else {
     if (prop_range[1] > range(tbl_prop, na.rm = TRUE)[1] |
-        prop_range[2] < range(tbl_prop, na.rm = TRUE)[2]) {
+      prop_range[2] < range(tbl_prop, na.rm = TRUE)[2]) {
       warning("There are data points outside the specified range for proportion.")
     }
     fig_prop_range <- prop_range
@@ -204,7 +204,7 @@ format_ae_forestly <- function(
     fig_diff_range <- round(range(tbl_diff, na.rm = TRUE) + c(-2, 2))
   } else {
     if (diff_range[1] > range(tbl_diff, na.rm = TRUE)[1] |
-        diff_range[2] < range(tbl_diff, na.rm = TRUE)[2]) {
+      diff_range[2] < range(tbl_diff, na.rm = TRUE)[2]) {
       warning("There are data points outside the specified range for difference.")
     }
     fig_diff_range <- diff_range
@@ -369,14 +369,16 @@ format_ae_forestly <- function(
   )
 
   # column hidden
-  columns <- lapply(columns, function (x) {
+  columns <- lapply(columns, function(x) {
     if (!"show" %in% names(x)) {
       x$show <- TRUE
     }
     return(x)
   })
 
-  hidden_item <- names(columns)[(!names(columns) %in% "soc_name") & (sapply(columns, function(x) {return(!x$show)}))]
+  hidden_item <- names(columns)[(!names(columns) %in% "soc_name") & (sapply(columns, function(x) {
+    return(!x$show)
+  }))]
 
   # Create outdata
   outdata$tbl <- tbl

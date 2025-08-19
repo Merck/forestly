@@ -29,8 +29,8 @@
 #' @export
 #'
 #' @examples
-#' adsl <- forestly_adsl[1:100,]
-#' adae <- forestly_adae[1:100,]
+#' adsl <- forestly_adsl[1:100, ]
+#' adae <- forestly_adae[1:100, ]
 #' meta_forestly(
 #'   dataset_adsl = adsl,
 #'   dataset_adae = adae
@@ -48,8 +48,6 @@ prepare_ae_forestly <- function(
       "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"
     ),
     ae_listing_unique = FALSE) {
-
-
   if (is.null(population)) {
     if (length(meta$population) == 1) {
       population <- meta$population[[1]]$name
@@ -66,32 +64,32 @@ prepare_ae_forestly <- function(
     }
   }
 
-  if( is.null(parameter)){
+  if (is.null(parameter)) {
     parameters <- names(meta$parameter)
 
     meta$parameter
-  }else{
+  } else {
     parameters <- unlist(strsplit(parameter, ";"))
   }
 
-  for(i in seq_along(parameters)){
+  for (i in seq_along(parameters)) {
     para <- meta$parameter[[parameters[i]]]
-    if(is.null(para$var)){
+    if (is.null(para$var)) {
       para$var <- "AEDECOD"
     }
-    if(is.null(para$soc)){
+    if (is.null(para$soc)) {
       para$soc <- "AEBODSYS"
     }
-    if(is.null(para$seq)){
+    if (is.null(para$seq)) {
       para$seq <- sample(1e5:2e5, size = 1)
     }
-    if(is.null(para$term1)){
+    if (is.null(para$term1)) {
       para$term1 <- ""
     }
-    if(is.null(para$term2)){
+    if (is.null(para$term2)) {
       para$term2 <- ""
     }
-    if(is.null(para$summ_row)){
+    if (is.null(para$summ_row)) {
       para$summ_row <- ""
     }
     meta$parameter[[parameters[i]]] <- para
@@ -112,7 +110,7 @@ prepare_ae_forestly <- function(
 
   ae_listing <- data.frame()
   for (i in 1:length(res)) {
-    if (nrow(res[[i]]$ae_listing) > 0){
+    if (nrow(res[[i]]$ae_listing) > 0) {
       res[[i]]$ae_listing$param <- res[[i]]$parameter
       ae_listing <- rbind(ae_listing, res[[i]]$ae_listing)
     }
@@ -151,10 +149,12 @@ prepare_ae_forestly <- function(
   parameter_order <- factor(parameter_order, levels = parameters)
 
   # Display message if a specified-parameter is not included
-  if (any(!(parameters %in% unique(parameter_order)))){
-    warning(paste0('There is no record for the parameter "',
-                   parameters[!(parameters %in% unique(parameter_order))],
-                   '" to display.'))
+  if (any(!(parameters %in% unique(parameter_order)))) {
+    warning(paste0(
+      'There is no record for the parameter "',
+      parameters[!(parameters %in% unique(parameter_order))],
+      '" to display.'
+    ))
   }
 
   # Additional group information

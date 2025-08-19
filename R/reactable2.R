@@ -111,16 +111,18 @@ reactable2 <- function(
   )
 
   if (soc_toggle) {
-    on_click2 <- paste0("function control_column(hidden_columns) {",
-                        "  if (hidden_columns.includes('soc_name')) {",
-                        "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
-                             return prevColumns.length === 0 ? ['soc_name']:[", hidden_item ,"]})",
-                        "  } else {",
-                        "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
-                             return prevColumns.length === 0 ? [ ]: ['soc_name',",  hidden_item, "]})",
-                        "  }",
-                        "}",
-                        "control_column(Reactable.getState('", element_id, "').hiddenColumns);")
+    on_click2 <- paste0(
+      "function control_column(hidden_columns) {",
+      "  if (hidden_columns.includes('soc_name')) {",
+      "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
+                             return prevColumns.length === 0 ? ['soc_name']:[", hidden_item, "]})",
+      "  } else {",
+      "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
+                             return prevColumns.length === 0 ? [ ]: ['soc_name',", hidden_item, "]})",
+      "  }",
+      "}",
+      "control_column(Reactable.getState('", element_id, "').hiddenColumns);"
+    )
 
     tbl <- htmltools::tagList(
       htmltools::tags$button(

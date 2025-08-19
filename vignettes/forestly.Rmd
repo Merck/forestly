@@ -48,12 +48,14 @@ library(forestly)
 adsl <- forestly_adsl
 adae <- forestly_adae
 
-adsl$TRTA <- factor(forestly_adsl$TRT01A, 
-                    levels = c("Xanomeline Low Dose", "Placebo"), 
-                    labels = c("Low Dose", "Placebo"))
-adae$TRTA <- factor(forestly_adae$TRTA, 
-                    levels = c("Xanomeline Low Dose", "Placebo"), 
-                    labels = c("Low Dose", "Placebo"))
+adsl$TRTA <- factor(forestly_adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+adae$TRTA <- factor(forestly_adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
 ```
 
 ## Step 2: build the metadata
@@ -74,59 +76,73 @@ Without loss of generality, our plan is to generate the following four AE-specif
 However, users are allowed to add more AE-specific tables as needed. For the above 4 AE specific tables, we take the APaT for both observation and observation. 
 ```{r}
 meta <- meta |>
-  define_plan(plan = plan(analysis = "ae_forestly", 
-                          population = "apat",
-                          observation = "apat", 
-                          parameter = "any;drug-related;serious;drug-related-serious")) 
+  define_plan(plan = plan(
+    analysis = "ae_forestly",
+    population = "apat",
+    observation = "apat",
+    parameter = "any;drug-related;serious;drug-related-serious"
+  ))
 ```
 
 Following the definition of the analysis plan, we further specify the details of `analysis = "ae_forestly"` by providing its label for display.
 ```{r}
 meta <- meta |>
-  define_analysis(name = "ae_forestly", label = "Interactive Forest Plot") 
+  define_analysis(name = "ae_forestly", label = "Interactive Forest Plot")
 ```
 
 We then define the related population (`population = "apat"`) and observation (`observation = "apat"`) by specifying their grouping variable (`group = ...`), subject ID (`id = ...`), population flag (`subset = ...`) and label (`label = ...`). If users wish to use different population flags, grouping variables, or labels, they can make changes as needed.
 ```{r}
 meta <- meta |>
-  define_population(name = "apat", group = "TRTA", id = "USUBJID",
-                    subset = SAFFL == "Y", label = "All Patient as Treated") |>
-  define_observation(name = "apat", group = "TRTA", 
-                     subset = SAFFL == "Y", label = "All Patient as Treated") 
+  define_population(
+    name = "apat", group = "TRTA", id = "USUBJID",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_observation(
+    name = "apat", group = "TRTA",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  )
 ```
 
 Next, we specify the details of `parameter = "any;drug-related;serious;drug-related-serious"`. For any AEs (`"any"`), their is no filter applied. 
 ```{r}
 meta <- meta |>
-  define_parameter(name = "any", 
-                   subset = NULL,
-                   label = "Any AEs", 
-                   var = "AEDECOD", soc = "AEBODSYS")
+  define_parameter(
+    name = "any",
+    subset = NULL,
+    label = "Any AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  )
 ```
 For drug related AEs (`"drug-related"`), its filter is `AEREL %in% c("PROBABLE", "POSSIBLE")`.
 ```{r}
 meta <- meta |>
-  define_parameter(name = "drug-related", 
-                   subset = toupper(AREL) == "RELATED",
-                   label = "Drug-related AEs", 
-                   var = "AEDECOD", soc = "AEBODSYS") 
+  define_parameter(
+    name = "drug-related",
+    subset = toupper(AREL) == "RELATED",
+    label = "Drug-related AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  )
 ```
 Similarly, we define serious AE and drug related serious AEs.
 ```{r}
 meta <- meta |>
-  define_parameter(name = "serious", 
-                   subset = AESER == "Y",
-                   label = "Serious AEs", 
-                   var = "AEDECOD", soc = "AEBODSYS") |>
-  define_parameter(name = "drug-related-serious", 
-                   subset = AESER == "Y" & AEREL %in% c("PROBABLE", "POSSIBLE"),
-                   label = "Drug-related serious AEs", 
-                   var = "AEDECOD", soc = "AEBODSYS") 
+  define_parameter(
+    name = "serious",
+    subset = AESER == "Y",
+    label = "Serious AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  define_parameter(
+    name = "drug-related-serious",
+    subset = AESER == "Y" & AEREL %in% c("PROBABLE", "POSSIBLE"),
+    label = "Drug-related serious AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  )
 ```
 
 Finally, we build the metadata by running the `meta_build()` function.
 ```{r}
-meta <- meta |>  meta_build()
+meta <- meta |> meta_build()
 ```
 
 ## Step 3: generate the interative AE forest plot

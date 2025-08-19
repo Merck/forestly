@@ -44,7 +44,6 @@
 #'     format_ae_forestly() |>
 #'     ae_forestly()
 #' }
-
 ae_forestly <- function(outdata,
                         display_soc_toggle = TRUE,
                         filter = c("prop", "n"),
@@ -90,8 +89,9 @@ ae_forestly <- function(outdata,
 
   if (is.null(filter_label)) {
     filter_label <- ifelse(filter == "prop",
-                           "Incidence (%) in One or More Treatment Groups",
-                           "Number of AE in One or More Treatment Groups")
+      "Incidence (%) in One or More Treatment Groups",
+      "Number of AE in One or More Treatment Groups"
+    )
   }
 
   # `max_page` controls the maximum page number displayed in the interactive forest table.
@@ -108,13 +108,15 @@ ae_forestly <- function(outdata,
     FUN.VALUE = character(1)
   )
 
-  for (par in parameters[(!(parameters %in% unique(outdata$parameter_order)))]){
+  for (par in parameters[(!(parameters %in% unique(outdata$parameter_order)))]) {
     outdata$tbl <-
       rbind(outdata$tbl, NA)
     outdata$tbl$name <- ifelse(is.na(outdata$tbl$name), "No data to display", outdata$tbl$name)
     outdata$tbl$parameter <-
-      factor(ifelse(is.na(outdata$tbl$parameter), par, as.character(outdata$tbl$parameter)),
-             levels(outdata$parameter_order))
+      factor(
+        ifelse(is.na(outdata$tbl$parameter), par, as.character(outdata$tbl$parameter)),
+        levels(outdata$parameter_order)
+      )
   }
 
   outdata$tbl$parameter <- factor(
@@ -191,8 +193,8 @@ ae_forestly <- function(outdata,
         outdata$ae_listing,
         ((toupper(outdata$ae_listing$Adverse_Event) %in% toupper(t_row)) &
           (outdata$ae_listing$param == t_param)) |
-        ((toupper(outdata$ae_listing$SOC_Name) %in% toupper(t_row)) &
-           (outdata$ae_listing$param == t_param))
+          ((toupper(outdata$ae_listing$SOC_Name) %in% toupper(t_row)) &
+            (outdata$ae_listing$param == t_param))
       )
 
       # Exclude 'param' column from t_details
@@ -217,9 +219,9 @@ ae_forestly <- function(outdata,
       col_defs <- stats::setNames(
         lapply(names(t_details), function(name) {
           # Use label from the list
-          label_name <- if(is.null(labels[[name]])) name else labels[[name]][[1]]
+          label_name <- if (is.null(labels[[name]])) name else labels[[name]][[1]]
           reactable::colDef(
-            header = label_name,  # Use header instead of name
+            header = label_name, # Use header instead of name
             cell = function(value) format(value, nsmall = 1),
             align = "center",
             minWidth = 70
@@ -242,7 +244,6 @@ ae_forestly <- function(outdata,
         highlight = TRUE
       )
     },
-
     pageSizeOptions = max_page,
 
     # Default sort variable
