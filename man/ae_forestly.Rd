@@ -9,6 +9,7 @@ ae_forestly(
   display_soc_toggle = TRUE,
   filter = c("prop", "n"),
   filter_label = NULL,
+  filter_range = NULL,
   width = 1400,
   max_page = NULL
 )
@@ -21,6 +22,10 @@ ae_forestly(
 \item{filter}{A character value of the filter variable.}
 
 \item{filter_label}{A character value of the label for slider bar.}
+
+\item{filter_range}{A numeric vector of length 2 for the range of the slider bar.
+If NULL (default), the range is automatically calculated from the data.
+If only one value is provided, it will be used as the maximum and minimum will be 0.}
 
 \item{width}{A numeric value of width of the table in pixels.}
 
