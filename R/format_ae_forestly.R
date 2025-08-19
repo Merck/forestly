@@ -131,7 +131,7 @@ format_ae_forestly <- function(
   tbl_prop <- outdata$prop[, 1:n_group]
   y <- rep(NA, n_group)
   y[outdata$reference_group] <- mean(1:n_group1)
-  y[-outdata$reference_group] <- 1:n_group1
+  y[-outdata$reference_group] <- rev(1:n_group1)
 
   # Calculate the range of the forest plot
   if (is.null(prop_range)) {
@@ -199,7 +199,7 @@ format_ae_forestly <- function(
     x = names(outdata$diff),
     x_lower = names(outdata$ci_lower),
     x_upper = names(outdata$ci_upper),
-    y = 1:ncol(outdata$diff),
+    y = rev(1:ncol(outdata$diff)),
     xlim = fig_diff_range,
     color = fig_diff_color,
     width = width_fig,
