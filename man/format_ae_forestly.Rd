@@ -18,6 +18,8 @@ format_ae_forestly(
   diff_range = NULL,
   color = NULL,
   diff_label = "Treatment <- Favor -> Placebo",
+  col_header = NULL,
+  fig_header = NULL,
   show_ae_parameter = FALSE
 )
 }
@@ -32,7 +34,7 @@ format_ae_forestly(
 \item \code{diff}: Risk difference.
 }}
 
-\item{digits}{A value of digits to be displayed for proportion and
+\item{digits}{A number of digits after decimal point to be displayed for proportion and
 risk difference.}
 
 \item{width_term}{Width in px for AE term column.}
@@ -57,6 +59,12 @@ for risk difference figure.}
 Default value supports up to 4 groups.}
 
 \item{diff_label}{x-axis label for risk difference.}
+
+\item{col_header}{Column header for risk difference table columns.
+If NULL (default), uses "Risk Difference (\%) \if{html}{\out{<br>}} vs. \link{Reference Group}".}
+
+\item{fig_header}{Column header for risk difference figure.
+If NULL (default), uses "Risk Difference (\%) + 95\% CI \if{html}{\out{<br>}} vs. \link{Reference Group}".}
 
 \item{show_ae_parameter}{A boolean value to display AE parameter column.}
 }
