@@ -1,7 +1,7 @@
 # Claude Code Assistant Instructions
 
 ## Project Overview
-This is the forestly R package, which creates interactive forest plots for clinical trial data analysis. The package is built on top of metalite and metalite.ae packages and uses reactable for interactive tables.
+This is the forestly R package, which creates interactive forest plots for clinical trial data analysis. The package is built on top of metalite and metalite.ae packages and uses reactable for interactive tables with Plotly.js for interactive visualizations.
 
 ## Development Guidelines
 
@@ -18,7 +18,9 @@ This is the forestly R package, which creates interactive forest plots for clini
 
 ### Key Functions
 - `ae_forestly()`: Main function to create interactive forest plots
+- `format_ae_forestly()`: Formats AE data and configures Plotly visualizations
 - `format_ae_listing()`: Formats AE listing data
+- `sparkline_point_js()`: Generates JavaScript/Plotly code for interactive sparkline plots
 - `propercase()`: Converts strings to proper case (handles factors)
 - `titlecase()`: Converts strings to title case using tools::toTitleCase (handles factors)
 
@@ -52,6 +54,8 @@ devtools::document()
 - metalite.ae
 - reactable
 - reactR
+- plotly (via JavaScript integration)
+- brew (for template processing)
 - tools (base R)
 
 ## Testing Data
@@ -65,3 +69,6 @@ The package includes test data in `data/`:
 - The `ae_listing.R` file contains functions that handle factor inputs, which was a recent fix
 - Test files should use `devtools::load_all()` or source the R files directly for testing
 - The package uses testthat for unit testing framework
+- Interactive plots use Plotly.js via JavaScript templates in `inst/js/`
+- The y-axis ordering in `format_ae_forestly.R` affects the visual display in interactive plots
+- When debugging interactive plot issues, check both R code and JavaScript template files
