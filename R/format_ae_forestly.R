@@ -40,9 +40,9 @@
 #'   Default value supports up to 4 groups.
 #' @param diff_label x-axis label for risk difference.
 #' @param col_header Column header for risk difference table columns.
-#'   If NULL (default), uses "Risk Difference (%) <br> vs. [Reference Group]".
+#'   If NULL (default), uses "Risk Difference (%) <br> vs. Reference Group".
 #' @param fig_header Column header for risk difference figure.
-#'   If NULL (default), uses "Risk Difference (%) + 95% CI <br> vs. [Reference Group]".
+#'   If NULL (default), uses "Risk Difference (%) + 95% CI <br> vs. Reference Group".
 #' @param show_ae_parameter A boolean value to display AE parameter column.
 #'
 #' @return An `outdata` object.
