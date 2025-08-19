@@ -22,6 +22,9 @@
 #' @param display_soc_toggle A boolean value to display SOC toggle button.
 #' @param filter A character value of the filter variable.
 #' @param filter_label A character value of the label for slider bar.
+#' @param filter_range A numeric vector of length 2 for the range of the slider bar.
+#'   If NULL (default), the range is automatically calculated from the data.
+#'   If only one value is provided, it will be used as the maximum and minimum will be 0.
 #' @param width A numeric value of width of the table in pixels.
 #' @param max_page A numeric value of max page number shown in the table.
 #'
@@ -46,12 +49,46 @@ ae_forestly <- function(outdata,
                         display_soc_toggle = TRUE,
                         filter = c("prop", "n"),
                         filter_label = NULL,
+                        filter_range = NULL,
                         width = 1400,
                         max_page = NULL) {
   filter <- match.arg(filter)
-  filter_range <- c(0, 100)
 
-  if(is.null(filter_label)) {
+  # Handle filter_range parameter
+  if (!is.null(filter_range)) {
+    # User provided filter_range
+    if (length(filter_range) == 1) {
+      # If only one value provided, use it as max with min=0
+      filter_range <- c(0, filter_range[1])
+    } else if (length(filter_range) == 2) {
+      # Use as provided
+      filter_range <- filter_range
+    } else {
+      stop("filter_range must be NULL, a single numeric value, or a numeric vector of length 2")
+    }
+  } else {
+    # Auto-detect range from data
+    if (filter == "prop") {
+      # For proportion, get max from hide_prop column
+      max_val <- max(outdata$tbl$hide_prop, na.rm = TRUE)
+      # Round up to nearest 10 for better UX
+      max_val <- ceiling(max_val / 10) * 10
+      # Ensure at least 100 for proportion
+      filter_range <- c(0, max(100, max_val))
+    } else if (filter == "n") {
+      # For count, get max from hide_n column
+      max_val <- max(outdata$tbl$hide_n, na.rm = TRUE)
+      # Round up to nearest 10 (or 5 if max is small)
+      if (max_val <= 20) {
+        max_val <- ceiling(max_val / 5) * 5
+      } else {
+        max_val <- ceiling(max_val / 10) * 10
+      }
+      filter_range <- c(0, max_val)
+    }
+  }
+
+  if (is.null(filter_label)) {
     filter_label <- ifelse(filter == "prop",
                            "Incidence (%) in One or More Treatment Groups",
                            "Number of AE in One or More Treatment Groups")
@@ -133,12 +170,10 @@ ae_forestly <- function(outdata,
     )
   }
 
-  filter_subject$children[[2]]$attribs$`data-from` <- 0
-
-  data_to <- ceiling(as.numeric(filter_subject$children[[2]]$attribs$`data-to`))
-  data_to <- (data_to %/% 10 + 1) * 10
-  filter_subject$children[[2]]$attribs$`data-to` <- data_to
-  filter_subject$children[[2]]$attribs$`data-max` <- data_to
+  # Set the slider attributes to match our filter_range
+  filter_subject$children[[2]]$attribs$`data-from` <- filter_range[1]
+  filter_subject$children[[2]]$attribs$`data-to` <- filter_range[2]
+  filter_subject$children[[2]]$attribs$`data-max` <- filter_range[2]
 
   p_reactable <- reactable2(
     tbl,
