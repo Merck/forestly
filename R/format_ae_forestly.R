@@ -39,6 +39,10 @@
 #' @param color A vector of colors for analysis groups.
 #'   Default value supports up to 4 groups.
 #' @param diff_label x-axis label for risk difference.
+#' @param col_header Column header for risk difference table columns.
+#'   If NULL (default), uses "Risk Difference (%) <br> vs. Reference Group".
+#' @param fig_header Column header for risk difference figure.
+#'   If NULL (default), uses "Risk Difference (%) + 95% CI <br> vs. Reference Group".
 #' @param show_ae_parameter A boolean value to display AE parameter column.
 #'
 #' @return An `outdata` object.
@@ -68,6 +72,8 @@ format_ae_forestly <- function(
     diff_range = NULL,
     color = NULL,
     diff_label = "Treatment <- Favor -> Placebo",
+    col_header = NULL,
+    fig_header = NULL,
     show_ae_parameter = FALSE) {
   display <- tolower(display)
 
@@ -77,6 +83,8 @@ format_ae_forestly <- function(
     several.ok = TRUE
   )
 
+  display_n <- "n" %in% display
+  display_prop <- "prop" %in% display
   display_total <- "total" %in% display
   display_diff <- "diff" %in% display
 
@@ -92,6 +100,18 @@ format_ae_forestly <- function(
 
   name_n <- names(outdata$n)[1:m_group]
   name_prop <- names(outdata$prop)[1:m_group]
+
+  # Get reference group name for headers
+  reference_name <- outdata$group[index_reference]
+
+  # Set default headers if not provided
+  if (is.null(col_header)) {
+    col_header <- paste0("Risk Difference (%) <br> vs. ", reference_name)
+  }
+
+  if (is.null(fig_header)) {
+    fig_header <- paste0("Risk Difference (%) + 95% CI <br> vs. ", reference_name)
+  }
 
   # Input checking
   if (is.null(color)) {
@@ -131,7 +151,7 @@ format_ae_forestly <- function(
   tbl_prop <- outdata$prop[, 1:n_group]
   y <- rep(NA, n_group)
   y[outdata$reference_group] <- mean(1:n_group1)
-  y[-outdata$reference_group] <- 1:n_group1
+  y[-outdata$reference_group] <- rev(1:n_group1)
 
   # Calculate the range of the forest plot
   if (is.null(prop_range)) {
@@ -199,7 +219,7 @@ format_ae_forestly <- function(
     x = names(outdata$diff),
     x_lower = names(outdata$ci_lower),
     x_upper = names(outdata$ci_upper),
-    y = 1:ncol(outdata$diff),
+    y = rev(1:ncol(outdata$diff)),
     xlim = fig_diff_range,
     color = fig_diff_color,
     width = width_fig,
@@ -231,7 +251,7 @@ format_ae_forestly <- function(
     )
   }
   columnGroups[[m_group + 1]] <- reactable::colGroup(
-    name = "Risk Difference (%) <br> vs. Placebo",
+    name = col_header,
     html = TRUE,
     columns = names(outdata$diff)
   )
@@ -259,7 +279,8 @@ format_ae_forestly <- function(
   col_n <- lapply(name_n, function(x) {
     reactable::colDef(
       header = "n", defaultSortOrder = "desc",
-      minWidth = width_n, align = "center"
+      minWidth = width_n, align = "center",
+      show = display_n
     )
   })
   names(col_n) <- name_n
@@ -269,6 +290,7 @@ format_ae_forestly <- function(
     reactable::colDef(
       header = "(%)", defaultSortOrder = "desc",
       minWidth = width_prop, align = "center",
+      show = display_prop,
       format = reactable::colFormat(
         prefix = "(",
         digits = digits,
@@ -320,7 +342,7 @@ format_ae_forestly <- function(
 
   # difference format
   col_diff_fig <- list(diff_fig = reactable::colDef(
-    header = "Risk Difference (%) + 95% CI <br> vs. Placebo",
+    header = fig_header,
     defaultSortOrder = "desc",
     width = ifelse("fig_diff" %in% display, width_fig, 0),
     align = "center",

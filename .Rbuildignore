@@ -16,3 +16,5 @@
 ^vignettes/layout.Rmd$
 ^vignettes/meta-forestly.Rmd$
 
+^CLAUDE\.md$
+^data-raw$
