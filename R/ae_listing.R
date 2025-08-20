@@ -65,17 +65,82 @@ collect_ae_listing <- function(
   outdata
 }
 
-#' Convert character strings to proper case
+#' Convert character strings or factor to proper case
 #'
-#' @param x A character vector.
+#' This function converts the first letter of each string to uppercase and the rest to lowercase.
+#' It handles both character vectors and factors robustly.
 #'
-#' @return A character vector.
+#' @param x A character vector or factor.
+#'
+#' @return A character vector with proper case applied.
 #'
 #' @noRd
 #'
 #' @examples
 #' propercase("AbCDe FGha")
-propercase <- function(x) paste0(toupper(substr(x, 1, 1)), tolower(substring(x, 2)))
+#' propercase(factor(c("MILD", "MODERATE", "SEVERE")))
+propercase <- function(x) {
+  if (is.factor(x)) {
+    # For factors, apply proper case to levels to preserve factor structure
+    levels(x) <- paste0(toupper(substr(levels(x), 1, 1)), tolower(substring(levels(x), 2)))
+    # Return as character to match expected output type
+    return(as.character(x))
+  } else if (is.character(x)) {
+    # For character vectors, apply proper case directly
+    return(paste0(toupper(substr(x, 1, 1)), tolower(substring(x, 2))))
+  } else {
+    # For other types, convert to character first then apply proper case
+    x_char <- as.character(x)
+    return(paste0(toupper(substr(x_char, 1, 1)), tolower(substring(x_char, 2))))
+  }
+}
+
+#' Convert character strings or factor to title case
+#'
+#' This function provides a robust wrapper around tools::toTitleCase that handles
+#' both character vectors and factors. For factors, it preserves the factor structure
+#' by modifying only the levels, which maintains the original ordering.
+#' The function automatically converts input to lowercase before applying title case.
+#'
+#' @param x A character vector or factor.
+#' @param lower Logical indicating whether to convert to lowercase first (default TRUE).
+#'
+#' @return A character vector with title case applied.
+#'
+#' @noRd
+#'
+#' @examples
+#' titlecase(c("american indian or alaska native", "WHITE")) # char vector
+#' titlecase(factor(c("tHEre is oNe", "tHAt is tWo", "heRe is tHRee"))) # factor
+#' titlecase(c("F", "M")) # char vector
+#' titlecase(factor(c("F", "M"))) # factor
+titlecase <- function(x, lower = TRUE) {
+  if (is.factor(x)) {
+    # For factors, apply title case to levels to preserve factor structure
+    if (lower) {
+      levels(x) <- tools::toTitleCase(tolower(levels(x)))
+    } else {
+      levels(x) <- tools::toTitleCase(levels(x))
+    }
+    # Return as character to match expected output type
+    return(as.character(x))
+  } else if (is.character(x)) {
+    # For character vectors, apply title case directly
+    if (lower) {
+      return(tools::toTitleCase(tolower(x)))
+    } else {
+      return(tools::toTitleCase(x))
+    }
+  } else {
+    # For other types, convert to character first then apply title case
+    x_char <- as.character(x)
+    if (lower) {
+      return(tools::toTitleCase(tolower(x_char)))
+    } else {
+      return(tools::toTitleCase(x_char))
+    }
+  }
+}
 
 #' Format AE listing analysis
 #'
@@ -157,7 +222,6 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   if ("EPOCH" %in% toupper(names(res))) {
     res[["Onset_Epoch"]] <- tools::toTitleCase(tolower(res[["EPOCH"]])) # propcase the EPOCH
   }
-
 
   # Relative day of onset (ASTDY)
   if ("ASTDY" %in% toupper(names(res))) {
