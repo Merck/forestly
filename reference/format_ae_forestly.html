@@ -66,6 +66,8 @@
 <span>  diff_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  color <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  diff_label <span class="op">=</span> <span class="st">"Treatment &lt;- Favor -&gt; Placebo"</span>,</span>
+<span>  col_header <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fig_header <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  show_ae_parameter <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -132,6 +134,16 @@ Default value supports up to 4 groups.</p></dd>
 
 <dt id="arg-diff-label">diff_label<a class="anchor" aria-label="anchor" href="#arg-diff-label"></a></dt>
 <dd><p>x-axis label for risk difference.</p></dd>
+
+
+<dt id="arg-col-header">col_header<a class="anchor" aria-label="anchor" href="#arg-col-header"></a></dt>
+<dd><p>Column header for risk difference table columns.
+If NULL (default), uses "Risk Difference (%) <br> vs. Reference Group".</p></dd>
+
+
+<dt id="arg-fig-header">fig_header<a class="anchor" aria-label="anchor" href="#arg-fig-header"></a></dt>
+<dd><p>Column header for risk difference figure.
+If NULL (default), uses "Risk Difference (%) + 95% CI <br> vs. Reference Group".</p></dd>
 
 
 <dt id="arg-show-ae-parameter">show_ae_parameter<a class="anchor" aria-label="anchor" href="#arg-show-ae-parameter"></a></dt>

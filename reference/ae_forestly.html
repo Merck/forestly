@@ -57,6 +57,7 @@
 <span>  display_soc_toggle <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  filter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"prop"</span>, <span class="st">"n"</span><span class="op">)</span>,</span>
 <span>  filter_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  filter_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  width <span class="op">=</span> <span class="fl">1400</span>,</span>
 <span>  max_page <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -80,6 +81,12 @@
 
 <dt id="arg-filter-label">filter_label<a class="anchor" aria-label="anchor" href="#arg-filter-label"></a></dt>
 <dd><p>A character value of the label for slider bar.</p></dd>
+
+
+<dt id="arg-filter-range">filter_range<a class="anchor" aria-label="anchor" href="#arg-filter-range"></a></dt>
+<dd><p>A numeric vector of length 2 for the range of the slider bar.
+If NULL (default), the range is automatically calculated from the data.
+If only one value is provided, it will be used as the maximum and minimum will be 0.</p></dd>
 
 
 <dt id="arg-width">width<a class="anchor" aria-label="anchor" href="#arg-width"></a></dt>
