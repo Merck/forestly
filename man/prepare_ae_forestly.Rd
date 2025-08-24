@@ -46,8 +46,8 @@ An \code{outdata} object.
 Prepare datasets for interactive forest plot
 }
 \examples{
-adsl <- forestly_adsl[1:100,]
-adae <- forestly_adae[1:100,]
+adsl <- forestly_adsl[1:100, ]
+adae <- forestly_adae[1:100, ]
 meta_forestly(
   dataset_adsl = adsl,
   dataset_adae = adae

@@ -36,31 +36,43 @@ Building interactive AE forest plots starts with constructing the metadata. The 
 adsl <- forestly_adsl
 adae <- forestly_adae
 
-adsl$TRTA <- factor(forestly_adsl$TRT01A, 
-                    levels = c("Xanomeline Low Dose", "Placebo"), 
-                    labels = c("Low Dose", "Placebo"))
-adae$TRTA <- factor(forestly_adae$TRTA, 
-                    levels = c("Xanomeline Low Dose", "Placebo"), 
-                    labels = c("Low Dose", "Placebo"))
+adsl$TRTA <- factor(forestly_adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+adae$TRTA <- factor(forestly_adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
 
 meta <- meta_adam(population = adsl, observation = adae) |>
-  define_plan(plan = plan(analysis = "ae_forestly", 
-                          population = "apat",
-                          observation = "apat", 
-                          parameter = "any;drug-related")) |>
+  define_plan(plan = plan(
+    analysis = "ae_forestly",
+    population = "apat",
+    observation = "apat",
+    parameter = "any;drug-related"
+  )) |>
   define_analysis(name = "ae_forestly", label = "Interactive Forest Plot") |>
-  define_population(name = "apat", group = "TRTA", id = "USUBJID",
-                    subset = SAFFL == "Y", label = "All Patient as Treated") |>
-  define_observation(name = "apat", group = "TRTA", 
-                     subset = SAFFL == "Y", label = "All Patient as Treated") |>
-  define_parameter(name = "any", 
-                   subset = NULL,
-                   label = "Any AEs", 
-                   var = "AEDECOD", soc = "AEBODSYS") |>
-  define_parameter(name = "drug-related", 
-                   subset = toupper(AREL) == "RELATED",
-                   label = "Drug-related AEs", 
-                   var = "AEDECOD", soc = "AEBODSYS") |>  
+  define_population(
+    name = "apat", group = "TRTA", id = "USUBJID",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_observation(
+    name = "apat", group = "TRTA",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_parameter(
+    name = "any",
+    subset = NULL,
+    label = "Any AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  define_parameter(
+    name = "drug-related",
+    subset = toupper(AREL) == "RELATED",
+    label = "Drug-related AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
   meta_build()
 ```
 
@@ -81,14 +93,16 @@ In the example below, we modify the column widths to better suit the display. Us
 ```{r}
 meta |>
   prepare_ae_forestly() |>
-  format_ae_forestly(width_term = 5, # width of the column of AE PT term
-                     # widths of the column of subject with AE counts
-                     width_n = 2, 
-                     # widths of the column of AE proportions
-                     width_prop = 2, 
-                     # widths of plotting the AE proportions and differences
-                     width_fig = 150, 
-                     # vertical space between legend and the table
-                     footer_space = 100) |>
+  format_ae_forestly(
+    width_term = 5, # width of the column of AE PT term
+    # widths of the column of subject with AE counts
+    width_n = 2,
+    # widths of the column of AE proportions
+    width_prop = 2,
+    # widths of plotting the AE proportions and differences
+    width_fig = 150,
+    # vertical space between legend and the table
+    footer_space = 100
+  ) |>
   ae_forestly()
 ```

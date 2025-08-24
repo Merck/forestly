@@ -38,31 +38,43 @@ Building interactive AE forest plots starts with constructing the metadata. The 
 adsl <- forestly_adsl
 adae <- forestly_adae
 
-adsl$TRTA <- factor(forestly_adsl$TRT01A, 
-                    levels = c("Xanomeline Low Dose", "Placebo"), 
-                    labels = c("Low Dose", "Placebo"))
-adae$TRTA <- factor(forestly_adae$TRTA, 
-                    levels = c("Xanomeline Low Dose", "Placebo"), 
-                    labels = c("Low Dose", "Placebo"))
+adsl$TRTA <- factor(forestly_adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+adae$TRTA <- factor(forestly_adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
 
 meta <- meta_adam(population = adsl, observation = adae) |>
-  define_plan(plan = plan(analysis = "ae_forestly", 
-                          population = "apat",
-                          observation = "apat", 
-                          parameter = "any;drug-related")) |>
+  define_plan(plan = plan(
+    analysis = "ae_forestly",
+    population = "apat",
+    observation = "apat",
+    parameter = "any;drug-related"
+  )) |>
   define_analysis(name = "ae_forestly", label = "Interactive Forest Plot") |>
-  define_population(name = "apat", group = "TRTA", id = "USUBJID",
-                    subset = SAFFL == "Y", label = "All Patient as Treated") |>
-  define_observation(name = "apat", group = "TRTA", 
-                     subset = SAFFL == "Y", label = "All Patient as Treated") |>
-  define_parameter(name = "any", 
-                   subset = NULL,
-                   label = "Any AEs", 
-                   var = "AEDECOD", soc = "AEBODSYS") |>
-  define_parameter(name = "drug-related", 
-                   subset = toupper(AREL) == "RELATED",
-                   label = "Drug-related AEs", 
-                   var = "AEDECOD", soc = "AEBODSYS") |>  
+  define_population(
+    name = "apat", group = "TRTA", id = "USUBJID",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_observation(
+    name = "apat", group = "TRTA",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_parameter(
+    name = "any",
+    subset = NULL,
+    label = "Any AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  define_parameter(
+    name = "drug-related",
+    subset = toupper(AREL) == "RELATED",
+    label = "Drug-related AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
   meta_build()
 ```
 

@@ -208,9 +208,9 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   }
   attr(res[["Participant_ID"]], "label") <- NULL
 
-  res[["Gender"]] <- titlecase(res[["SEX"]])
+  res[["Gender"]] <- tools::toTitleCase(res[["SEX"]])
 
-  res[["Race"]] <- titlecase(res[["RACE"]])
+  res[["Race"]] <- tools::toTitleCase(tolower(res[["RACE"]]))
 
   res[["Age"]] <- res[["AGE"]]
 
@@ -220,9 +220,8 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
 
   # Onset epoch
   if ("EPOCH" %in% toupper(names(res))) {
-    res[["Onset_Epoch"]] <- titlecase(res[["EPOCH"]])
+    res[["Onset_Epoch"]] <- tools::toTitleCase(tolower(res[["EPOCH"]])) # propcase the EPOCH
   }
-
 
   # Relative day of onset (ASTDY)
   if ("ASTDY" %in% toupper(names(res))) {
@@ -239,7 +238,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   # Duration
   if ("ADURN" %in% toupper(names(res)) & "ADURU" %in% toupper(names(res))) {
     res[["Duration"]] <- paste(ifelse(is.na(res[["ADURN"]]), "", as.character(res[["ADURN"]])),
-      titlecase(res[["ADURU"]]),
+      tools::toTitleCase(tolower(res[["ADURU"]])),
       sep = " "
     ) # AE duration with unit
 
@@ -275,7 +274,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   # AE related
   if ("AEREL" %in% toupper(names(res))) {
     res[["Related"]] <- ifelse(res[["AEREL"]] == "RELATED", "Y", ifelse(
-      toupper(res[["AEREL"]]) == "NOT RELATED", "N", titlecase(res[["AEREL"]])
+      toupper(res[["AEREL"]]) == "NOT RELATED", "N", tools::toTitleCase(tolower(res[["AEREL"]]))
     ))
   }
 
@@ -290,7 +289,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
           "DOSE INCREASED" = "Increased",
           "NOT APPLICABLE" = "N/A",
           "UNKNOWN" = "Unknown",
-          titlecase(res[["AEACN"]][i])
+          tools::toTitleCase(tolower(res[["AEACN"]][i]))
         )
       }
     } else {
@@ -307,7 +306,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
           "RECOVERING/RESOLVING" = "Resolving",
           "RECOVERED/RESOLVED WITH SEQUELAE" = "Sequelae",
           "NOT RECOVERED/NOT RESOLVED" = "Not Resolved",
-          titlecase(res[["AEOUT"]][i])
+          tools::toTitleCase(tolower(res[["AEOUT"]][i]))
         )
       }
     } else {
