@@ -65,8 +65,8 @@ test_that("Set `display` to ('diff', 'total') without ('n', 'prop') columns", {
 
   # expect_named(ae_frm, c("n", "prop", "total"))
   expect_named(ae_frm)
-  expect_true("diff" %in% names(ae_frm))
-  expect_false("total" %in% names(ae_frm))
+  expect_true("diff" %in% ae_frm$display[1])
+  expect_true("total" %in% ae_frm$display[2])
 })
 
 test_that("1. Set `display` to ('n', 'prop', 'total', 'diff') and change column width using argument
