@@ -2,7 +2,7 @@
 
 ## New features
 
-- `rtf_static_forestly()` is now available for generating static forestly plots in RTF format (#60).
+- `rtf_static_forestly()` is now available for generating static forest plots in RTF format (#60).
 - Add data source script `data-raw/forestly_adae.R` (#72).
 - Add `prop_range` and `diff_range` arguments to `format_ae_forestly()` to allow control over the x-axis limits for AE proportion and risk difference plots (#80).
 - Add `col_header` and `fig_header` arguments to `format_ae_forestly()` to enable customizable column and figure headers for risk difference outputs (#96).
@@ -10,8 +10,8 @@
 
 ## Bug fixes
 
-- Fix bug to correctly pass the `digits` to the display format of each column in format_ae_forestly() to make the number of displayed decimal places for proportions and risk differences user-configurable (#90).
-- Fix bug so that the "n" and "(%)" columns in the output table are displayed only when specified in the `display` argument (#95)
+- Fix bug to correctly pass the `digits` to the display format of each column in `format_ae_forestly()` to make the number of displayed decimal places for proportions and risk differences user-configurable (#90).
+- Fix bug so that the "n" and "(%)" columns in the output table are displayed only when specified in the `display` of `format_ae_forestly()` (#95)
 
 ## Improvements
 
