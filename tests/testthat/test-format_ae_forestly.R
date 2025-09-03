@@ -46,6 +46,29 @@ test_that("Set `display` to ('n', 'prop', 'total') then one has total column", {
   expect_false("total" %in% names(ae_frm))
 })
 
+test_that("Set `display` to ('diff', 'total') without ('n', 'prop') columns", {
+  out <- test_format_ae_forestly()
+  ae_frm <- format_ae_forestly(
+    out,
+    display = c("diff", "total"),
+    digits = 1,
+    width_term = 200,
+    width_fig = 300,
+    width_n = 40,
+    width_prop = 60,
+    width_diff = 80,
+    footer_space = 90,
+    color = NULL,
+    diff_label = "Treatment <- Favor -> Placebo",
+    show_ae_parameter = FALSE
+  )
+
+  # expect_named(ae_frm, c("n", "prop", "total"))
+  expect_named(ae_frm)
+  expect_true("diff" %in% ae_frm$display[1])
+  expect_true("total" %in% ae_frm$display[2])
+})
+
 test_that("1. Set `display` to ('n', 'prop', 'total', 'diff') and change column width using argument
            2. Change `diff_label` to 'MK-xxxx <- Favor -> Placebo' and 'footer_space' to change location of footer", {
   out <- test_format_ae_forestly()

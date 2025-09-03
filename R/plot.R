@@ -24,6 +24,7 @@
 #'
 #' @param tbl A data frame selected from input data set to display on this plot.
 #'   y and x variables are required.
+#' @param prop_cols A character vector of proportion columns to be used for a plot.
 #' @param y_var A character string that specifies a variable to be displayed
 #'   on the y-axis.
 #' @param label A character vector of labels for each treatment group.
@@ -82,10 +83,10 @@
 #'
 #' meta_any <- meta$tbl[1:20, ] |> dplyr::filter(parameter == "any")
 #' meta_any |>
-#'   dplyr::select(name, prop_1, prop_2) |>
-#'   plot_dot("name", label = c("Treatment", "Placebo"))
+#'   plot_dot("name", prop_cols = c("prop_1", "prop_2"), label = c("Treatment", "Placebo"))
 plot_dot <- function(
     tbl,
+    prop_cols = c("prop_1", "prop_2"),
     y_var,
     label,
     x_breaks = NULL,
@@ -96,6 +97,9 @@ plot_dot <- function(
     background_alpha = 0.3,
     theme = theme_panel(show_text = TRUE, show_ticks = TRUE),
     legend_nrow = 1) {
+  # Choose columns to use in tbl
+  tbl <- tbl[, c(y_var, prop_cols)]
+
   # Define variable index
   y_id <- which(names(tbl) %in% y_var)
 
@@ -280,6 +284,8 @@ plot_dot <- function(
 #'
 #' @inheritParams plot_dot
 #'
+#' @param ci_cols A character vector of columns for a risk difference to be used for a plot.
+#'   Need 3 columns, risk difference, lower bound, and upper bound.
 #' @param errbar_width A numeric value to define the error bar width.
 #'   Default is 0.4. Value of this argument will be a half length of the
 #'   error bar, for example, `errorbar_width = 0.2` means half of the error bar
@@ -340,10 +346,12 @@ plot_dot <- function(
 #'   dplyr::select(name, diff_1, lower_1, upper_1) |>
 #'   plot_errorbar(
 #'     y_var = "name",
+#'     ci_cols = c("diff_1", "lower_1", "upper_1"),
 #'     label = c("Treatment", "Placebo")
 #'   )
 plot_errorbar <- function(
     tbl,
+    ci_cols = c("diff_1", "lower_1", "upper_1"),
     y_var,
     errbar_width = 0.4,
     color = NULL,
@@ -359,6 +367,9 @@ plot_errorbar <- function(
     background_alpha = 0.3,
     theme = theme_panel(show_text = TRUE, show_ticks = TRUE),
     legend_nrow = 1) {
+  # Choose columns to use in tbl
+  tbl <- tbl[, c(y_var, ci_cols)]
+
   # Define variable index
   y_id <- which(names(tbl) %in% y_var)
 
@@ -594,6 +605,8 @@ nudge_unit <- function(n) {
 #'
 #' @param tbl A data frame to be displayed in this table.
 #' @param y_var A string of a variable name from `tbl` for the y axis variable.
+#' @param n_cols A character vector of columns for subject count to be used for a plot.
+#' @param prop_cols A character vector of proportion columns to be used for a plot.
 #' @param x_label Labels displayed on the top of table for each column of table.
 #'   Default is `NULL`, variable name will display as label.
 #' @param text_color Defines colors to display each treatment group.
@@ -646,10 +659,11 @@ nudge_unit <- function(n) {
 #' meta_any <- meta$tbl[1:20, ] |> dplyr::filter(parameter == "any")
 #'
 #' meta_any |>
-#'   dplyr::select(name, diff_1, lower_1, upper_1) |>
 #'   table_panel(y_var = "name")
 table_panel <- function(
     tbl,
+    n_cols = c("n_1", "n_2"),
+    prop_cols = c("prop_1", "prop_2"),
     y_var,
     x_label = NULL,
     text_color = NULL,
@@ -663,6 +677,24 @@ table_panel <- function(
     background_alpha = 0.3) {
   # Check that one variable name is provided as y_var
   if (length(y_var) > 1) stop("`y_var` should contain only one variable name.")
+
+  # Check if the length of n and prop columns are same
+  if (length(n_cols) != length(prop_cols)) {
+    stop("The length of `n_cols` and `prop_cols` should be the same.")
+  }
+  # Derive combined columns from n and prop columns
+  stats <- lapply(
+    1:length(n_cols),
+    function (x) {
+      paste0(tbl[[n_cols[[x]]]], " (", tbl[[prop_cols[[x]]]], ")")
+    }
+  )
+  stat_cols <- paste0("stat_", 1:length(n_cols))
+  names(stats) <- stat_cols
+  tbl <- cbind(tbl, stats)
+
+  # Choose columns to use in tbl
+  tbl <- tbl[, c(y_var, stat_cols)]
 
   # Define variable index
   y_id <- which(names(tbl) %in% y_var)
