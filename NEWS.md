@@ -1,3 +1,25 @@
+# forestly 0.1.3
+
+## New features
+
+- `rtf_static_forestly()` is now available for generating static forest plots in RTF format (#60).
+- Add data source script `data-raw/forestly_adae.R` (#72).
+- Add `prop_range` and `diff_range` arguments to `format_ae_forestly()` to allow control over the x-axis limits for AE proportion and risk difference plots (#80).
+- Add `col_header` and `fig_header` arguments to `format_ae_forestly()` to enable customizable column and figure headers for risk difference outputs (#96).
+- Add `filter_range` argument to `ae_forestly()` for flexible slider range customization (#97).
+
+## Bug fixes
+
+- Fix bug to correctly pass the `digits` to the display format of each column in `format_ae_forestly()` to make the number of displayed decimal places for proportions and risk differences user-configurable (#90).
+- Fix bug so that the "n" and "(%)" columns in the output table are displayed only when specified in the `display` of `format_ae_forestly()` (#95)
+
+## Improvements
+
+- Update `format_ae_listing()` to consistently use list-style indexing (res[["column"]]) instead of dollar-sign notation (res$column) for accessing data frame columns (#71).
+- Reorganize `pkgdown` site structure (#81, #82, #85)
+- Update `format_ae_listing()` to replace direct use of `tools::toTitleCase()` with new helper function `titelcase()` for the case where SEX in the input data is factorized (#92).
+- Update `format_ae_forestly()` to ensure consistency in the order of treatment groups across tables and figures (#94).
+
 # forestly 0.1.2
 
 - Fix a bug that prevents reactable from rendering under reactR >= 0.6.0 (#67).
