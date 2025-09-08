@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">forestly</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,6 +46,30 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3" id="forestly-013">forestly 0.1.3<a class="anchor" aria-label="anchor" href="#forestly-013"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-1-3">New features<a class="anchor" aria-label="anchor" href="#new-features-0-1-3"></a></h3>
+<ul><li>
+<code><a href="../reference/rtf_static_forestly.html">rtf_static_forestly()</a></code> is now available for generating static forest plots in RTF format (<a href="https://github.com/Merck/forestly/issues/60" class="external-link">#60</a>).</li>
+<li>Add data source script <code>data-raw/forestly_adae.R</code> (<a href="https://github.com/Merck/forestly/issues/72" class="external-link">#72</a>).</li>
+<li>Add <code>prop_range</code> and <code>diff_range</code> arguments to <code><a href="../reference/format_ae_forestly.html">format_ae_forestly()</a></code> to allow control over the x-axis limits for AE proportion and risk difference plots (<a href="https://github.com/Merck/forestly/issues/80" class="external-link">#80</a>).</li>
+<li>Add <code>col_header</code> and <code>fig_header</code> arguments to <code><a href="../reference/format_ae_forestly.html">format_ae_forestly()</a></code> to enable customizable column and figure headers for risk difference outputs (<a href="https://github.com/Merck/forestly/issues/96" class="external-link">#96</a>).</li>
+<li>Add <code>filter_range</code> argument to <code><a href="../reference/ae_forestly.html">ae_forestly()</a></code> for flexible slider range customization (<a href="https://github.com/Merck/forestly/issues/97" class="external-link">#97</a>).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-1-3">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-1-3"></a></h3>
+<ul><li>Fix bug to correctly pass the <code>digits</code> to the display format of each column in <code><a href="../reference/format_ae_forestly.html">format_ae_forestly()</a></code> to make the number of displayed decimal places for proportions and risk differences user-configurable (<a href="https://github.com/Merck/forestly/issues/90" class="external-link">#90</a>).</li>
+<li>Fix bug so that the “n” and “(%)” columns in the output table are displayed only when specified in the <code>display</code> of <code><a href="../reference/format_ae_forestly.html">format_ae_forestly()</a></code> (<a href="https://github.com/Merck/forestly/issues/95" class="external-link">#95</a>)</li>
+</ul></div>
+<div class="section level3">
+<h3 id="improvements-0-1-3">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-1-3"></a></h3>
+<ul><li>Update <code>format_ae_listing()</code> to consistently use list-style indexing (res[[“column”]]) instead of dollar-sign notation (res$column) for accessing data frame columns (<a href="https://github.com/Merck/forestly/issues/71" class="external-link">#71</a>).</li>
+<li>Reorganize <code>pkgdown</code> site structure (<a href="https://github.com/Merck/forestly/issues/81" class="external-link">#81</a>, <a href="https://github.com/Merck/forestly/issues/82" class="external-link">#82</a>, <a href="https://github.com/Merck/forestly/issues/85" class="external-link">#85</a>)</li>
+<li>Update <code>format_ae_listing()</code> to replace direct use of <code><a href="https://rdrr.io/r/tools/toTitleCase.html" class="external-link">tools::toTitleCase()</a></code> with new helper function <code>titelcase()</code> for the case where SEX in the input data is factorized (<a href="https://github.com/Merck/forestly/issues/92" class="external-link">#92</a>).</li>
+<li>Update <code><a href="../reference/format_ae_forestly.html">format_ae_forestly()</a></code> to ensure consistency in the order of treatment groups across tables and figures (<a href="https://github.com/Merck/forestly/issues/94" class="external-link">#94</a>).</li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.2" id="forestly-012">forestly 0.1.2<a class="anchor" aria-label="anchor" href="#forestly-012"></a></h2><p class="text-muted">CRAN release: 2025-01-10</p>
 <ul><li>Fix a bug that prevents reactable from rendering under reactR &gt;= 0.6.0 (<a href="https://github.com/Merck/forestly/issues/67" class="external-link">#67</a>).</li>
 <li>Add a new argument <code>filter_label</code> to <code><a href="../reference/ae_forestly.html">ae_forestly()</a></code> for controlling slider bar label (<a href="https://github.com/Merck/forestly/issues/68" class="external-link">#68</a>).</li>
@@ -73,7 +97,7 @@
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Yilong Zhang, Benjamin Wang, Yujie Zhao. Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3. <br>Copyright © 2023 Merck &amp; Co., Inc., Rahway, NJ, USA and its affiliates. All rights reserved.</p>
+  <p>Developed by Yilong Zhang, Benjamin Wang, Yujie Zhao, Hiroaki Fukuda. Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3. <br>Copyright © 2023 Merck &amp; Co., Inc., Rahway, NJ, USA and its affiliates. All rights reserved.</p>
 </div>
 
 <div class="pkgdown-footer-right">
