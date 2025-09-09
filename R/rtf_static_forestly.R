@@ -49,8 +49,8 @@
 #'   labels = c("Low Dose", "Placebo")
 #' )
 #' outdata <- meta_forestly(
-#'   dataset_adsl = forestly_adsl,
-#'   dataset_adae = forestly_adae
+#'   dataset_adsl = forestly_adsl[1:40, ],
+#'   dataset_adae = forestly_adae[1:40, ]
 #' ) |>
 #'   prepare_ae_forestly()|>
 #'   format_ae_forestly()
