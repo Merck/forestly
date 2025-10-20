@@ -39,6 +39,7 @@ articles:
   - customize-diff-label
   - customize-xlimit
   - customize-width
+  - customize-display-only-soc
 - title: Developer Notes
   contents:
   - design-pattern
