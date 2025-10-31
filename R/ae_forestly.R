@@ -23,6 +23,7 @@
 #' @param filter A character value of the filter variable.
 #' @param filter_label A character value of the label for slider bar.
 #' @param filter_range A numeric vector of length 2 for the range of the slider bar.
+#' @param ae_label A character value of the label for criteria.
 #'   If NULL (default), the range is automatically calculated from the data.
 #'   If only one value is provided, it will be used as the maximum and minimum will be 0.
 #' @param width A numeric value of width of the table in pixels.
@@ -49,6 +50,7 @@ ae_forestly <- function(outdata,
                         filter = c("prop", "n"),
                         filter_label = NULL,
                         filter_range = NULL,
+                        ae_label = NULL,
                         width = 1400,
                         max_page = NULL) {
   filter <- match.arg(filter)
@@ -89,8 +91,8 @@ ae_forestly <- function(outdata,
 
   if (is.null(filter_label)) {
     filter_label <- ifelse(filter == "prop",
-      "Incidence (%) in One or More Treatment Groups",
-      "Number of AE in One or More Treatment Groups"
+                           "Incidence (%) in One or More Treatment Groups",
+                           "Number of AE in One or More Treatment Groups"
     )
   }
 
@@ -104,8 +106,8 @@ ae_forestly <- function(outdata,
 
   parameters <- unlist(strsplit(outdata$parameter, ";"))
   par_label <- vapply(parameters,
-    function(x) metalite::collect_adam_mapping(outdata$meta, x)$label,
-    FUN.VALUE = character(1)
+                      function(x) metalite::collect_adam_mapping(outdata$meta, x)$label,
+                      FUN.VALUE = character(1)
   )
 
   for (par in parameters[(!(parameters %in% unique(outdata$parameter_order)))]) {
@@ -136,9 +138,14 @@ ae_forestly <- function(outdata,
   default_param <- as.character(unique(outdata$tbl$parameter)[1])
 
   random_id <- paste0("filter_ae_", uuid::UUIDgenerate(), "|", default_param)
+
+  if (is.null(ae_label)) {
+    ae_label <- "AE Criteria"
+  }
+
   filter_ae <- crosstalk::filter_select(
     id = random_id,
-    label = "AE Criteria",
+    label = ae_label,
     sharedData = tbl,
     group = ~parameter,
     multiple = FALSE
@@ -192,9 +199,9 @@ ae_forestly <- function(outdata,
       t_details <- subset(
         outdata$ae_listing,
         ((toupper(outdata$ae_listing$Adverse_Event) %in% toupper(t_row)) &
-          (outdata$ae_listing$param == t_param)) |
+           (outdata$ae_listing$param == t_param)) |
           ((toupper(outdata$ae_listing$SOC_Name) %in% toupper(t_row)) &
-            (outdata$ae_listing$param == t_param))
+             (outdata$ae_listing$param == t_param))
       )
 
       # Exclude 'param' column from t_details
