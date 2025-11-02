@@ -27,6 +27,7 @@
 #'   If only one value is provided, it will be used as the maximum and minimum will be 0.
 #' @param width A numeric value of width of the table in pixels.
 #' @param max_page A numeric value of max page number shown in the table.
+#' @param dowload_button A logical value to display download button.
 #'
 #' @return An AE forest plot saved as a `shiny.tag.list` object.
 #'
@@ -50,7 +51,8 @@ ae_forestly <- function(outdata,
                         filter_label = NULL,
                         filter_range = NULL,
                         width = 1400,
-                        max_page = NULL) {
+                        max_page = NULL,
+                        dowload_button = FALSE) {
   filter <- match.arg(filter)
 
   # Handle filter_range parameter
@@ -184,6 +186,7 @@ ae_forestly <- function(outdata,
     hidden_item = paste0("'", outdata$hidden_column, "'", collapse = ", "),
     soc_toggle = display_soc_toggle,
     width = width,
+    download = dowload_button,
     searchable = FALSE,
     details = function(index) {
       t_row <- outdata$tbl$name[index]
