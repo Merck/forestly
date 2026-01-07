@@ -1,0 +1,88 @@
+# Selecting Columns to Display in AE Listings
+
+``` r
+library(forestly)
+library(metalite)
+```
+
+The interactive AE forest plots provide drill-down capability to
+subject-level AE listings. In this vignette, we demonstrate how to
+customize the columns of the AE listing.
+
+## Step 1: build your metadata
+
+Building interactive AE forest plots starts with constructing the
+metadata. The detailed procedure for building metadata is covered in the
+vignette [Generate Interactive AE Forest Plots with Drill Down to AE
+Listing](https://merck.github.io/forestly/articles/forestly.html).
+Therefore, in this vignette, we will skip those details and directly use
+the metadata created there.
+
+``` r
+adsl <- forestly_adsl
+adae <- forestly_adae
+
+adsl$TRTA <- factor(forestly_adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+adae$TRTA <- factor(forestly_adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+
+meta <- meta_adam(population = adsl, observation = adae) |>
+  define_plan(plan = plan(
+    analysis = "ae_forestly",
+    population = "apat",
+    observation = "apat",
+    parameter = "any;drug-related"
+  )) |>
+  define_analysis(name = "ae_forestly", label = "Interactive Forest Plot") |>
+  define_population(
+    name = "apat", group = "TRTA", id = "USUBJID",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_observation(
+    name = "apat", group = "TRTA",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_parameter(
+    name = "any",
+    subset = NULL,
+    label = "Any AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  define_parameter(
+    name = "drug-related",
+    subset = toupper(AREL) == "RELATED",
+    label = "Drug-related AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  meta_build()
+```
+
+## Step 2: customize the AE listing columns
+
+Users can specify the AE listing columns using the
+`ae_listing_display = ...` argument in the
+[`prepare_ae_forestly()`](https://merck.github.io/forestly/reference/prepare_ae_forestly.md)
+function. The columns displayed in the AE listing correspond to the
+variables provided in `ae_listing_display = ....`.
+
+In the following example, we select the unique subject ID, site number,
+gender, race, and age, so the listing will display only these five
+variables.
+
+``` r
+meta |>
+  prepare_ae_forestly(ae_listing_display = c("USUBJID", "SITEID", "SEX", "RACE", "AGE")) |>
+  format_ae_forestly() |>
+  ae_forestly()
+```
+
+AE Criteria
+
+Incidence (%) in One or More Treatment Groups
+
+Show/Hide SOC column

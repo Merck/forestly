@@ -1,0 +1,151 @@
+# forestly
+
+## Installation
+
+The easiest way to get forestly is to install from CRAN:
+
+``` r
+install.packages("forestly")
+```
+
+Alternatively, to use a new feature or get a bug fix, you can install
+the development version of forestly from GitHub:
+
+``` r
+# install.packages("remotes")
+remotes::install_github("Merck/forestly")
+```
+
+## Overview
+
+The forestly package creates interactive forest plots for clinical trial
+analysis & reporting.
+
+- Safety analysis
+  - Specific adverse events analysis
+- Efficacy analysis (future work)
+  - Subgroup analysis
+
+We assume ADaM datasets are ready for analysis and leverage
+[metalite](https://merck.github.io/metalite/) data structure to define
+inputs and outputs.
+
+## Workflow
+
+The general workflow is:
+
+1.  [`meta_forestly()`](https://merck.github.io/forestly/reference/meta_forestly.md)
+    constructs input metadata for treatment analysis from ADaM datasets.
+2.  [`prepare_ae_forestly()`](https://merck.github.io/forestly/reference/prepare_ae_forestly.md)
+    prepares datasets for interactive forest plot.
+3.  [`format_ae_forestly()`](https://merck.github.io/forestly/reference/format_ae_forestly.md)
+    formats output layout.
+4.  [`ae_forestly()`](https://merck.github.io/forestly/reference/ae_forestly.md)
+    generates an interactive forest plot.
+
+Here is a quick example
+
+``` r
+library("forestly")
+
+meta_forestly(
+  dataset_adsl = forestly_adsl,
+  dataset_adae = forestly_adae,
+  parameter_term = "any;rel;ser",
+  population_subset = SAFFL == "Y",
+  observation_subset = SAFFL == "Y"
+) |>
+  prepare_ae_forestly(parameter = "any;rel;ser") |>
+  format_ae_forestly() |>
+  ae_forestly()
+```
+
+## Interactive features
+
+The interactive features for safety analysis include:
+
+- Select different AE criteria.
+- Filter by incidence of AE in one or more groups.
+- Reveal information by hovering the mouse over a data point.
+- Search bars to find subjects with selected adverse events (AEs).
+- Sort value by clicking the column header.
+- Drill-down listing by clicking $▸$.
+
+## References
+
+- Paper: [2023 PHUSE US
+  Connect](https://phuse.s3.eu-central-1.amazonaws.com/Archive/2023/Connect/US/Florida/PAP_DV07.pdf)
+- Talk: [2021 R/Pharma
+  Conference](https://rinpharma.com/publication/rinpharma_206/)
+
+# Package index
+
+## Adverse event analysis
+
+- [`meta_forestly()`](https://merck.github.io/forestly/reference/meta_forestly.md)
+  : Create metadata for interactive forest plot
+- [`prepare_ae_forestly()`](https://merck.github.io/forestly/reference/prepare_ae_forestly.md)
+  : Prepare datasets for interactive forest plot
+- [`format_ae_forestly()`](https://merck.github.io/forestly/reference/format_ae_forestly.md)
+  : Format outdata for interactive forest plot
+- [`ae_forestly()`](https://merck.github.io/forestly/reference/ae_forestly.md)
+  : Display interactive forest plot
+
+## Static plot
+
+- [`background_panel()`](https://merck.github.io/forestly/reference/background_panel.md)
+  : Add background for creating plot with customized color
+- [`plot_dot()`](https://merck.github.io/forestly/reference/plot_dot.md)
+  : Dot plot
+- [`plot_errorbar()`](https://merck.github.io/forestly/reference/plot_errorbar.md)
+  : Plot to display risk difference
+- [`table_panel()`](https://merck.github.io/forestly/reference/table_panel.md)
+  : Create table panel ggplot2 object for rainfall or forest plot
+- [`theme_panel()`](https://merck.github.io/forestly/reference/theme_panel.md)
+  : Theme function for plot with multiple panels
+- [`rtf_static_forestly()`](https://merck.github.io/forestly/reference/rtf_static_forestly.md)
+  : Output static forest plot
+
+## Example data
+
+- [`forestly_adsl`](https://merck.github.io/forestly/reference/forestly_adsl.md)
+  : A subject level demographic dataset
+- [`forestly_adsl_3grp`](https://merck.github.io/forestly/reference/forestly_adsl_3grp.md)
+  : A subject level demographic dataset
+- [`forestly_adae`](https://merck.github.io/forestly/reference/forestly_adae.md)
+  : An adverse event dataset
+- [`forestly_adae_3grp`](https://merck.github.io/forestly/reference/forestly_adae_3grp.md)
+  : An adverse event dataset
+
+# Articles
+
+### Generate AE Forest Plot
+
+- [Generate Static AE Forest
+  Plots](https://merck.github.io/forestly/articles/forest-plot-static.md):
+- [Generate Interactive AE Forest Plots with Drill Down to AE
+  Listing](https://merck.github.io/forestly/articles/forestly.md):
+
+### Customize the Interactive AE Forest Plot
+
+- [Selecting Columns to Display in AE
+  Listings](https://merck.github.io/forestly/articles/customize-listing-columns.md):
+- [Adjusting Decimal Precision in Displayed
+  Data](https://merck.github.io/forestly/articles/customize-digits.md):
+- [Personalized Color Choices in Data
+  Visualization](https://merck.github.io/forestly/articles/customize-color.md):
+- [Add/Hide Columns in the AE-Specific
+  Tables](https://merck.github.io/forestly/articles/customize-ae-specific-columns.md):
+- [Legend Customization in AE Proportion Difference
+  Visualizations](https://merck.github.io/forestly/articles/customize-diff-label.md):
+- [Customizing Plot Limits for AE Proportions and
+  Differences](https://merck.github.io/forestly/articles/customize-xlimit.md):
+- [Adjusting Column Widths for Optimal
+  Layout](https://merck.github.io/forestly/articles/customize-width.md):
+- [Display Only SOC in the AE-Specific
+  Tables](https://merck.github.io/forestly/articles/customize-display-only-soc.md):
+
+### Developer Notes
+
+- [Design Plan of the forestly
+  Package](https://merck.github.io/forestly/articles/design-pattern.md):

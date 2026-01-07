@@ -1,0 +1,91 @@
+# Legend Customization in AE Proportion Difference Visualizations
+
+``` r
+library(forestly)
+library(metalite)
+```
+
+The interactive AE forest plots include AE-specific tables presenting
+numerical values for AE proportions, differences, and confidence
+intervals (CI), alongside their visualizations. Directly below the
+column visualizing the AE proportion difference, a legend is displayed.
+By default, this legend reads: “Treatment \<- Favor -\> Placebo”. In
+this vignette, we demonstrate how to customize this legend.
+
+## Step 1: build your metadata
+
+Building interactive AE forest plots starts with constructing the
+metadata. The detailed procedure for building metadata is covered in the
+vignette [Generate Interactive AE Forest Plots with Drill Down to AE
+Listing](https://merck.github.io/forestly/articles/forestly.html).
+Therefore, in this vignette, we will skip those details and directly use
+the metadata created there.
+
+``` r
+adsl <- forestly_adsl
+adae <- forestly_adae
+
+adsl$TRTA <- factor(forestly_adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+adae$TRTA <- factor(forestly_adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+
+meta <- meta_adam(population = adsl, observation = adae) |>
+  define_plan(plan = plan(
+    analysis = "ae_forestly",
+    population = "apat",
+    observation = "apat",
+    parameter = "any;drug-related"
+  )) |>
+  define_analysis(name = "ae_forestly", label = "Interactive Forest Plot") |>
+  define_population(
+    name = "apat", group = "TRTA", id = "USUBJID",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_observation(
+    name = "apat", group = "TRTA",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_parameter(
+    name = "any",
+    subset = NULL,
+    label = "Any AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  define_parameter(
+    name = "drug-related",
+    subset = toupper(AREL) == "RELATED",
+    label = "Drug-related AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  meta_build()
+```
+
+## Step 2: customize the legend below the column of AE proportions differences
+
+Users can modify the legend for the AE proportion difference by
+specifying the `diff_label = ...` argument within the
+[`format_ae_forestly()`](https://merck.github.io/forestly/reference/format_ae_forestly.md)
+function. The default setting is
+`diff_label = "Treatment <- Favor -> Placebo"`.
+
+In the example below, we show how to change the legend text. We
+encourage users to tailor this label to best reflect the context of
+their specific study.
+
+``` r
+meta |>
+  prepare_ae_forestly() |>
+  format_ae_forestly(diff_label = "New Drug <- Favor -> SoC", ) |>
+  ae_forestly()
+```
+
+AE Criteria
+
+Incidence (%) in One or More Treatment Groups
+
+Show/Hide SOC column
