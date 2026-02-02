@@ -48,7 +48,9 @@
 #' @param label A logical value to display label as a hover text.
 #' @param download A logical value to display download button.
 #' @param soc_toggle A logical value to display SOC toggle button.
+#' @param diff_toggle A logical value to display risk difference toggle button.
 #' @param hidden_item Vector for hidden columns.
+#' @param diff_columns Character vector of risk difference column names.
 #' @param ... Additional arguments passed to [reactable::reactable()].
 #' @inheritParams reactable::reactable
 #'
@@ -76,7 +78,9 @@ reactable2 <- function(
     download = TRUE,
     col_def = NULL,
     soc_toggle = TRUE,
+    diff_toggle = FALSE,
     hidden_item = NULL,
+    diff_columns = NULL,
     ...) {
   # Display variable label as hover text
   if (label & is.null(col_def)) {
@@ -110,25 +114,58 @@ reactable2 <- function(
     ...
   )
 
-  if (soc_toggle) {
-    on_click2 <- paste0(
-      "function control_column(hidden_columns) {",
-      "  if (hidden_columns.includes('soc_name')) {",
+  buttons <- list()
+
+  if (diff_toggle && !is.null(diff_columns) && length(diff_columns) > 0) {
+    diff_cols_js <- paste0("['", paste(diff_columns, collapse = "', '"), "']")
+    on_click_diff <- paste0(
+      "function control_diff(hidden_columns) {",
+      "  const diffCols = ", diff_cols_js, ";",
+      "  const allDiffHidden = diffCols.every(col => hidden_columns.includes(col));",
+      "  if (allDiffHidden) {",
       "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
-                             return prevColumns.length === 0 ? ['soc_name']:[", hidden_item, "]})",
+                             return prevColumns.filter(col => !diffCols.includes(col))})",
       "  } else {",
       "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
-                             return prevColumns.length === 0 ? [ ]: ['soc_name',", hidden_item, "]})",
+                             return [...new Set([...prevColumns, ...diffCols])]})",
       "  }",
       "}",
-      "control_column(Reactable.getState('", element_id, "').hiddenColumns);"
+      "control_diff(Reactable.getState('", element_id, "').hiddenColumns);"
     )
 
-    tbl <- htmltools::tagList(
+    buttons <- c(buttons, list(
+      htmltools::tags$button(
+        "Show/Hide Risk Difference",
+        onclick = on_click_diff
+      )
+    ))
+  }
+
+  if (soc_toggle) {
+    on_click_soc <- paste0(
+      "function control_soc(hidden_columns) {",
+      "  if (hidden_columns.includes('soc_name')) {",
+      "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
+                             return prevColumns.filter(col => col !== 'soc_name')})",
+      "  } else {",
+      "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
+                             return [...prevColumns, 'soc_name']})",
+      "  }",
+      "}",
+      "control_soc(Reactable.getState('", element_id, "').hiddenColumns);"
+    )
+
+    buttons <- c(buttons, list(
       htmltools::tags$button(
         "Show/Hide SOC column",
-        onclick = on_click2
-      ),
+        onclick = on_click_soc
+      )
+    ))
+  }
+
+  if (length(buttons) > 0) {
+    tbl <- htmltools::tagList(
+      buttons,
       tbl
     )
   }

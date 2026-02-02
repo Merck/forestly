@@ -19,8 +19,7 @@ format_ae_forestly(
   color = NULL,
   diff_label = "Treatment <- Favor -> Placebo",
   col_header = NULL,
-  fig_header = NULL,
-  show_ae_parameter = FALSE
+  fig_header = NULL
 )
 }
 \arguments{
@@ -65,8 +64,6 @@ If NULL (default), uses "Risk Difference (\%) \if{html}{\out{<br>}} vs. Referenc
 
 \item{fig_header}{Column header for risk difference figure.
 If NULL (default), uses "Risk Difference (\%) + 95\% CI \if{html}{\out{<br>}} vs. Reference Group".}
-
-\item{show_ae_parameter}{A boolean value to display AE parameter column.}
 }
 \value{
 An \code{outdata} object.

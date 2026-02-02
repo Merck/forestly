@@ -1,5 +1,5 @@
 ---
-title: "Add/Hide Columns in the AE-Specific Tables"
+title: "Toggle Risk Difference Columns in the AE-Specific Tables"
 authors: "Yujie Zhao"
 output:
   rmarkdown::html_document:
@@ -7,7 +7,7 @@ output:
     number_sections: yes
     code_folding: hide
 vignette: |
-  %\VignetteIndexEntry{Add/Hide Columns in the AE-Specific Tables}
+  %\VignetteIndexEntry{Toggle Risk Difference Columns in the AE-Specific Tables}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -26,14 +26,7 @@ library(forestly)
 library(metalite)
 ```
 
-The interactive AE forest plots include AE-specific tables that present both numerical and visual summaries of the following:
-
-- The number of subjects experiencing AEs in each arm
-- The percentage of subjects with AEs in each arm
-- Differences in AE proportions between arms
-- Confidence intervals for these AE proportion differences
-
-In this vignette, we guide users through customizing (show/hide) the columns displayed in the AE-specific table.
+The interactive AE forest plots include AE-specific tables that present both numerical and visual summaries for each AE SOC/PT term. In this vignette, we demonstrate how to toggle the visibility of risk difference columns using an interactive button.
 
 # Step 1: build your metadata
 
@@ -84,24 +77,15 @@ meta <- meta_adam(population = adsl, observation = adae) |>
 ```
 
 
-# Step 2: customize the AE specific columns
+# Step 2: toggle risk difference columns
 
-Users can tailor the AE-specific columns by specifying the `display = ...` argument within the `format_ae_forestly()` function. The available options are as follows:
+Users can control the display of risk difference columns using the `display_diff_toggle = ...` argument in the `ae_forestly()` function.
 
-- `"n"`: Displays a column with the number of subjects experiencing AEs.
-- `"prop"`: Displays a column with the proportion of subjects experiencing AEs.
-- `"diff"`: Displays a column showing the difference in AE proportions between arms.
-- `"fig_prop"`: Displays a column visualizing AE proportions.
-- `"fig_diff"`: Displays a column visualizing differences in AE proportions between arms.
-- `"total"`: Displays a column reporting pooled results from both control and experimental arms.
-
-By default, `display = c("n", "prop", "fig_prop", "fig_diff")` is used, which includes: (1) the number of subjects with AEs in each arm, (2) the AE proportion in each arm, (3) a visualization of AE proportions, (4) a visualization of AE proportion differences.
-
-In the example below, we demonstrate how to add a total column alongside the default display settings.
+In the example below, we enable the risk difference toggle button by setting `display_diff_toggle = TRUE`. This adds an interactive "Show/Hide Risk Difference" button above the table, allowing users to dynamically show or hide all risk difference related columns, including the difference values (`diff`) and the risk difference visualization (`fig_diff`).
 
 ```{r}
 meta |>
   prepare_ae_forestly() |>
-  format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff", "total")) |>
-  ae_forestly()
+  format_ae_forestly() |>
+  ae_forestly(display_diff_toggle = TRUE)
 ```

@@ -7,6 +7,7 @@
 ae_forestly(
   outdata,
   display_soc_toggle = TRUE,
+  display_diff_toggle = FALSE,
   filter = c("prop", "n"),
   filter_label = NULL,
   filter_range = NULL,
@@ -20,6 +21,8 @@ ae_forestly(
 \item{outdata}{An \code{outdata} object created by \code{\link[=format_ae_forestly]{format_ae_forestly()}}.}
 
 \item{display_soc_toggle}{A boolean value to display SOC toggle button.}
+
+\item{display_diff_toggle}{A boolean value to display risk difference toggle button.}
 
 \item{filter}{A character value of the filter variable.}
 

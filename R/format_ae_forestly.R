@@ -43,7 +43,6 @@
 #'   If NULL (default), uses "Risk Difference (%) <br> vs. Reference Group".
 #' @param fig_header Column header for risk difference figure.
 #'   If NULL (default), uses "Risk Difference (%) + 95% CI <br> vs. Reference Group".
-#' @param show_ae_parameter A boolean value to display AE parameter column.
 #'
 #' @return An `outdata` object.
 #'
@@ -73,8 +72,7 @@ format_ae_forestly <- function(
     color = NULL,
     diff_label = "Treatment <- Favor -> Placebo",
     col_header = NULL,
-    fig_header = NULL,
-    show_ae_parameter = FALSE) {
+    fig_header = NULL) {
   display <- tolower(display)
 
   display <- match.arg(
@@ -142,8 +140,6 @@ format_ae_forestly <- function(
     hide_prop = apply(outdata$prop[, 1:n_group], 1, max, na.rm = TRUE),
     hide_n = apply(outdata$n[, 1:n_group], 1, max, na.rm = TRUE)
   )
-
-  if (!show_ae_parameter) tbl <- tbl[, c(2:ncol(tbl), 1)]
 
   rownames(tbl) <- NULL
 
@@ -262,7 +258,7 @@ format_ae_forestly <- function(
   col_var <- list(
     parameter = reactable::colDef(
       header = "Type",
-      show = show_ae_parameter
+      show = FALSE
     ),
     name = reactable::colDef(
       header = "Adverse Events",

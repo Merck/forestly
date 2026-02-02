@@ -20,6 +20,7 @@
 #'
 #' @param outdata An `outdata` object created by [format_ae_forestly()].
 #' @param display_soc_toggle A boolean value to display SOC toggle button.
+#' @param display_diff_toggle A boolean value to display risk difference toggle button.
 #' @param filter A character value of the filter variable.
 #' @param filter_label A character value of the label for slider bar.
 #' @param filter_range A numeric vector of length 2 for the range of the slider bar.
@@ -48,6 +49,7 @@
 #' }
 ae_forestly <- function(outdata,
                         display_soc_toggle = TRUE,
+                        display_diff_toggle = FALSE,
                         filter = c("prop", "n"),
                         filter_label = NULL,
                         filter_range = NULL,
@@ -186,12 +188,18 @@ ae_forestly <- function(outdata,
   filter_subject$children[[2]]$attribs$`data-to` <- filter_range[2]
   filter_subject$children[[2]]$attribs$`data-max` <- filter_range[2]
 
+  diff_cols <- c(
+    names(outdata$diff)
+  )
+
   p_reactable <- reactable2(
     tbl,
     columns = outdata$reactable_columns,
     columnGroups = outdata$reactable_columns_group,
     hidden_item = paste0("'", outdata$hidden_column, "'", collapse = ", "),
     soc_toggle = display_soc_toggle,
+    diff_toggle = display_diff_toggle,
+    diff_columns = diff_cols,
     width = width,
     download = dowload_button,
     searchable = FALSE,

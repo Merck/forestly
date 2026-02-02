@@ -11,8 +11,7 @@ test_that("Set `display` to ('n', 'prop', 'diff') then one has an additional ris
     width_diff = 80,
     footer_space = 90,
     color = NULL,
-    diff_label = "Treatment <- Favor -> Placebo",
-    show_ae_parameter = FALSE
+    diff_label = "Treatment <- Favor -> Placebo"
   )
 
   # expect_named(ae_frm, c("n", "prop", "diff"))
@@ -35,8 +34,7 @@ test_that("Set `display` to ('n', 'prop', 'total') then one has total column", {
     width_diff = 80,
     footer_space = 90,
     color = NULL,
-    diff_label = "Treatment <- Favor -> Placebo",
-    show_ae_parameter = FALSE
+    diff_label = "Treatment <- Favor -> Placebo"
   )
 
   # expect_named(ae_frm, c("n", "prop", "total"))
@@ -59,8 +57,7 @@ test_that("Set `display` to ('diff', 'total') without ('n', 'prop') columns", {
     width_diff = 80,
     footer_space = 90,
     color = NULL,
-    diff_label = "Treatment <- Favor -> Placebo",
-    show_ae_parameter = FALSE
+    diff_label = "Treatment <- Favor -> Placebo"
   )
 
   # expect_named(ae_frm, c("n", "prop", "total"))
@@ -83,8 +80,7 @@ test_that("1. Set `display` to ('n', 'prop', 'total', 'diff') and change column 
     width_diff = 80,
     footer_space = 90,
     color = NULL,
-    diff_label = "MK-XXXX <- Favor -> Placebo",
-    show_ae_parameter = FALSE
+    diff_label = "MK-XXXX <- Favor -> Placebo"
   )
 
   expect_equal(ae_frm$reactable_columns$diff_fig$width, 300)
@@ -96,7 +92,7 @@ test_that("1. Set `display` to ('n', 'prop', 'total', 'diff') and change column 
   expect_equal(ae_frm$reactable_columns$prop_4$minWidth, 60)
 })
 
-test_that("Set `show` to TRUE then display column 'Type' and change color for tratment group", {
+test_that("Parameter column is always hidden", {
   out <- test_format_ae_forestly()
   ae_frm <- format_ae_forestly(
     out,
@@ -109,11 +105,11 @@ test_that("Set `show` to TRUE then display column 'Type' and change color for tr
     width_diff = 80,
     footer_space = 90,
     color = c("BLACK", "BLUE", "YELLOW", "PINK"),
-    diff_label = "Treatment <- Favor -> Placebo",
-    show_ae_parameter = TRUE
+    diff_label = "Treatment <- Favor -> Placebo"
   )
 
   expect_equal(ae_frm$reactable_columns$parameter$header, "Type")
+  expect_equal(ae_frm$reactable_columns$parameter$show, FALSE)
 })
 
 test_that("Add variable name not in n, prop, total, diff causes error", {
