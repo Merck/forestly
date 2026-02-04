@@ -192,14 +192,19 @@ ae_forestly <- function(outdata,
     names(outdata$diff)
   )
 
+  hidden_cols <- outdata$hidden_column
+  if (display_diff_toggle) {
+    hidden_cols <- setdiff(hidden_cols, c(diff_cols, "diff_fig"))
+  }
+
   p_reactable <- reactable2(
     tbl,
     columns = outdata$reactable_columns,
     columnGroups = outdata$reactable_columns_group,
-    hidden_item = paste0("'", outdata$hidden_column, "'", collapse = ", "),
+    hidden_item = paste0("'", hidden_cols, "'", collapse = ", "),
     soc_toggle = display_soc_toggle,
     diff_toggle = display_diff_toggle,
-    diff_columns = diff_cols,
+    diff_columns = c(diff_cols, "diff_fig"),
     width = width,
     download = dowload_button,
     searchable = FALSE,

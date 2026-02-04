@@ -22,7 +22,8 @@ knitr::opts_chunk$set(
 ```
 
 ```{r}
-library(forestly)
+# library(forestly)
+devtools::load_all()
 library(metalite)
 ```
 
@@ -87,5 +88,6 @@ In the example below, we enable the risk difference toggle button by setting `di
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly() |>
-  ae_forestly(display_diff_toggle = TRUE)
+  ae_forestly(display_diff_toggle = TRUE,
+              display_soc_toggle = FALSE)
 ```

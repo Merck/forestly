@@ -116,31 +116,6 @@ reactable2 <- function(
 
   buttons <- list()
 
-  if (diff_toggle && !is.null(diff_columns) && length(diff_columns) > 0) {
-    diff_cols_js <- paste0("['", paste(diff_columns, collapse = "', '"), "']")
-    on_click_diff <- paste0(
-      "function control_diff(hidden_columns) {",
-      "  const diffCols = ", diff_cols_js, ";",
-      "  const allDiffHidden = diffCols.every(col => hidden_columns.includes(col));",
-      "  if (allDiffHidden) {",
-      "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
-                             return prevColumns.filter(col => !diffCols.includes(col))})",
-      "  } else {",
-      "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
-                             return [...new Set([...prevColumns, ...diffCols])]})",
-      "  }",
-      "}",
-      "control_diff(Reactable.getState('", element_id, "').hiddenColumns);"
-    )
-
-    buttons <- c(buttons, list(
-      htmltools::tags$button(
-        "Show/Hide Risk Difference",
-        onclick = on_click_diff
-      )
-    ))
-  }
-
   if (soc_toggle) {
     on_click_soc <- paste0(
       "function control_soc(hidden_columns) {",
@@ -162,6 +137,33 @@ reactable2 <- function(
       )
     ))
   }
+
+  if (diff_toggle && !is.null(diff_columns) && length(diff_columns) > 0) {
+    diff_cols_js <- paste0("['", paste(diff_columns, collapse = "', '"), "']")
+    on_click_diff <- paste0(
+      "function control_diff(hidden_columns) {",
+      "  const diffCols = ", diff_cols_js, ";",
+      "  const allDiffHidden = diffCols.every(col => hidden_columns.includes(col));",
+      "  if (allDiffHidden) {",
+      "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
+                             return prevColumns.filter(col => !diffCols.includes(col))})",
+      "  } else {",
+      "    Reactable.setHiddenColumns('", element_id, "', prevColumns => {
+                             return [...new Set([...prevColumns, ...diffCols])]})",
+      "  }",
+      "}",
+      "control_diff(Reactable.getState('", element_id, "').hiddenColumns);"
+    )
+
+    buttons <- c(buttons, list(
+      htmltools::tags$button(
+        "Show/Hide Risk Difference Value",
+        onclick = on_click_diff
+      )
+    ))
+  }
+
+
 
   if (length(buttons) > 0) {
     tbl <- htmltools::tagList(
