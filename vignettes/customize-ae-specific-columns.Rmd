@@ -1,0 +1,107 @@
+---
+title: "Add/Hide Columns in the AE-Specific Tables"
+authors: "Yujie Zhao"
+output:
+  rmarkdown::html_document:
+    self_contained: no
+    number_sections: yes
+    code_folding: hide
+vignette: |
+  %\VignetteIndexEntry{Add/Hide Columns in the AE-Specific Tables}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r}
+library(forestly)
+library(metalite)
+```
+
+The interactive AE forest plots include AE-specific tables that present both numerical and visual summaries of the following:
+
+- The number of subjects experiencing AEs in each arm
+- The percentage of subjects with AEs in each arm
+- Differences in AE proportions between arms
+- Confidence intervals for these AE proportion differences
+
+In this vignette, we guide users through customizing (show/hide) the columns displayed in the AE-specific table.
+
+# Step 1: build your metadata
+
+Building interactive AE forest plots starts with constructing the metadata. The detailed procedure for building metadata is covered in the vignette [Generate Interactive AE Forest Plots with Drill Down to AE Listing](https://merck.github.io/forestly/articles/forestly.html). Therefore, in this vignette, we will skip those details and directly use the metadata created there. 
+
+```{r}
+adsl <- forestly_adsl
+adae <- forestly_adae
+
+adsl$TRTA <- factor(forestly_adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+adae$TRTA <- factor(forestly_adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+
+meta <- meta_adam(population = adsl, observation = adae) |>
+  define_plan(plan = plan(
+    analysis = "ae_forestly",
+    population = "apat",
+    observation = "apat",
+    parameter = "any;drug-related"
+  )) |>
+  define_analysis(name = "ae_forestly", label = "Interactive Forest Plot") |>
+  define_population(
+    name = "apat", group = "TRTA", id = "USUBJID",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_observation(
+    name = "apat", group = "TRTA",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_parameter(
+    name = "any",
+    subset = NULL,
+    label = "Any AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  define_parameter(
+    name = "drug-related",
+    subset = toupper(AREL) == "RELATED",
+    label = "Drug-related AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  meta_build()
+```
+
+
+# Step 2: customize the AE specific columns
+
+Users can tailor the AE-specific columns by specifying the `display = ...` argument within the `format_ae_forestly()` function. The available options are as follows:
+
+- `"n"`: Displays a column with the number of subjects experiencing AEs.
+- `"prop"`: Displays a column with the proportion of subjects experiencing AEs.
+- `"diff"`: Displays a column showing the difference in AE proportions between arms.
+- `"fig_prop"`: Displays a column visualizing AE proportions.
+- `"fig_diff"`: Displays a column visualizing differences in AE proportions between arms.
+- `"total"`: Displays a column reporting pooled results from both control and experimental arms.
+
+By default, `display = c("n", "prop", "fig_prop", "fig_diff")` is used, which includes: (1) the number of subjects with AEs in each arm, (2) the AE proportion in each arm, (3) a visualization of AE proportions, (4) a visualization of AE proportion differences.
+
+In the example below, we demonstrate how to add a total column alongside the default display settings.
+
+```{r}
+meta |>
+  prepare_ae_forestly() |>
+  format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff", "total")) |>
+  ae_forestly()
+```
