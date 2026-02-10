@@ -25,6 +25,7 @@
     <li><a class="dropdown-item" href="../articles/customize-color.html">Personalized Color Choices in Data Visualization</a></li>
     <li><a class="dropdown-item" href="../articles/customize-ae-specific-columns.html">Add/Hide Columns in the AE-Specific Tables</a></li>
     <li><a class="dropdown-item" href="../articles/customize-diff-label.html">Legend Customization in AE Proportion Difference Visualizations</a></li>
+    <li><a class="dropdown-item" href="../articles/customize-toggle-buttons.html">Toggle Risk Difference Columns in the AE-Specific Tables</a></li>
     <li><a class="dropdown-item" href="../articles/customize-xlimit.html">Customizing Plot Limits for AE Proportions and Differences</a></li>
     <li><a class="dropdown-item" href="../articles/customize-width.html">Adjusting Column Widths for Optimal Layout</a></li>
     <li><a class="dropdown-item" href="../articles/customize-display-only-soc.html">Display Only SOC in the AE-Specific Tables</a></li>
@@ -56,6 +57,7 @@
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ae_forestly</span><span class="op">(</span></span>
 <span>  <span class="va">outdata</span>,</span>
 <span>  display_soc_toggle <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  display_diff_toggle <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  filter <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"prop"</span>, <span class="st">"n"</span><span class="op">)</span>,</span>
 <span>  filter_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  filter_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -76,6 +78,10 @@
 
 <dt id="arg-display-soc-toggle">display_soc_toggle<a class="anchor" aria-label="anchor" href="#arg-display-soc-toggle"></a></dt>
 <dd><p>A boolean value to display SOC toggle button.</p></dd>
+
+
+<dt id="arg-display-diff-toggle">display_diff_toggle<a class="anchor" aria-label="anchor" href="#arg-display-diff-toggle"></a></dt>
+<dd><p>A boolean value to display risk difference toggle button.</p></dd>
 
 
 <dt id="arg-filter">filter<a class="anchor" aria-label="anchor" href="#arg-filter"></a></dt>

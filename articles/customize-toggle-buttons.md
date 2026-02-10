@@ -1,0 +1,94 @@
+# Toggle Risk Difference Columns in the AE-Specific Tables
+
+``` r
+library(forestly)
+library(metalite)
+```
+
+The interactive AE forest plots include AE-specific tables that present
+both numerical and visual summaries for each AE SOC/PT term. In this
+vignette, we demonstrate how to toggle the visibility of risk difference
+columns using an interactive button.
+
+## Step 1: build your metadata
+
+Building interactive AE forest plots starts with constructing the
+metadata. The detailed procedure for building metadata is covered in the
+vignette [Generate Interactive AE Forest Plots with Drill Down to AE
+Listing](https://merck.github.io/forestly/articles/forestly.html).
+Therefore, in this vignette, we will skip those details and directly use
+the metadata created there.
+
+``` r
+adsl <- forestly_adsl
+adae <- forestly_adae
+
+adsl$TRTA <- factor(forestly_adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+adae$TRTA <- factor(forestly_adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+
+meta <- meta_adam(population = adsl, observation = adae) |>
+  define_plan(plan = plan(
+    analysis = "ae_forestly",
+    population = "apat",
+    observation = "apat",
+    parameter = "any;drug-related"
+  )) |>
+  define_analysis(name = "ae_forestly", label = "Interactive Forest Plot") |>
+  define_population(
+    name = "apat", group = "TRTA", id = "USUBJID",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_observation(
+    name = "apat", group = "TRTA",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_parameter(
+    name = "any",
+    subset = NULL,
+    label = "Any AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  define_parameter(
+    name = "drug-related",
+    subset = toupper(AREL) == "RELATED",
+    label = "Drug-related AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  meta_build()
+```
+
+## Step 2: toggle risk difference columns
+
+Users can control the display of risk difference columns using the
+`display_diff_toggle = ...` argument in the
+[`ae_forestly()`](https://merck.github.io/forestly/reference/ae_forestly.md)
+function.
+
+In the example below, we enable the risk difference toggle button by
+setting `display_diff_toggle = TRUE`. This adds an interactive
+“Show/Hide Risk Difference” button above the table, allowing users to
+dynamically show or hide all risk difference related columns, including
+the difference values (`diff`) and the risk difference visualization
+(`fig_diff`).
+
+``` r
+meta |>
+  prepare_ae_forestly() |>
+  format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff", "diff")) |>
+  ae_forestly(display_diff_toggle = TRUE,
+              display_soc_toggle = TRUE)
+```
+
+AE Criteria
+
+Incidence (%) in One or More Treatment Groups
+
+Show/Hide SOC column
+
+Show/Hide Risk Difference

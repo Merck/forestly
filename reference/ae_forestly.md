@@ -8,6 +8,7 @@ Display interactive forest plot
 ae_forestly(
   outdata,
   display_soc_toggle = TRUE,
+  display_diff_toggle = FALSE,
   filter = c("prop", "n"),
   filter_label = NULL,
   filter_range = NULL,
@@ -28,6 +29,10 @@ ae_forestly(
 - display_soc_toggle:
 
   A boolean value to display SOC toggle button.
+
+- display_diff_toggle:
+
+  A boolean value to display risk difference toggle button.
 
 - filter:
 

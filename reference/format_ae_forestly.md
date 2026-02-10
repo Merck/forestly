@@ -18,10 +18,10 @@ format_ae_forestly(
   prop_range = NULL,
   diff_range = NULL,
   color = NULL,
+  ae_col_header = NULL,
   diff_label = "Treatment <- Favor -> Placebo",
-  col_header = NULL,
-  fig_header = NULL,
-  show_ae_parameter = FALSE
+  diff_col_header = NULL,
+  diff_fig_header = NULL
 )
 ```
 
@@ -87,25 +87,30 @@ format_ae_forestly(
   A vector of colors for analysis groups. Default value supports up to 4
   groups.
 
+- ae_col_header:
+
+  Column header for adverse events item columns. If NULL (default) and
+  "par" specified in `components` from
+  [`prepare_ae_forestly()`](https://merck.github.io/forestly/reference/prepare_ae_forestly.md),
+  uses "Adverse Event". If NULL and "soc" specified in `components` from
+  [`prepare_ae_forestly()`](https://merck.github.io/forestly/reference/prepare_ae_forestly.md),
+  uses "System Organ Class" for "soc".
+
 - diff_label:
 
   x-axis label for risk difference.
 
-- col_header:
+- diff_col_header:
 
   Column header for risk difference table columns. If NULL (default),
   uses "Risk Difference (%)  
   vs. Reference Group".
 
-- fig_header:
+- diff_fig_header:
 
   Column header for risk difference figure. If NULL (default), uses
   "Risk Difference (%) + 95% CI  
   vs. Reference Group".
-
-- show_ae_parameter:
-
-  A boolean value to display AE parameter column.
 
 ## Value
 
@@ -124,7 +129,7 @@ meta_forestly(
   format_ae_forestly()
 #> Warning: In observation level data, force group variable 'TRTA' be a factor
 #> Warning: In observation level data, force group variable 'TRTA' be a factor
-#> List of 25
+#> List of 26
 #>  $ meta                   :List of 7
 #>  $ population             : chr "apat"
 #>  $ observation            : chr "safety"
@@ -134,6 +139,7 @@ meta_forestly(
 #>  $ group                  : chr [1:3] "Placebo" "Xanomeline Low Dose" "Total"
 #>  $ reference_group        : num 2
 #>  $ parameter_order        : Factor w/ 2 levels "any","rel": 1 1 1 1 1 1 1 1 1 1 ...
+#>  $ components             : chr "par"
 #>  $ prop                   :'data.frame': 60 obs. of  3 variables:
 #>  $ diff                   :'data.frame': 60 obs. of  1 variable:
 #>  $ n_pop                  :'data.frame': 1 obs. of  3 variables:

@@ -8,12 +8,13 @@ articles:
   customize-digits: customize-digits.html
   customize-display-only-soc: customize-display-only-soc.html
   customize-listing-columns: customize-listing-columns.html
+  customize-toggle-buttons: customize-toggle-buttons.html
   customize-width: customize-width.html
   customize-xlimit: customize-xlimit.html
   design-pattern: design-pattern.html
   forest-plot-static: forest-plot-static.html
   forestly: forestly.html
-last_built: 2026-01-16T16:52Z
+last_built: 2026-02-10T20:56Z
 urls:
   reference: https://merck.github.io/forestly/reference
   article: https://merck.github.io/forestly/articles

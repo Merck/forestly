@@ -19,6 +19,8 @@
   Tables](https://merck.github.io/forestly/articles/customize-ae-specific-columns.md):
 - [Legend Customization in AE Proportion Difference
   Visualizations](https://merck.github.io/forestly/articles/customize-diff-label.md):
+- [Toggle Risk Difference Columns in the AE-Specific
+  Tables](https://merck.github.io/forestly/articles/customize-toggle-buttons.md):
 - [Customizing Plot Limits for AE Proportions and
   Differences](https://merck.github.io/forestly/articles/customize-xlimit.md):
 - [Adjusting Column Widths for Optimal

@@ -25,6 +25,7 @@
     <li><a class="dropdown-item" href="../articles/customize-color.html">Personalized Color Choices in Data Visualization</a></li>
     <li><a class="dropdown-item" href="../articles/customize-ae-specific-columns.html">Add/Hide Columns in the AE-Specific Tables</a></li>
     <li><a class="dropdown-item" href="../articles/customize-diff-label.html">Legend Customization in AE Proportion Difference Visualizations</a></li>
+    <li><a class="dropdown-item" href="../articles/customize-toggle-buttons.html">Toggle Risk Difference Columns in the AE-Specific Tables</a></li>
     <li><a class="dropdown-item" href="../articles/customize-xlimit.html">Customizing Plot Limits for AE Proportions and Differences</a></li>
     <li><a class="dropdown-item" href="../articles/customize-width.html">Adjusting Column Widths for Optimal Layout</a></li>
     <li><a class="dropdown-item" href="../articles/customize-display-only-soc.html">Display Only SOC in the AE-Specific Tables</a></li>
@@ -66,10 +67,10 @@
 <span>  prop_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  diff_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  color <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  ae_col_header <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  diff_label <span class="op">=</span> <span class="st">"Treatment &lt;- Favor -&gt; Placebo"</span>,</span>
-<span>  col_header <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  fig_header <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  show_ae_parameter <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  diff_col_header <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  diff_fig_header <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -133,22 +134,24 @@ for risk difference figure.</p></dd>
 Default value supports up to 4 groups.</p></dd>
 
 
+<dt id="arg-ae-col-header">ae_col_header<a class="anchor" aria-label="anchor" href="#arg-ae-col-header"></a></dt>
+<dd><p>Column header for adverse events item columns.
+If NULL (default) and "par" specified in <code>components</code> from <code><a href="prepare_ae_forestly.html">prepare_ae_forestly()</a></code>, uses "Adverse Event".
+If NULL and "soc" specified in <code>components</code> from <code><a href="prepare_ae_forestly.html">prepare_ae_forestly()</a></code>, uses "System Organ Class" for "soc".</p></dd>
+
+
 <dt id="arg-diff-label">diff_label<a class="anchor" aria-label="anchor" href="#arg-diff-label"></a></dt>
 <dd><p>x-axis label for risk difference.</p></dd>
 
 
-<dt id="arg-col-header">col_header<a class="anchor" aria-label="anchor" href="#arg-col-header"></a></dt>
+<dt id="arg-diff-col-header">diff_col_header<a class="anchor" aria-label="anchor" href="#arg-diff-col-header"></a></dt>
 <dd><p>Column header for risk difference table columns.
 If NULL (default), uses "Risk Difference (%) <br> vs. Reference Group".</p></dd>
 
 
-<dt id="arg-fig-header">fig_header<a class="anchor" aria-label="anchor" href="#arg-fig-header"></a></dt>
+<dt id="arg-diff-fig-header">diff_fig_header<a class="anchor" aria-label="anchor" href="#arg-diff-fig-header"></a></dt>
 <dd><p>Column header for risk difference figure.
 If NULL (default), uses "Risk Difference (%) + 95% CI <br> vs. Reference Group".</p></dd>
-
-
-<dt id="arg-show-ae-parameter">show_ae_parameter<a class="anchor" aria-label="anchor" href="#arg-show-ae-parameter"></a></dt>
-<dd><p>A boolean value to display AE parameter column.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -168,7 +171,7 @@ If NULL (default), uses "Risk Difference (%) + 95% CI <br> vs. Reference Group".
 <span class="r-in"><span>  <span class="fu">format_ae_forestly</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>In observation level data, force group variable 'TRTA' be a factor</span>
 <span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>In observation level data, force group variable 'TRTA' be a factor</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> List of 25</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 26</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ meta                   :List of 7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ population             : chr "apat"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ observation            : chr "safety"</span>
@@ -178,6 +181,7 @@ If NULL (default), uses "Risk Difference (%) + 95% CI <br> vs. Reference Group".
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ group                  : chr [1:3] "Placebo" "Xanomeline Low Dose" "Total"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ reference_group        : num 2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ parameter_order        : Factor w/ 2 levels "any","rel": 1 1 1 1 1 1 1 1 1 1 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ components             : chr "par"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ prop                   :'data.frame':	60 obs. of  3 variables:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ diff                   :'data.frame':	60 obs. of  1 variable:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ n_pop                  :'data.frame':	1 obs. of  3 variables:</span>

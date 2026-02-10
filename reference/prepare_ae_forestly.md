@@ -72,7 +72,7 @@ meta_forestly(
   prepare_ae_forestly()
 #> Warning: In observation level data, force group variable 'TRTA' be a factor
 #> Warning: In observation level data, force group variable 'TRTA' be a factor
-#> List of 18
+#> List of 19
 #>  $ meta           :List of 7
 #>  $ population     : chr "apat"
 #>  $ observation    : chr "safety"
@@ -82,6 +82,7 @@ meta_forestly(
 #>  $ group          : chr [1:3] "Placebo" "Xanomeline Low Dose" "Total"
 #>  $ reference_group: num 2
 #>  $ parameter_order: Factor w/ 2 levels "any","rel": 1 1 1 1 1 1 1 1 1 1 ...
+#>  $ components     : chr "par"
 #>  $ prop           :'data.frame': 60 obs. of  3 variables:
 #>  $ diff           :'data.frame': 60 obs. of  1 variable:
 #>  $ n_pop          :'data.frame': 1 obs. of  3 variables:
