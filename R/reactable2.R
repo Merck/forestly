@@ -157,7 +157,7 @@ reactable2 <- function(
 
     buttons <- c(buttons, list(
       htmltools::tags$button(
-        "Show/Hide Risk Difference Value",
+        "Show/Hide Risk Difference",
         onclick = on_click_diff
       )
     ))

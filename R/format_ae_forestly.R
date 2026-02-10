@@ -38,10 +38,13 @@
 #'   for risk difference figure.
 #' @param color A vector of colors for analysis groups.
 #'   Default value supports up to 4 groups.
+#' @param ae_col_header Column header for adverse events item columns.
+#'   If NULL (default) and "par" specified in `components` from `prepare_ae_forestly()`, uses "Adverse Event".
+#'   If NULL and "soc" specified in `components` from `prepare_ae_forestly()`, uses "System Organ Class" for "soc".
 #' @param diff_label x-axis label for risk difference.
-#' @param col_header Column header for risk difference table columns.
+#' @param diff_col_header Column header for risk difference table columns.
 #'   If NULL (default), uses "Risk Difference (%) <br> vs. Reference Group".
-#' @param fig_header Column header for risk difference figure.
+#' @param diff_fig_header Column header for risk difference figure.
 #'   If NULL (default), uses "Risk Difference (%) + 95% CI <br> vs. Reference Group".
 #'
 #' @return An `outdata` object.
@@ -70,9 +73,10 @@ format_ae_forestly <- function(
     prop_range = NULL,
     diff_range = NULL,
     color = NULL,
+    ae_col_header = NULL,
     diff_label = "Treatment <- Favor -> Placebo",
-    col_header = NULL,
-    fig_header = NULL) {
+    diff_col_header = NULL,
+    diff_fig_header = NULL) {
   display <- tolower(display)
 
   display <- match.arg(
@@ -103,12 +107,20 @@ format_ae_forestly <- function(
   reference_name <- outdata$group[index_reference]
 
   # Set default headers if not provided
-  if (is.null(col_header)) {
-    col_header <- paste0("Risk Difference (%) <br> vs. ", reference_name)
+  if (is.null(ae_col_header)) {
+    if ("par" %in% outdata$components) {
+      ae_col_header <- "Adverse Event"
+    } else if ("soc" %in% outdata$components) {
+      ae_col_header <- "System Organ Class"
+    }
   }
 
-  if (is.null(fig_header)) {
-    fig_header <- paste0("Risk Difference (%) + 95% CI <br> vs. ", reference_name)
+  if (is.null(diff_col_header)) {
+    diff_col_header <- paste0("Risk Difference (%) <br> vs. ", reference_name)
+  }
+
+  if (is.null(diff_fig_header)) {
+    diff_fig_header <- paste0("Risk Difference (%) + 95% CI <br> vs. ", reference_name)
   }
 
   # Input checking
@@ -247,7 +259,7 @@ format_ae_forestly <- function(
     )
   }
   columnGroups[[m_group + 1]] <- reactable::colGroup(
-    name = col_header,
+    name = diff_col_header,
     html = TRUE,
     columns = names(outdata$diff)
   )
@@ -261,7 +273,7 @@ format_ae_forestly <- function(
       show = FALSE
     ),
     name = reactable::colDef(
-      header = "Adverse Events",
+      header = ae_col_header,
       minWidth = width_term, align = "right"
     ),
     soc_name = reactable::colDef(
@@ -338,7 +350,7 @@ format_ae_forestly <- function(
 
   # difference format
   col_diff_fig <- list(diff_fig = reactable::colDef(
-    header = fig_header,
+    header = diff_fig_header,
     defaultSortOrder = "desc",
     width = ifelse("fig_diff" %in% display, width_fig, 0),
     align = "center",

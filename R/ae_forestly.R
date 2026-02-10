@@ -192,9 +192,15 @@ ae_forestly <- function(outdata,
     names(outdata$diff)
   )
 
+  all_diff_cols <- c(diff_cols, "diff_fig")
+  displayed_diff_cols <- intersect(all_diff_cols, c(
+    if ("diff" %in% outdata$display) diff_cols else NULL,
+    if ("fig_diff" %in% outdata$display) "diff_fig" else NULL
+  ))
+
   hidden_cols <- outdata$hidden_column
   if (display_diff_toggle) {
-    hidden_cols <- setdiff(hidden_cols, c(diff_cols, "diff_fig"))
+    hidden_cols <- setdiff(hidden_cols, displayed_diff_cols)
   }
 
   p_reactable <- reactable2(
@@ -204,7 +210,7 @@ ae_forestly <- function(outdata,
     hidden_item = paste0("'", hidden_cols, "'", collapse = ", "),
     soc_toggle = display_soc_toggle,
     diff_toggle = display_diff_toggle,
-    diff_columns = c(diff_cols, "diff_fig"),
+    diff_columns = displayed_diff_cols,
     width = width,
     download = dowload_button,
     searchable = FALSE,
