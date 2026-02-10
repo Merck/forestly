@@ -170,6 +170,7 @@ prepare_ae_forestly <- function(
     order = info$order,
     parameter_order = parameter_order,
     group = res[[1]]$group,
+    components = components,
     reference_group = res[[1]]$reference_group,
     prop = values$prop,
     diff = values$diff,

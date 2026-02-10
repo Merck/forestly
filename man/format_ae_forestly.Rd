@@ -17,10 +17,10 @@ format_ae_forestly(
   prop_range = NULL,
   diff_range = NULL,
   color = NULL,
+  ae_col_header = NULL,
   diff_label = "Treatment <- Favor -> Placebo",
-  col_header = NULL,
-  fig_header = NULL,
-  show_ae_parameter = FALSE
+  diff_col_header = NULL,
+  diff_fig_header = NULL
 )
 }
 \arguments{
@@ -58,15 +58,17 @@ for risk difference figure.}
 \item{color}{A vector of colors for analysis groups.
 Default value supports up to 4 groups.}
 
+\item{ae_col_header}{Column header for adverse events item columns.
+If NULL (default) and "par" specified in \code{components} from \code{prepare_ae_forestly()}, uses "Adverse Event".
+If NULL and "soc" specified in \code{components} from \code{prepare_ae_forestly()}, uses "System Organ Class" for "soc".}
+
 \item{diff_label}{x-axis label for risk difference.}
 
-\item{col_header}{Column header for risk difference table columns.
+\item{diff_col_header}{Column header for risk difference table columns.
 If NULL (default), uses "Risk Difference (\%) \if{html}{\out{<br>}} vs. Reference Group".}
 
-\item{fig_header}{Column header for risk difference figure.
+\item{diff_fig_header}{Column header for risk difference figure.
 If NULL (default), uses "Risk Difference (\%) + 95\% CI \if{html}{\out{<br>}} vs. Reference Group".}
-
-\item{show_ae_parameter}{A boolean value to display AE parameter column.}
 }
 \value{
 An \code{outdata} object.

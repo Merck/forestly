@@ -37,6 +37,7 @@ articles:
   - customize-color
   - customize-ae-specific-columns
   - customize-diff-label
+  - customize-toggle-buttons
   - customize-xlimit
   - customize-width
   - customize-display-only-soc
