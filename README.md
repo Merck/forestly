@@ -80,4 +80,4 @@ The interactive features for safety analysis include:
 ## References
 
 - Paper: [2023 PHUSE US Connect](https://phuse.s3.eu-central-1.amazonaws.com/Archive/2023/Connect/US/Florida/PAP_DV07.pdf)
-- Talk: [2021 R/Pharma Conference](https://rinpharma.com/publication/rinpharma_206/)
+- Talk: [2021 R/Pharma Conference](https://www.youtube.com/watch?v=HICBeSqD6kI)

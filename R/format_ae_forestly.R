@@ -259,7 +259,13 @@ format_ae_forestly <- function(
     )
   }
   columnGroups[[m_group + 1]] <- reactable::colGroup(
-    name = diff_col_header,
+    name = paste0(
+      '<span title="',
+      htmltools::htmlEscape(gsub(" <br> ", " ", diff_col_header, fixed = TRUE)),
+      '">',
+      diff_col_header,
+      '</span>'
+    ),
     html = TRUE,
     columns = names(outdata$diff)
   )
@@ -315,7 +321,10 @@ format_ae_forestly <- function(
     function(x) {
       i <- as.numeric(gsub("diff_", "", x, fixed = TRUE))
       reactable::colDef(
-        header = outdata$group[i],
+        header = htmltools::tags$span(
+          title = outdata$group[i],
+          outdata$group[i]
+        ),
         minWidth = width_diff,
         show = display_diff,
         format = reactable::colFormat(digits = digits)
