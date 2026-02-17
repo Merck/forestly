@@ -1,5 +1,31 @@
 # Changelog
 
+## forestly 0.1.4
+
+### New features
+
+- Add `download_button` argument to
+  [`ae_forestly()`](https://merck.github.io/forestly/reference/ae_forestly.md)
+  to control whether the CSV download button is shown
+  ([\#109](https://github.com/Merck/forestly/issues/109)).
+- Add `ae_label` argument to
+  [`ae_forestly()`](https://merck.github.io/forestly/reference/ae_forestly.md)
+  to customize the label of the AE filter
+  ([\#110](https://github.com/Merck/forestly/issues/110)).
+- Add `display_diff_toggle` argument to
+  [`ae_forestly()`](https://merck.github.io/forestly/reference/ae_forestly.md)
+  to control whether the toggle button for displaying the “diff” column
+  is shown ([\#114](https://github.com/Merck/forestly/issues/114)).
+- Add new vignettes: vignette(“customize-display-only-soc”) and
+  vignette(“customize-toggle-buttons”)
+  ([\#108](https://github.com/Merck/forestly/issues/108),
+  [\#114](https://github.com/Merck/forestly/issues/114)).
+
+### Improvements
+
+- Add a tool tip to the risk-difference column so that the full text is
+  displayed ([\#117](https://github.com/Merck/forestly/issues/117)).
+
 ## forestly 0.1.3
 
 CRAN release: 2025-09-10
