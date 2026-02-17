@@ -9,7 +9,7 @@
 
 ## Improvements
 
--   Add a tool tip to the risk-difference column so that the full text is displayed (#115).
+-   Add a tool tip to the risk-difference column so that the full text is displayed (#117).
 
 # forestly 0.1.3
 
