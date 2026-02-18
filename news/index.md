@@ -2,6 +2,8 @@
 
 ## forestly 0.1.4
 
+CRAN release: 2026-02-18
+
 ### New features
 
 - Add `download_button` argument to
