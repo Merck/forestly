@@ -3,6 +3,7 @@
 ``` r
 library(forestly)
 library(metalite)
+library(dplyr)
 ```
 
 The interactive AE forest plots include AE-specific tables presenting
@@ -11,7 +12,9 @@ intervals (CI), alongside their visualizations. Each type of information
 is displayed in a separate column. In this vignette, we demonstrate how
 to customize the column widths in these tables.
 
-## Step 1: build your metadata
+## General Use
+
+### Step 1: build your metadata
 
 Building interactive AE forest plots starts with constructing the
 metadata. The detailed procedure for building metadata is covered in the
@@ -64,7 +67,7 @@ meta <- meta_adam(population = adsl, observation = adae) |>
   meta_build()
 ```
 
-## Step 2: adjusting column widths
+### Step 2: adjusting column widths
 
 Users can control the column widths using the following arguments:
 
@@ -98,6 +101,108 @@ meta |>
     width_fig = 150,
     # vertical space between legend and the table
     footer_space = 100
+  ) |>
+  ae_forestly()
+```
+
+AE Criteria
+
+Incidence (%) in One or More Treatment Groups
+
+Show/Hide SOC column
+
+## Multiple, Long Treatment Labels Example
+
+### Step 1: build example metadata
+
+The datasets used here include five treatment arms with long labels.
+
+``` r
+adsl <- forestly_adsl
+adae <- forestly_adae
+
+set.seed(1234)
+adsl$TRTA <- sample(
+  x = c("Control Arm A",
+        "Control Arm B",
+        "Active Arm (Mono): Drug X",
+        "Active Arm (Comb): Drug X + Drug A + Drug B + Drug C",
+        "Active Arm: Cumulative Drug X"),
+  size = nrow(adsl),
+  replace = TRUE
+)
+adae <- adae |> 
+  dplyr::select(-TRTA) |>
+  dplyr::left_join(
+    adsl,
+    by = c("USUBJID"),
+    suffix = c("", ".y")
+  ) |>
+  dplyr::select(-ends_with(".y"))
+
+adsl$TRTA <- factor(
+  adsl$TRTA,
+  levels = c("Active Arm: Cumulative Drug X",
+             "Active Arm (Mono): Drug X",
+             "Active Arm (Comb): Drug X + Drug A + Drug B + Drug C",
+             "Control Arm A",
+             "Control Arm B")
+)
+adae$TRTA <- factor(
+  adae$TRTA,
+  levels = c("Active Arm: Cumulative Drug X",
+             "Active Arm (Mono): Drug X",
+             "Active Arm (Comb): Drug X + Drug A + Drug B + Drug C",
+             "Control Arm A",
+             "Control Arm B")
+)
+
+meta <- meta_adam(population = adsl, observation = adae) |>
+  define_plan(plan = plan(
+    analysis = "ae_forestly",
+    population = "apat",
+    observation = "apat",
+    parameter = "any;drug-related"
+  )) |>
+  define_analysis(name = "ae_forestly", label = "Interactive Forest Plot") |>
+  define_population(
+    name = "apat", group = "TRTA", id = "USUBJID",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_observation(
+    name = "apat", group = "TRTA",
+    subset = SAFFL == "Y", label = "All Patient as Treated"
+  ) |>
+  define_parameter(
+    name = "any",
+    subset = NULL,
+    label = "Any AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  define_parameter(
+    name = "drug-related",
+    subset = toupper(AREL) == "RELATED",
+    label = "Drug-related AEs",
+    var = "AEDECOD", soc = "AEBODSYS"
+  ) |>
+  meta_build()
+```
+
+### Step 2: adjusting column widths
+
+In this example, we adjust the column widths to accommodate the long
+treatment labels and multiple treatment arms. To ensure sufficient space
+for the legend, the `width_fig` is set to a larger value and the
+`footer_space` is increased.
+
+``` r
+meta |>
+  prepare_ae_forestly() |>
+  format_ae_forestly(
+    footer_space = 210,
+    width_fig = 420,
+    display = c("n", "prop", "fig_prop", "fig_diff", "diff"),
+    color = c("#66203A", "#00857C", "#6ECEB2", "#BFED33", "#DFEd31")
   ) |>
   ae_forestly()
 ```
