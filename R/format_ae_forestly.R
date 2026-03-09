@@ -253,7 +253,13 @@ format_ae_forestly <- function(
   columnGroups <- list()
   for (i in 1:m_group) {
     columnGroups[[i]] <- reactable::colGroup(
-      name = paste0(outdata$group[i], "<br> (N=", outdata$n_pop[i], ")"),
+      name = paste0(
+        '<span title="',
+        paste0(outdata$group[i], " (N=", outdata$n_pop[i], ")"),
+        '">',
+        paste0(outdata$group[i], "<br> (N=", outdata$n_pop[i], ")"),
+        '</span>'
+      ),
       html = TRUE,
       columns = c(name_n[i], name_prop[i])
     )
