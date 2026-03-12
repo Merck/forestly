@@ -21,7 +21,7 @@
 #' @param outdata An `outdata` object created by [format_ae_forestly()].
 #' @param display_soc_toggle A boolean value to display SOC toggle button.
 #' @param display_diff_toggle A boolean value to display risk difference toggle button.
-#' @param filter A character value of the filter variable.
+#' @param filter A character value of the filter variable. If NULL, the slider bar will not be displayed.
 #' @param filter_label A character value of the label for slider bar.
 #' @param filter_range A numeric vector of length 2 for the range of the slider bar.
 #' @param ae_label A character value of the label for criteria.
@@ -57,39 +57,47 @@ ae_forestly <- function(outdata,
                         width = 1400,
                         max_page = NULL,
                         dowload_button = FALSE) {
-  filter <- match.arg(filter)
+  # Set filter parameter
+  if (!is.null(filter)) {
+    display_filter = TRUE
+    filter <- match.arg(filter, c("prop", "n"))
+  } else {
+    display_filter = FALSE
+  }
 
   # Handle filter_range parameter
-  if (!is.null(filter_range)) {
-    # User provided filter_range
-    if (length(filter_range) == 1) {
-      # If only one value provided, use it as max with min=0
-      filter_range <- c(0, filter_range[1])
-    } else if (length(filter_range) == 2) {
-      # Use as provided
-      filter_range <- filter_range
-    } else {
-      stop("filter_range must be NULL, a single numeric value, or a numeric vector of length 2")
-    }
-  } else {
-    # Auto-detect range from data
-    if (filter == "prop") {
-      # For proportion, get max from hide_prop column
-      max_val <- max(outdata$tbl$hide_prop, na.rm = TRUE)
-      # Round up to nearest 10 for better UX
-      max_val <- ceiling(max_val / 10) * 10
-      # Ensure at least 100 for proportion
-      filter_range <- c(0, max(100, max_val))
-    } else if (filter == "n") {
-      # For count, get max from hide_n column
-      max_val <- max(outdata$tbl$hide_n, na.rm = TRUE)
-      # Round up to nearest 10 (or 5 if max is small)
-      if (max_val <= 20) {
-        max_val <- ceiling(max_val / 5) * 5
+  if (display_filter) {
+    if (!is.null(filter_range)) {
+      # User provided filter_range
+      if (length(filter_range) == 1) {
+        # If only one value provided, use it as max with min=0
+        filter_range <- c(0, filter_range[1])
+      } else if (length(filter_range) == 2) {
+        # Use as provided
+        filter_range <- filter_range
       } else {
-        max_val <- ceiling(max_val / 10) * 10
+        stop("filter_range must be NULL, a single numeric value, or a numeric vector of length 2")
       }
-      filter_range <- c(0, max_val)
+    } else {
+      # Auto-detect range from data
+      if (filter == "prop") {
+        # For proportion, get max from hide_prop column
+        max_val <- max(outdata$tbl$hide_prop, na.rm = TRUE)
+        # Round up to nearest 10 for better UX
+        max_val <- ceiling(max_val / 10) * 10
+        # Ensure at least 100 for proportion
+        filter_range <- c(0, max(100, max_val))
+      } else if (filter == "n") {
+        # For count, get max from hide_n column
+        max_val <- max(outdata$tbl$hide_n, na.rm = TRUE)
+        # Round up to nearest 10 (or 5 if max is small)
+        if (max_val <= 20) {
+          max_val <- ceiling(max_val / 5) * 5
+        } else {
+          max_val <- ceiling(max_val / 10) * 10
+        }
+        filter_range <- c(0, max_val)
+      }
     }
   }
 
@@ -157,36 +165,40 @@ ae_forestly <- function(outdata,
 
   # Make a select list
   # Make a slider bar of the incidence percentage
-  if (filter == "prop") {
-    filter_subject <- crosstalk::filter_slider(
-      id = "filter_subject",
-      label = filter_label,
-      sharedData = tbl,
-      column = ~hide_prop, # whose values will be used for this slider
-      step = 1, # specifies interval between each select-able value on the slider
-      width = 250, # width of the slider control
-      min = filter_range[1], # the leftmost value of the slider
-      max = filter_range[2] # the rightmost value of the slider
-    )
-  }
+  if (display_filter) {
+    if (filter == "prop") {
+      filter_subject <- crosstalk::filter_slider(
+        id = "filter_subject",
+        label = filter_label,
+        sharedData = tbl,
+        column = ~hide_prop, # whose values will be used for this slider
+        step = 1, # specifies interval between each select-able value on the slider
+        width = 250, # width of the slider control
+        min = filter_range[1], # the leftmost value of the slider
+        max = filter_range[2] # the rightmost value of the slider
+      )
+    }
 
-  if (filter == "n") {
-    filter_subject <- crosstalk::filter_slider(
-      id = "filter_subject",
-      label = filter_label,
-      sharedData = tbl,
-      column = ~hide_n,
-      step = 1,
-      width = 250,
-      min = filter_range[1], # the leftmost value of the slider
-      max = filter_range[2] # the rightmost value of the slider
-    )
-  }
+    if (filter == "n") {
+      filter_subject <- crosstalk::filter_slider(
+        id = "filter_subject",
+        label = filter_label,
+        sharedData = tbl,
+        column = ~hide_n,
+        step = 1,
+        width = 250,
+        min = filter_range[1], # the leftmost value of the slider
+        max = filter_range[2] # the rightmost value of the slider
+      )
+    }
 
-  # Set the slider attributes to match our filter_range
-  filter_subject$children[[2]]$attribs$`data-from` <- filter_range[1]
-  filter_subject$children[[2]]$attribs$`data-to` <- filter_range[2]
-  filter_subject$children[[2]]$attribs$`data-max` <- filter_range[2]
+    # Set the slider attributes to match our filter_range
+    filter_subject$children[[2]]$attribs$`data-from` <- filter_range[1]
+    filter_subject$children[[2]]$attribs$`data-to` <- filter_range[2]
+    filter_subject$children[[2]]$attribs$`data-max` <- filter_range[2]
+  } else {
+    filter_subject <- NULL
+  }
 
   diff_cols <- c(
     names(outdata$diff)
