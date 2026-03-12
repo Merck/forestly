@@ -36,7 +36,8 @@ ae_forestly(
 
 - filter:
 
-  A character value of the filter variable.
+  A character value of the filter variable. If NULL, the slider bar will
+  not be displayed.
 
 - filter_label:
 
