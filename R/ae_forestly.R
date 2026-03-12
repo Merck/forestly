@@ -60,9 +60,7 @@ ae_forestly <- function(outdata,
   # Set filter parameter
   if (!is.null(filter)) {
     display_filter = TRUE
-    if (!filter %in% c("prop", "n")) {
-      stop("filter must be either 'prop' for proportion or 'n' for count")
-    }
+    filter <- match.arg(filter, c("prop", "n"))
   } else {
     display_filter = FALSE
   }
