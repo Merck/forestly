@@ -8,7 +8,7 @@ ae_forestly(
   outdata,
   display_soc_toggle = TRUE,
   display_diff_toggle = FALSE,
-  filter = c("prop", "n"),
+  filter = NULL,
   filter_label = NULL,
   filter_range = NULL,
   ae_label = NULL,
@@ -24,7 +24,7 @@ ae_forestly(
 
 \item{display_diff_toggle}{A boolean value to display risk difference toggle button.}
 
-\item{filter}{A character value of the filter variable.}
+\item{filter}{A character value of the filter variable. If NULL, the slider bar will not be displayed.}
 
 \item{filter_label}{A character value of the label for slider bar.}
 
