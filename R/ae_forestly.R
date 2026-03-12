@@ -50,7 +50,7 @@
 ae_forestly <- function(outdata,
                         display_soc_toggle = TRUE,
                         display_diff_toggle = FALSE,
-                        filter = NULL,
+                        filter = c("prop", "n"),
                         filter_label = NULL,
                         filter_range = NULL,
                         ae_label = NULL,
