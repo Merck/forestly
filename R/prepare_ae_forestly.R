@@ -47,7 +47,10 @@ prepare_ae_forestly <- function(
       "USUBJID", "SITEID", "SEX", "RACE", "AGE", "ASTDY", "AESER",
       "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"
     ),
-    ae_listing_unique = FALSE) {
+    ae_listing_unique = FALSE,
+    bisection = 1e2,
+    ...
+    ) {
   if (is.null(population)) {
     if (length(meta$population) == 1) {
       population <- meta$population[[1]]$name
@@ -103,7 +106,10 @@ prepare_ae_forestly <- function(
       components = components,
       reference_group = reference_group
     ) |>
-      metalite.ae::extend_ae_specific_inference() |>
+      metalite.ae::extend_ae_specific_inference(
+        bisection = bisection,
+        ...
+      ) |>
       collect_ae_listing(display = ae_listing_display) |>
       format_ae_listing(display_unique_records = ae_listing_unique)
   })
