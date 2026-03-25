@@ -13,7 +13,9 @@ prepare_ae_forestly(
   reference_group = NULL,
   ae_listing_display = c("USUBJID", "SITEID", "SEX", "RACE", "AGE", "ASTDY", "AESER",
     "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"),
-  ae_listing_unique = FALSE
+  ae_listing_unique = FALSE,
+  bisection = 100,
+  ...
 )
 }
 \arguments{
