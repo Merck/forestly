@@ -30,7 +30,7 @@ The term name is used as key to link information.}
 \item{parameter}{A character value of parameter term name.
 The term name is used as key to link information.}
 
-\item{components}{A character vector of components name.}
+\item{components}{A character vector of components name, default value is \code{"par"}.}
 
 \item{reference_group}{An integer to indicate reference group.
 Default is 2 if there are 2 groups, otherwise, the default is 1.}
@@ -40,6 +40,10 @@ on AE listing table.}
 
 \item{ae_listing_unique}{A logical value to display only unique records
 on AE listing table.}
+
+\item{bisection}{A numeric value. A control parameter for the bisection
+method used to calculate confidence the lower and upper confidence
+interval bounds for the risk. The default value is \code{1e2}.}
 }
 \value{
 An \code{outdata} object.

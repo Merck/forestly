@@ -19,11 +19,23 @@
 #' Prepare datasets for interactive forest plot
 #'
 #' @inheritParams metalite.ae::prepare_ae_specific
+#' @param meta A metadata object created by metalite.
+#' @param population A character value of population term name.
+#'   The term name is used as key to link information.
+#' @param observation A character value of observation term name.
+#'   The term name is used as key to link information.
+#' @param parameter A character value of parameter term name.
+#'   The term name is used as key to link information.
+#' @param components A character vector of components name, default value is `"par"`.
+#' @param reference_group An integer to indicate reference group.
+#'   Default is 2 if there are 2 groups, otherwise, the default is 1.
 #' @param ae_listing_display A vector of name of variables used to display
 #'   on AE listing table.
 #' @param ae_listing_unique A logical value to display only unique records
 #'   on AE listing table.
-#'
+#' @param bisection A numeric value. A control parameter for the bisection
+#'   method used to calculate confidence the lower and upper confidence
+#'   interval bounds for the risk. The default value is `1e2`.
 #' @return An `outdata` object.
 #'
 #' @export
