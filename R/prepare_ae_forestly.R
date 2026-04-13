@@ -64,6 +64,23 @@ prepare_ae_forestly <- function(
     }
   }
 
+  if (population == observation) {
+    if (any(!meta$population[[population]]$var %in% names(meta$data_observation))) {
+      stop(paste0(
+        "When the same term is specified for population and observation, ",
+        "the variable specified in population should be included in the observation dataset."
+        ))
+    }
+  }
+
+  if (any(!ae_listing_display %in% names(meta$data_observation))) {
+    warning(paste0(
+      "The variables specified in ae_listing_display should be included in the observation dataset. ",
+      "Only the variables included in the observation dataset will be displayed on AE listing table."
+      ))
+    ae_listing_display <- ae_listing_display[ae_listing_display %in% names(meta$data_observation)]
+  }
+
   if (is.null(parameter)) {
     parameters <- names(meta$parameter)
 
