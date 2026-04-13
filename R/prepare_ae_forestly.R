@@ -36,6 +36,7 @@
 #' @param bisection A numeric value. A control parameter for the bisection
 #'   method used to calculate confidence the lower and upper confidence
 #'   interval bounds for the risk. The default value is `1e2`.
+#' @param ... Additional arguments passed to [metalite.ae::rate_compare_sum()].
 #' @return An `outdata` object.
 #'
 #' @export
