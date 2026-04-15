@@ -64,6 +64,24 @@ prepare_ae_forestly <- function(
     }
   }
 
+  # Temporary Processing
+  data_observation <- meta$data_observation |>
+    merge(
+      meta$data_population,
+      by = "USUBJID",
+      all.x = TRUE,
+      suffixes = c("", ".pop")
+    )
+  meta$data_observation <- data_observation[, !grepl("\\.pop$", names(data_observation))]
+
+  if (any(!ae_listing_display %in% names(meta$data_observation))) {
+    warning(paste0(
+      "The variables specified in ae_listing_display should be included in the input dataset. ",
+      "Only the variables included in the input dataset will be displayed on AE listing table."
+      ))
+    ae_listing_display <- ae_listing_display[ae_listing_display %in% names(meta$data_observation)]
+  }
+
   if (is.null(parameter)) {
     parameters <- names(meta$parameter)
 
