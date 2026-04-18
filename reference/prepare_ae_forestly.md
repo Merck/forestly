@@ -14,7 +14,9 @@ prepare_ae_forestly(
   reference_group = NULL,
   ae_listing_display = c("USUBJID", "SITEID", "SEX", "RACE", "AGE", "ASTDY", "AESER",
     "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"),
-  ae_listing_unique = FALSE
+  ae_listing_unique = FALSE,
+  bisection = 100,
+  ...
 )
 ```
 
@@ -41,7 +43,7 @@ prepare_ae_forestly(
 
 - components:
 
-  A character vector of components name.
+  A character vector of components name, default value is `"par"`.
 
 - reference_group:
 
@@ -55,6 +57,17 @@ prepare_ae_forestly(
 - ae_listing_unique:
 
   A logical value to display only unique records on AE listing table.
+
+- bisection:
+
+  A numeric value. A control parameter for the bisection method used to
+  calculate confidence the lower and upper confidence interval bounds
+  for the risk. The default value is `1e2`.
+
+- ...:
+
+  Additional arguments passed to
+  [`metalite.ae::rate_compare_sum()`](https://merck.github.io/metalite.ae/reference/rate_compare_sum.html).
 
 ## Value
 
