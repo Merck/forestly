@@ -30,7 +30,7 @@ The term name is used as key to link information.}
 \item{parameter}{A character value of parameter term name.
 The term name is used as key to link information.}
 
-\item{components}{A character vector of components name, default value is \code{"par"}.}
+\item{components}{A character vector of components name.}
 
 \item{reference_group}{An integer to indicate reference group.
 Default is 2 if there are 2 groups, otherwise, the default is 1.}

@@ -208,11 +208,17 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   }
   attr(res[["Participant_ID"]], "label") <- NULL
 
-  res[["Gender"]] <- tools::toTitleCase(res[["SEX"]])
+  if ("SEX" %in% toupper(names(res))) {
+    res[["Gender"]] <- tools::toTitleCase(res[["SEX"]])
+  }
 
-  res[["Race"]] <- tools::toTitleCase(tolower(res[["RACE"]]))
+  if ("RACE" %in% toupper(names(res))) {
+    res[["Race"]] <- tools::toTitleCase(tolower(res[["RACE"]]))
+  }
 
-  res[["Age"]] <- res[["AGE"]]
+  if ("AGE" %in% toupper(names(res))) {
+    res[["Age"]] <- res[["AGE"]]
+  }
 
   res[["Treatment_Group"]] <- res[[obs_group]]
 
