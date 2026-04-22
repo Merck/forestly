@@ -43,7 +43,7 @@ prepare_ae_forestly(
 
 - components:
 
-  A character vector of components name, default value is `"par"`.
+  A character vector of components name.
 
 - reference_group:
 
