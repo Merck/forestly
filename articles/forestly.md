@@ -94,12 +94,20 @@ changes as needed.
 ``` r
 meta <- meta |>
   define_population(
-    name = "apat", group = "TRTA", id = "USUBJID",
-    subset = SAFFL == "Y", label = "All Patient as Treated"
+    name = "apat", 
+    group = "TRTA", 
+    id = "USUBJID",
+    subset = SAFFL == "Y", 
+    label = "All Patient as Treated",
+    var = c("USUBJID", "SAFFL", "TRTA", "SITEID", "SEX", "RACE", "AGE")
   ) |>
   define_observation(
-    name = "apat", group = "TRTA",
-    subset = SAFFL == "Y", label = "All Patient as Treated"
+    name = "apat", 
+    group = "TRTA",
+    subset = SAFFL == "Y", 
+    label = "All Patient as Treated",
+    var = c("USUBJID", "SAFFL", "TRTA", "AEDECOD", "AEBODSYS", 
+            "AEREL", "AESER", "AEOUT", "AEACN", "AESDTH", "ASTDT", "AENDT")
   )
 ```
 
@@ -113,7 +121,8 @@ meta <- meta |>
     name = "any",
     subset = NULL,
     label = "Any AEs",
-    var = "AEDECOD", soc = "AEBODSYS"
+    var = "AEDECOD", 
+    soc = "AEBODSYS"
   )
 ```
 
@@ -124,9 +133,10 @@ For drug related AEs (`"drug-related"`), its filter is
 meta <- meta |>
   define_parameter(
     name = "drug-related",
-    subset = toupper(AREL) == "RELATED",
+    subset = toupper(AEREL) %in% c("PROBABLE", "POSSIBLE"),
     label = "Drug-related AEs",
-    var = "AEDECOD", soc = "AEBODSYS"
+    var = "AEDECOD", 
+    soc = "AEBODSYS"
   )
 ```
 
@@ -138,13 +148,15 @@ meta <- meta |>
     name = "serious",
     subset = AESER == "Y",
     label = "Serious AEs",
-    var = "AEDECOD", soc = "AEBODSYS"
+    var = "AEDECOD", 
+    soc = "AEBODSYS"
   ) |>
   define_parameter(
     name = "drug-related-serious",
-    subset = AESER == "Y" & AEREL %in% c("PROBABLE", "POSSIBLE"),
+    subset = AESER == "Y" & toupper(AEREL) %in% c("PROBABLE", "POSSIBLE"),
     label = "Drug-related serious AEs",
-    var = "AEDECOD", soc = "AEBODSYS"
+    var = "AEDECOD", 
+    soc = "AEBODSYS"
   )
 ```
 
