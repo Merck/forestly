@@ -95,12 +95,15 @@ propercase <- function(x) {
   }
 }
 
-#' Convert character strings or factor to title case
+#' Convert character strings or factor to title case (optimized with memoization)
 #'
-#' This function provides a robust wrapper around tools::toTitleCase that handles
+#' This function provides a fast implementation of title case conversion that handles
 #' both character vectors and factors. For factors, it preserves the factor structure
 #' by modifying only the levels, which maintains the original ordering.
-#' The function automatically converts input to lowercase before applying title case.
+#' This optimized version uses memoization to cache converted values, dramatically
+#' speeding up performance for large datasets with repeated values.
+#'
+#' Based on Yihui Xie's profiling and optimization approach for issue #129.
 #'
 #' @param x A character vector or factor.
 #' @param lower Logical indicating whether to convert to lowercase first (default TRUE).
@@ -114,33 +117,63 @@ propercase <- function(x) {
 #' titlecase(factor(c("tHEre is oNe", "tHAt is tWo", "heRe is tHRee"))) # factor
 #' titlecase(c("F", "M")) # char vector
 #' titlecase(factor(c("F", "M"))) # factor
-titlecase <- function(x, lower = TRUE) {
-  if (is.factor(x)) {
-    # For factors, apply title case to levels to preserve factor structure
-    if (lower) {
-      levels(x) <- tools::toTitleCase(tolower(levels(x)))
-    } else {
-      levels(x) <- tools::toTitleCase(levels(x))
+titlecase <- local({
+  # Memoized version of tools::toTitleCase with preprocessing
+  # Maintains separate caches for lower=TRUE and lower=FALSE cases
+  cache_lower_true <- list()
+  cache_lower_false <- list()
+
+  function(x, lower = TRUE) {
+    # Helper function to apply memoized title case
+    memoized_titlecase <- function(text, to_lower = TRUE) {
+      if (length(text) == 0) return(character(0))
+
+      # Choose appropriate cache
+      cache <- if (to_lower) cache_lower_true else cache_lower_false
+
+      # Preprocess text if needed
+      if (to_lower) {
+        text <- tolower(text)
+      }
+
+      # Find values not yet in cache
+      not_cached <- !text %in% names(cache)
+
+      if (any(not_cached)) {
+        # Get unique values that need conversion
+        unique_new <- unique(text[not_cached])
+
+        # Convert using tools::toTitleCase and update cache
+        converted <- tools::toTitleCase(unique_new)
+        names(converted) <- unique_new
+
+        # Update the appropriate cache
+        if (to_lower) {
+          cache_lower_true <<- c(cache_lower_true, as.list(converted))
+        } else {
+          cache_lower_false <<- c(cache_lower_false, as.list(converted))
+        }
+
+        # Update local cache reference
+        cache <- if (to_lower) cache_lower_true else cache_lower_false
+      }
+
+      # Return cached results
+      unlist(cache[text], use.names = FALSE)
     }
-    # Return as character to match expected output type
-    return(as.character(x))
-  } else if (is.character(x)) {
-    # For character vectors, apply title case directly
-    if (lower) {
-      return(tools::toTitleCase(tolower(x)))
+
+    if (is.factor(x)) {
+      # For factors, apply title case to levels to preserve factor structure
+      levels(x) <- memoized_titlecase(levels(x), to_lower = lower)
+      # Return as character to match expected output type
+      return(as.character(x))
     } else {
-      return(tools::toTitleCase(x))
-    }
-  } else {
-    # For other types, convert to character first then apply title case
-    x_char <- as.character(x)
-    if (lower) {
-      return(tools::toTitleCase(tolower(x_char)))
-    } else {
-      return(tools::toTitleCase(x_char))
+      # For character vectors and other types, convert to character and apply title case
+      x_char <- as.character(x)
+      return(memoized_titlecase(x_char, to_lower = lower))
     }
   }
-}
+})
 
 #' Format AE listing analysis
 #'
@@ -209,11 +242,11 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   attr(res[["Participant_ID"]], "label") <- NULL
 
   if ("SEX" %in% toupper(names(res))) {
-    res[["Gender"]] <- tools::toTitleCase(res[["SEX"]])
+    res[["Gender"]] <- titlecase(res[["SEX"]], lower = FALSE)
   }
 
   if ("RACE" %in% toupper(names(res))) {
-    res[["Race"]] <- tools::toTitleCase(tolower(res[["RACE"]]))
+    res[["Race"]] <- titlecase(res[["RACE"]], lower = TRUE)
   }
 
   if ("AGE" %in% toupper(names(res))) {
@@ -226,7 +259,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
 
   # Onset epoch
   if ("EPOCH" %in% toupper(names(res))) {
-    res[["Onset_Epoch"]] <- tools::toTitleCase(tolower(res[["EPOCH"]])) # propcase the EPOCH
+    res[["Onset_Epoch"]] <- titlecase(res[["EPOCH"]], lower = TRUE) # propcase the EPOCH
   }
 
   # Relative day of onset (ASTDY)
@@ -244,7 +277,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   # Duration
   if ("ADURN" %in% toupper(names(res)) & "ADURU" %in% toupper(names(res))) {
     res[["Duration"]] <- paste(ifelse(is.na(res[["ADURN"]]), "", as.character(res[["ADURN"]])),
-      tools::toTitleCase(tolower(res[["ADURU"]])),
+      titlecase(res[["ADURU"]], lower = TRUE),
       sep = " "
     ) # AE duration with unit
 
@@ -280,7 +313,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   # AE related
   if ("AEREL" %in% toupper(names(res))) {
     res[["Related"]] <- ifelse(res[["AEREL"]] == "RELATED", "Y", ifelse(
-      toupper(res[["AEREL"]]) == "NOT RELATED", "N", tools::toTitleCase(tolower(res[["AEREL"]]))
+      toupper(res[["AEREL"]]) == "NOT RELATED", "N", titlecase(res[["AEREL"]], lower = TRUE)
     ))
   }
 
@@ -295,7 +328,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
           "DOSE INCREASED" = "Increased",
           "NOT APPLICABLE" = "N/A",
           "UNKNOWN" = "Unknown",
-          tools::toTitleCase(tolower(res[["AEACN"]][i]))
+          titlecase(res[["AEACN"]][i], lower = TRUE)
         )
       }
     } else {
@@ -312,7 +345,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
           "RECOVERING/RESOLVING" = "Resolving",
           "RECOVERED/RESOLVED WITH SEQUELAE" = "Sequelae",
           "NOT RECOVERED/NOT RESOLVED" = "Not Resolved",
-          tools::toTitleCase(tolower(res[["AEOUT"]][i]))
+          titlecase(res[["AEOUT"]][i], lower = TRUE)
         )
       }
     } else {
