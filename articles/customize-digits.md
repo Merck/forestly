@@ -1,6 +1,7 @@
 # Adjusting Decimal Precision in Displayed Data
 
 ``` r
+
 library(forestly)
 library(metalite)
 ```
@@ -19,6 +20,7 @@ Therefore, in this vignette, we will skip those details and directly use
 the metadata created there.
 
 ``` r
+
 adsl <- forestly_adsl
 adae <- forestly_adae
 
@@ -72,6 +74,7 @@ decimal place. In the example below, we demonstrate how to increase this
 to two decimal places.
 
 ``` r
+
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly(digits = 2) |>

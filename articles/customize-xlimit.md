@@ -1,6 +1,7 @@
 # Customizing Plot Limits for AE Proportions and Differences
 
 ``` r
+
 library(forestly)
 library(metalite)
 ```
@@ -20,6 +21,7 @@ Therefore, in this vignette, we will skip those details and directly use
 the metadata created there.
 
 ``` r
+
 adsl <- forestly_adsl
 adae <- forestly_adae
 
@@ -82,6 +84,7 @@ Please note that if the specified range does not fully encompass the
 observed minimum or maximum values, a warning message will be displayed.
 
 ``` r
+
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly(prop_range = c(-0.5, 30), diff_range = c(-10, 35)) |>

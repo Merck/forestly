@@ -53,6 +53,7 @@ tables with Plotly.js for interactive visualizations.
 ### Common Commands
 
 ``` r
+
 # Load all functions for development
 devtools::load_all()
 

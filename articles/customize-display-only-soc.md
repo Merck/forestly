@@ -1,6 +1,7 @@
 # Display Only SOC in the AE-Specific Tables
 
 ``` r
+
 library(forestly)
 library(metalite)
 ```
@@ -19,6 +20,7 @@ Therefore, in this vignette, we will skip those details and directly use
 the metadata created there.
 
 ``` r
+
 adsl <- forestly_adsl
 adae <- forestly_adae
 
@@ -72,6 +74,7 @@ In the example below, we display only SOC terms in the forest plot, so
 the “Adverse Events” column contains only SOC terms in the table.
 
 ``` r
+
 meta |>
   prepare_ae_forestly(components = "soc") |>
   format_ae_forestly() |>

@@ -25,6 +25,7 @@ the `forestly` R package. We further factorize the actual arm variable,
 as the reference group.
 
 ``` r
+
 library(metalite)
 library(forestly)
 
@@ -51,6 +52,7 @@ To begin, we input the `adsl` data as the population data and the `adae`
 data as the observation data.
 
 ``` r
+
 meta <- meta_adam(population = adsl, observation = adae)
 ```
 
@@ -66,6 +68,7 @@ AE-specific tables:
   take the APaT for both observation and observation.
 
 ``` r
+
 meta <- meta |>
   define_plan(plan = plan(
     analysis = "ae_forestly",
@@ -80,6 +83,7 @@ details of `analysis = "ae_forestly"` by providing its label for
 display.
 
 ``` r
+
 meta <- meta |>
   define_analysis(name = "ae_forestly", label = "Interactive Forest Plot")
 ```
@@ -92,6 +96,7 @@ different population flags, grouping variables, or labels, they can make
 changes as needed.
 
 ``` r
+
 meta <- meta |>
   define_population(
     name = "apat", 
@@ -116,6 +121,7 @@ Next, we specify the details of
 AEs (`"any"`), their is no filter applied.
 
 ``` r
+
 meta <- meta |>
   define_parameter(
     name = "any",
@@ -130,6 +136,7 @@ For drug related AEs (`"drug-related"`), its filter is
 `AEREL %in% c("PROBABLE", "POSSIBLE")`.
 
 ``` r
+
 meta <- meta |>
   define_parameter(
     name = "drug-related",
@@ -143,6 +150,7 @@ meta <- meta |>
 Similarly, we define serious AE and drug related serious AEs.
 
 ``` r
+
 meta <- meta |>
   define_parameter(
     name = "serious",
@@ -165,6 +173,7 @@ Finally, we build the metadata by running the
 function.
 
 ``` r
+
 meta <- meta |> meta_build()
 ```
 
@@ -181,6 +190,7 @@ takes care of formating, and the
 function realize the interactivity.
 
 ``` r
+
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly() |>

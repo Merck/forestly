@@ -1,6 +1,7 @@
 # Adjusting Column Widths for Optimal Layout
 
 ``` r
+
 library(forestly)
 library(metalite)
 library(dplyr)
@@ -24,6 +25,7 @@ Therefore, in this vignette, we will skip those details and directly use
 the metadata created there.
 
 ``` r
+
 adsl <- forestly_adsl
 adae <- forestly_adae
 
@@ -89,6 +91,7 @@ display. Users are encouraged to adjust these widths to optimize the
 table layout for their preferred screen size and readability.
 
 ``` r
+
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly(
@@ -118,6 +121,7 @@ Show/Hide SOC column
 The datasets used here include five treatment arms with long labels.
 
 ``` r
+
 adsl <- forestly_adsl
 adae <- forestly_adae
 
@@ -196,6 +200,7 @@ for the legend, the `width_fig` is set to a larger value and the
 `footer_space` is increased.
 
 ``` r
+
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly(

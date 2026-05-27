@@ -1,6 +1,7 @@
 # Personalized Color Choices in Data Visualization
 
 ``` r
+
 library(forestly)
 library(metalite)
 ```
@@ -19,6 +20,7 @@ Therefore, in this vignette, we will skip those details and directly use
 the metadata created there.
 
 ``` r
+
 adsl <- forestly_adsl
 adae <- forestly_adae
 
@@ -77,6 +79,7 @@ more than 4 arms, we recommend users define their own color settings to
 ensure clear visualization.
 
 ``` r
+
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly(color = c("black", "grey60", "grey40")) |>

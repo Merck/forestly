@@ -1,6 +1,7 @@
 # Add/Hide Columns in the AE-Specific Tables
 
 ``` r
+
 library(forestly)
 library(metalite)
 ```
@@ -26,6 +27,7 @@ Therefore, in this vignette, we will skip those details and directly use
 the metadata created there.
 
 ``` r
+
 adsl <- forestly_adsl
 adae <- forestly_adae
 
@@ -96,6 +98,7 @@ In the example below, we demonstrate how to add a total column alongside
 the default display settings.
 
 ``` r
+
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff", "total")) |>

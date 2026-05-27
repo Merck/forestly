@@ -1,6 +1,7 @@
 # Toggle Risk Difference Columns in the AE-Specific Tables
 
 ``` r
+
 library(forestly)
 library(metalite)
 ```
@@ -20,6 +21,7 @@ Therefore, in this vignette, we will skip those details and directly use
 the metadata created there.
 
 ``` r
+
 adsl <- forestly_adsl
 adae <- forestly_adae
 
@@ -78,6 +80,7 @@ the difference values (`diff`) and the risk difference visualization
 (`fig_diff`).
 
 ``` r
+
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff", "diff")) |>

@@ -1,6 +1,7 @@
 # Legend Customization in AE Proportion Difference Visualizations
 
 ``` r
+
 library(forestly)
 library(metalite)
 ```
@@ -22,6 +23,7 @@ Therefore, in this vignette, we will skip those details and directly use
 the metadata created there.
 
 ``` r
+
 adsl <- forestly_adsl
 adae <- forestly_adae
 
@@ -78,6 +80,7 @@ encourage users to tailor this label to best reflect the context of
 their specific study.
 
 ``` r
+
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly(diff_label = "New Drug <- Favor -> SoC", ) |>

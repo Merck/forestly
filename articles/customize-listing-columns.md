@@ -1,6 +1,7 @@
 # Selecting Columns to Display in AE Listings
 
 ``` r
+
 library(forestly)
 library(metalite)
 ```
@@ -19,6 +20,7 @@ Therefore, in this vignette, we will skip those details and directly use
 the metadata created there.
 
 ``` r
+
 adsl <- forestly_adsl
 adae <- forestly_adae
 
@@ -75,6 +77,7 @@ gender, race, and age, so the listing will display only these five
 variables.
 
 ``` r
+
 meta |>
   prepare_ae_forestly(ae_listing_display = c("USUBJID", "SITEID", "SEX", "RACE", "AGE")) |>
   format_ae_forestly() |>

@@ -1,11 +1,13 @@
 # Generate Static AE Forest Plots
 
 ``` r
+
 library(forestly)
 library(ggplot2)
 ```
 
 ``` r
+
 forestly_adsl$TRTA <- factor(
   forestly_adsl$TRT01A,
   levels = c("Xanomeline Low Dose", "Placebo"),
@@ -30,10 +32,12 @@ meta <- meta_forestly(
 ```
 
 ``` r
+
 meta_any <- meta$tbl[1:20, ] |> dplyr::filter(parameter == "any")
 ```
 
 ``` r
+
 p1 <- meta_any |>
   dplyr::select(name, prop_1, prop_2) |>
   plot_dot(
@@ -53,6 +57,7 @@ p1
 ![](forest-plot-static_files/figure-html/unnamed-chunk-5-1.png)
 
 ``` r
+
 p2 <- meta_any |>
   dplyr::select(name, diff_1, lower_1, upper_1) |>
   plot_errorbar(
@@ -67,6 +72,7 @@ p2
 ![](forest-plot-static_files/figure-html/unnamed-chunk-6-1.png)
 
 ``` r
+
 meta_any$stat_1 <- paste0(meta_any$n_1, "(", meta_any$prop_1, ")")
 meta_any$stat_2 <- paste0(meta_any$n_2, "(", meta_any$prop_2, ")")
 
@@ -83,6 +89,7 @@ p3
 ![](forest-plot-static_files/figure-html/unnamed-chunk-7-1.png)
 
 ``` r
+
 do.call(patchwork::wrap_plots, list(p1, p2, p3)) +
   # Define outer margin for assembled plot
   patchwork::plot_annotation(

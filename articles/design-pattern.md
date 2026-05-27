@@ -24,6 +24,7 @@ A minimal example summarized the major steps in using the forestly
 package is
 
 ``` r
+
 mydata <- tidy_ae_table(...)    # Step 1: create tidy AE data
 download_ae_reports(mydata)     # Step 2: generate download button
 forestly(mydata)                # Step 3: generate interactive forest plot

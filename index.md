@@ -5,6 +5,7 @@
 The easiest way to get forestly is to install from CRAN:
 
 ``` r
+
 install.packages("forestly")
 ```
 
@@ -12,6 +13,7 @@ Alternatively, to use a new feature or get a bug fix, you can install
 the development version of forestly from GitHub:
 
 ``` r
+
 # install.packages("remotes")
 remotes::install_github("Merck/forestly")
 ```
@@ -46,6 +48,7 @@ The general workflow is:
 Here is a quick example
 
 ``` r
+
 library("forestly")
 
 meta_forestly(
@@ -69,7 +72,7 @@ The interactive features for safety analysis include:
 - Reveal information by hovering the mouse over a data point.
 - Search bars to find subjects with selected adverse events (AEs).
 - Sort value by clicking the column header.
-- Drill-down listing by clicking $▸$.
+- Drill-down listing by clicking $`\blacktriangleright`$.
 
 ## References
 
