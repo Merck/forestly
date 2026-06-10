@@ -281,14 +281,32 @@ ae_forestly <- function(outdata,
         searchable = TRUE,
         searchMethod = reactable::JS(
           "function(rows, columnIds, filterValue) {
-            var negate = filterValue.startsWith('!');
-            var term = negate ? filterValue.slice(1).trim() : filterValue.trim();
-            if (term === '') return rows;
+            var v = filterValue.trim();
+            if (v === '') return rows;
+            // If the input looks like a JS expression (contains an operator),
+            // evaluate it with `x` bound to each cell value.
+            var exprPattern = /[=!<>]|\\.(includes|startsWith|endsWith|match)\\s*\\(/;
+            if (exprPattern.test(v)) {
+              try {
+                var fn = new Function('x', 'try { return (' + v + '); } catch(e) { return false; }');
+                // Negation expressions use every() (row passes if ALL cells satisfy),
+                // positive expressions use some() (row passes if ANY cell satisfies).
+                var isNegation = /^!|!=/.test(v);
+                var method = isNegation ? 'every' : 'some';
+                return rows.filter(function(row) {
+                  return columnIds[method](function(id) {
+                    var x = row.values[id];
+                    if (x == null) return isNegation;
+                    return fn(String(x)) || (isFinite(Number(x)) && fn(Number(x)));
+                  });
+                });
+              } catch(e) { }
+            }
+            // Default: substring search
             return rows.filter(function(row) {
-              var match = columnIds.some(function(id) {
-                return String(row.values[id]).toLowerCase().indexOf(term.toLowerCase()) > -1;
+              return columnIds.some(function(id) {
+                return String(row.values[id]).toLowerCase().indexOf(v.toLowerCase()) > -1;
               });
-              return negate ? !match : match;
             });
           }"
         ),
