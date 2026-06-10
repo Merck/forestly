@@ -1,6 +1,6 @@
 # forestly 0.1.5
 
-##New features
+## New features
 
 - Enable user to hide the slide bar on forest plot.
 - Add 'bisection' argument to 'prepare_ae_forestly'.
