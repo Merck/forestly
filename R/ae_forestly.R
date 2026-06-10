@@ -279,6 +279,19 @@ ae_forestly <- function(outdata,
         resizable = TRUE,
         filterable = TRUE,
         searchable = TRUE,
+        searchMethod = reactable::JS(
+          "function(rows, columnIds, filterValue) {
+            var negate = filterValue.startsWith('!');
+            var term = negate ? filterValue.slice(1).trim() : filterValue.trim();
+            if (term === '') return rows;
+            return rows.filter(function(row) {
+              var match = columnIds.some(function(id) {
+                return String(row.values[id]).toLowerCase().indexOf(term.toLowerCase()) > -1;
+              });
+              return negate ? !match : match;
+            });
+          }"
+        ),
         showPageSizeOptions = TRUE,
         borderless = TRUE,
         striped = TRUE,
