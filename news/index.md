@@ -1,5 +1,14 @@
 # Changelog
 
+## forestly 0.1.5
+
+### New features
+
+- Enable user to hide the slide bar on forest plot.
+- Add ‘bisection’ argument to ‘prepare_ae_forestly’.
+- Update `titlecase` function to speed up the exucution time to generate
+  plot.
+
 ## forestly 0.1.4
 
 CRAN release: 2026-02-18
