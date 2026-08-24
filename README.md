@@ -44,7 +44,7 @@ inputs and outputs.
 
 The general workflow is:
 
-1. `meta_forestly()` constructs input metadata for treatment analysis from ADaM datasets.
+1. Define input metadata from ADaM datasets with `metalite`.
 1. `prepare_ae_forestly()` prepares datasets for interactive forest plot.
 1. `format_ae_forestly()` formats output layout.
 1. `ae_forestly()` generates an interactive forest plot.
@@ -54,13 +54,79 @@ Here is a quick example
 ```r
 library("forestly")
 
-meta_forestly(
-  dataset_adsl = forestly_adsl,
-  dataset_adae = forestly_adae,
-  parameter_term = "any;rel;ser",
-  population_subset = SAFFL == "Y",
-  observation_subset = SAFFL == "Y"
-) |>
+adsl <- forestly_adsl
+adae <- forestly_adae
+adsl$TRTA <- factor(
+  adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+adae$TRTA <- factor(
+  adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+
+analysis_plan <- metalite::plan(
+  analysis = "ae_forestly",
+  population = "apat",
+  observation = "wk12",
+  parameter = "any;rel;ser"
+)
+
+meta <- metalite::meta_adam(population = adsl, observation = adae) |>
+  metalite::define_plan(plan = analysis_plan) |>
+  metalite::define_population(
+    name = "apat",
+    var = c("USUBJID", "SAFFL", "TRTA", "SITEID", "SEX", "RACE", "AGE"),
+    group = "TRTA",
+    subset = SAFFL == "Y",
+    label = "All Participants as Treated"
+  ) |>
+  metalite::define_observation(
+    name = "wk12",
+    var = c(
+      "USUBJID", "SAFFL", "TRTA", "SITEID", "SEX", "RACE", "AGE",
+      "ASTDY", "AEDECOD", "AEBODSYS", "AESER", "AEREL", "AEACN",
+      "AEOUT", "ADURN", "ADURU"
+    ),
+    group = "TRTA",
+    subset = SAFFL == "Y",
+    label = "Weeks 0 to 12"
+  ) |>
+  metalite::define_parameter(
+    name = "any",
+    term1 = "",
+    term2 = "",
+    var = "AEDECOD",
+    soc = "AEBODSYS",
+    label = "All AEs"
+  ) |>
+  metalite::define_parameter(
+    name = "rel",
+    term1 = "Drug-Related",
+    term2 = "",
+    subset = AEREL %in% c("POSSIBLE", "PROBABLE"),
+    var = "AEDECOD",
+    soc = "AEBODSYS",
+    label = "Drug-related AEs"
+  ) |>
+  metalite::define_parameter(
+    name = "ser",
+    term1 = "Serious",
+    term2 = "",
+    subset = AESER == "Y",
+    var = "AEDECOD",
+    soc = "AEBODSYS",
+    label = "Serious AEs"
+  ) |>
+  metalite::define_analysis(
+    name = "ae_forestly",
+    label = "Interactive forest plot"
+  ) |>
+  metalite::meta_build()
+
+meta |>
   prepare_ae_forestly(parameter = "any;rel;ser") |>
   format_ae_forestly() |>
   ae_forestly()
