@@ -2,7 +2,7 @@
 
 test_format_ae_forestly <- function() {
   prepare_ae_forestly(
-    metalite.ae::meta_ae_example(),
+    meta_ae_test(),
     population = "apat",
     observation = "wk12",
     parameter = "any;rel;ser"

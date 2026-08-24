@@ -19,7 +19,7 @@ test_that("ae_forestly(): test filter and width option", {
 })
 
 test_that("ae_forestly(): toggle risk difference button is hidden by default", {
-  outdata <- metalite.ae::meta_ae_example() |>
+  outdata <- meta_ae_test() |>
     prepare_ae_forestly(
       population = "apat",
       observation = "wk12",
@@ -34,7 +34,7 @@ test_that("ae_forestly(): toggle risk difference button is hidden by default", {
 })
 
 test_that("ae_forestly(): toggle risk difference button can be enabled", {
-  outdata <- metalite.ae::meta_ae_example() |>
+  outdata <- meta_ae_test() |>
     prepare_ae_forestly(
       population = "apat",
       observation = "wk12",
