@@ -62,7 +62,7 @@ adae$TRTA <- factor(forestly_adae$TRTA,
 
 We use the [metalite](https://merck.github.io/metalite/) R package to generate a minimal metadata for the generation of the interactive forest plot.
 
-To begin, we input the `adsl` data as the population data and the `adae` data as the observation data. 
+To begin, we input the `adsl` data as the population data and the `adae` data as the observation data.
 ```{r}
 meta <- meta_adam(population = adsl, observation = adae)
 ```
@@ -73,7 +73,7 @@ Without loss of generality, our plan is to generate the following four AE-specif
 - Drug-related AE (we give it a short name/nickname as `"drug-related"`)
 - Serious AE (we give it a short name/nickname as `"serious"`)
 - Drug-related serious AE (we give it a short name/nickname as `"drug-related-serious"`)
-However, users are allowed to add more AE-specific tables as needed. For the above 4 AE specific tables, we take the APaT for both observation and observation. 
+However, users are allowed to add more AE-specific tables as needed. For the above 4 AE specific tables, we take the APaT for both observation and observation.
 ```{r}
 meta <- meta |>
   define_plan(plan = plan(
@@ -94,31 +94,31 @@ We then define the related population (`population = "apat"`) and observation (`
 ```{r}
 meta <- meta |>
   define_population(
-    name = "apat", 
-    group = "TRTA", 
+    name = "apat",
+    group = "TRTA",
     id = "USUBJID",
-    subset = SAFFL == "Y", 
+    subset = SAFFL == "Y",
     label = "All Patient as Treated",
     var = c("USUBJID", "SAFFL", "TRTA", "SITEID", "SEX", "RACE", "AGE")
   ) |>
   define_observation(
-    name = "apat", 
+    name = "apat",
     group = "TRTA",
-    subset = SAFFL == "Y", 
+    subset = SAFFL == "Y",
     label = "All Patient as Treated",
-    var = c("USUBJID", "SAFFL", "TRTA", "AEDECOD", "AEBODSYS", 
+    var = c("USUBJID", "SAFFL", "TRTA", "AEDECOD", "AEBODSYS",
             "AEREL", "AESER", "AEOUT", "AEACN", "AESDTH", "ASTDT", "AENDT")
   )
 ```
 
-Next, we specify the details of `parameter = "any;drug-related;serious;drug-related-serious"`. For any AEs (`"any"`), their is no filter applied. 
+Next, we specify the details of `parameter = "any;drug-related;serious;drug-related-serious"`. For any AEs (`"any"`), their is no filter applied.
 ```{r}
 meta <- meta |>
   define_parameter(
     name = "any",
     subset = NULL,
     label = "Any AEs",
-    var = "AEDECOD", 
+    var = "AEDECOD",
     soc = "AEBODSYS"
   )
 ```
@@ -129,7 +129,7 @@ meta <- meta |>
     name = "drug-related",
     subset = toupper(AEREL) %in% c("PROBABLE", "POSSIBLE"),
     label = "Drug-related AEs",
-    var = "AEDECOD", 
+    var = "AEDECOD",
     soc = "AEBODSYS"
   )
 ```
@@ -140,14 +140,14 @@ meta <- meta |>
     name = "serious",
     subset = AESER == "Y",
     label = "Serious AEs",
-    var = "AEDECOD", 
+    var = "AEDECOD",
     soc = "AEBODSYS"
   ) |>
   define_parameter(
     name = "drug-related-serious",
     subset = AESER == "Y" & toupper(AEREL) %in% c("PROBABLE", "POSSIBLE"),
     label = "Drug-related serious AEs",
-    var = "AEDECOD", 
+    var = "AEDECOD",
     soc = "AEBODSYS"
   )
 ```
@@ -157,13 +157,12 @@ Finally, we build the metadata by running the `meta_build()` function.
 meta <- meta |> meta_build()
 ```
 
-## Step 3: generate the interative AE forest plot
+## Step 3: generate the interactive AE forest plot
 
-With the `meta` built as described above, users can generate the interactive AE forest seamlessly through a few simple function calls connected with the pipe operator (`|>`). The `prepare_ae_forestly()` prepares datasets (i.e., calculate all to-be-reported numbers). The `format_ae_forestly()` takes care of formating, and the `ae_forestly()` function realize the interactivity.
+With the `meta` built as described above, users can generate the interactive AE forest seamlessly through a few simple function calls connected with the pipe operator (`|>`). The `prepare_ae_forestly()` prepares datasets (i.e., calculate all to-be-reported numbers). The `format_ae_forestly()` takes care of formatting, and the `ae_forestly()` function realize the interactivity.
 ```{r}
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly() |>
   ae_forestly()
 ```
-
