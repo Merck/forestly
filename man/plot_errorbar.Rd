@@ -113,18 +113,55 @@ forestly_adae$TRTA <- factor(
   labels = c("Low Dose", "Placebo")
 )
 
-meta <- meta_forestly(
-  dataset_adsl = forestly_adsl,
-  dataset_adae = forestly_adae,
-  population_term = "apat",
-  observation_term = "wk12",
-  parameter_term = "any;rel;ser"
+analysis_plan <- metalite::plan(
+  analysis = "ae_forestly",
+  population = "apat",
+  observation = "wk12",
+  parameter = "any"
+)
+meta <- metalite::meta_adam(
+  population = forestly_adsl,
+  observation = forestly_adae
 ) |>
-  prepare_ae_forestly() |>
+  metalite::define_plan(plan = analysis_plan) |>
+  metalite::define_population(
+    name = "apat",
+    var = c("USUBJID", "SAFFL", "TRTA", "SITEID", "SEX", "RACE", "AGE"),
+    group = "TRTA",
+    subset = SAFFL == "Y",
+    label = "All Participants as Treated"
+  ) |>
+  metalite::define_observation(
+    name = "wk12",
+    var = c(
+      "USUBJID", "SAFFL", "TRTA", "SITEID", "SEX", "RACE", "AGE",
+      "ASTDY", "AEDECOD", "AEBODSYS", "AESER", "AEREL", "AEACN",
+      "AEOUT", "ADURN", "ADURU"
+    ),
+    group = "TRTA",
+    subset = SAFFL == "Y",
+    label = "Weeks 0 to 12"
+  ) |>
+  metalite::define_parameter(
+    name = "any",
+    term1 = "",
+    term2 = "",
+    var = "AEDECOD",
+    soc = "AEBODSYS",
+    label = "All AEs"
+  ) |>
+  metalite::define_analysis(
+    name = "ae_forestly",
+    label = "Interactive forest plot"
+  ) |>
+  metalite::meta_build()
+
+outdata <- meta |>
+  prepare_ae_forestly(parameter = "any") |>
   format_ae_forestly()
 
-meta_any <- meta$tbl[1:20, ] |> dplyr::filter(parameter == "any")
-meta_any |>
+outdata_any <- outdata$tbl[1:20, ] |> dplyr::filter(parameter == "any")
+outdata_any |>
   dplyr::select(name, diff_1, lower_1, upper_1) |>
   plot_errorbar(
     y_var = "name",

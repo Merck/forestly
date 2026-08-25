@@ -48,7 +48,6 @@ articles:
 reference:
 - title: Adverse event analysis
   contents:
-  - "meta_forestly"
   - "prepare_ae_forestly"
   - "format_ae_forestly"
   - "ae_forestly"

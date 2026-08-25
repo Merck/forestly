@@ -3,7 +3,6 @@
 export(ae_forestly)
 export(background_panel)
 export(format_ae_forestly)
-export(meta_forestly)
 export(plot_dot)
 export(plot_errorbar)
 export(prepare_ae_forestly)

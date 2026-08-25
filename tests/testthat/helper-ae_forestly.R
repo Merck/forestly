@@ -1,7 +1,7 @@
 # Helper functions used by test-ae_forestly.R
 
 test_ae_forestly <- function() {
-  metalite.ae::meta_ae_example() |>
+  meta_ae_test() |>
     prepare_ae_forestly(
       population = "apat",
       observation = "wk12",

@@ -47,14 +47,62 @@ An AE forest plot saved as a \code{shiny.tag.list} object.
 Display interactive forest plot
 }
 \examples{
-adsl <- forestly_adsl[1:100, ]
-adae <- forestly_adae[1:100, ]
-if (interactive()) {
-  meta_forestly(
-    dataset_adsl = adsl,
-    dataset_adae = adae,
+adsl <- forestly_adsl
+adae <- forestly_adae
+adsl$TRTA <- factor(
+  adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+adae$TRTA <- factor(
+  adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+
+analysis_plan <- metalite::plan(
+  analysis = "ae_forestly",
+  population = "apat",
+  observation = "wk12",
+  parameter = "any"
+)
+meta <- metalite::meta_adam(population = adsl, observation = adae) |>
+  metalite::define_plan(plan = analysis_plan) |>
+  metalite::define_population(
+    name = "apat",
+    var = c("USUBJID", "SAFFL", "TRTA", "SITEID", "SEX", "RACE", "AGE"),
+    group = "TRTA",
+    subset = SAFFL == "Y",
+    label = "All Participants as Treated"
   ) |>
-    prepare_ae_forestly() |>
+  metalite::define_observation(
+    name = "wk12",
+    var = c(
+      "USUBJID", "SAFFL", "TRTA", "SITEID", "SEX", "RACE", "AGE",
+      "ASTDY", "AEDECOD", "AEBODSYS", "AESER", "AEREL", "AEACN",
+      "AEOUT", "ADURN", "ADURU"
+    ),
+    group = "TRTA",
+    subset = SAFFL == "Y",
+    label = "Weeks 0 to 12"
+  ) |>
+  metalite::define_parameter(
+    name = "any",
+    term1 = "",
+    term2 = "",
+    var = "AEDECOD",
+    soc = "AEBODSYS",
+    label = "All AEs"
+  ) |>
+  metalite::define_analysis(
+    name = "ae_forestly",
+    label = "Interactive forest plot"
+  ) |>
+  metalite::meta_build()
+
+if (interactive()) {
+  meta |>
+    prepare_ae_forestly(parameter = "any") |>
     format_ae_forestly() |>
     ae_forestly()
 }
