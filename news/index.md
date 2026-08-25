@@ -2,6 +2,8 @@
 
 ## forestly 0.1.5
 
+CRAN release: 2026-06-12
+
 ### New features
 
 - Enable user to hide the slide bar on forest plot.
@@ -111,8 +113,7 @@ CRAN release: 2025-01-10
 CRAN release: 2024-07-08
 
 - Add button to display SOC column for subset.
-- Refine the default value of
-  [`meta_forestly()`](https://merck.github.io/forestly/reference/meta_forestly.md).
+- Refine the default value of `meta_forestly()`.
 - Update `format_ae_listing()` to be better aligned with oncology AEs
   reporting.
 - Enhance functionality related to drill-down listing.

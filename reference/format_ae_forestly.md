@@ -119,37 +119,83 @@ An `outdata` object.
 ## Examples
 
 ``` r
-adsl <- forestly_adsl[1:100, ]
-adae <- forestly_adae[1:100, ]
-meta_forestly(
-  dataset_adsl = adsl,
-  dataset_adae = adae
-) |>
-  prepare_ae_forestly() |>
+adsl <- forestly_adsl
+adae <- forestly_adae
+adsl$TRTA <- factor(
+  adsl$TRT01A,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+adae$TRTA <- factor(
+  adae$TRTA,
+  levels = c("Xanomeline Low Dose", "Placebo"),
+  labels = c("Low Dose", "Placebo")
+)
+
+analysis_plan <- metalite::plan(
+  analysis = "ae_forestly",
+  population = "apat",
+  observation = "wk12",
+  parameter = "any"
+)
+meta <- metalite::meta_adam(population = adsl, observation = adae) |>
+  metalite::define_plan(plan = analysis_plan) |>
+  metalite::define_population(
+    name = "apat",
+    var = c("USUBJID", "SAFFL", "TRTA", "SITEID", "SEX", "RACE", "AGE"),
+    group = "TRTA",
+    subset = SAFFL == "Y",
+    label = "All Participants as Treated"
+  ) |>
+  metalite::define_observation(
+    name = "wk12",
+    var = c(
+      "USUBJID", "SAFFL", "TRTA", "SITEID", "SEX", "RACE", "AGE",
+      "ASTDY", "AEDECOD", "AEBODSYS", "AESER", "AEREL", "AEACN",
+      "AEOUT", "ADURN", "ADURU"
+    ),
+    group = "TRTA",
+    subset = SAFFL == "Y",
+    label = "Weeks 0 to 12"
+  ) |>
+  metalite::define_parameter(
+    name = "any",
+    term1 = "",
+    term2 = "",
+    var = "AEDECOD",
+    soc = "AEBODSYS",
+    label = "All AEs"
+  ) |>
+  metalite::define_analysis(
+    name = "ae_forestly",
+    label = "Interactive forest plot"
+  ) |>
+  metalite::meta_build()
+
+meta |>
+  prepare_ae_forestly(parameter = "any") |>
   format_ae_forestly()
-#> Warning: In observation level data, force group variable 'TRTA' be a factor
-#> Warning: In observation level data, force group variable 'TRTA' be a factor
 #> List of 26
 #>  $ meta                   :List of 7
 #>  $ population             : chr "apat"
-#>  $ observation            : chr "safety"
-#>  $ parameter              : chr "any;rel"
-#>  $ n                      :'data.frame': 60 obs. of  3 variables:
-#>  $ order                  : num [1:60] 1008 1009 2019 2021 2022 ...
-#>  $ group                  : chr [1:3] "Placebo" "Xanomeline Low Dose" "Total"
+#>  $ observation            : chr "wk12"
+#>  $ parameter              : chr "any"
+#>  $ n                      :'data.frame': 190 obs. of  3 variables:
+#>  $ order                  : num [1:190] 1021 1022 1023 1024 1025 ...
+#>  $ group                  : chr [1:3] "Low Dose" "Placebo" "Total"
 #>  $ reference_group        : num 2
-#>  $ parameter_order        : Factor w/ 2 levels "any","rel": 1 1 1 1 1 1 1 1 1 1 ...
+#>  $ parameter_order        : Factor w/ 1 level "any": 1 1 1 1 1 1 1 1 1 1 ...
 #>  $ components             : chr "par"
-#>  $ prop                   :'data.frame': 60 obs. of  3 variables:
-#>  $ diff                   :'data.frame': 60 obs. of  1 variable:
+#>  $ prop                   :'data.frame': 190 obs. of  3 variables:
+#>  $ diff                   :'data.frame': 190 obs. of  1 variable:
 #>  $ n_pop                  :'data.frame': 1 obs. of  3 variables:
-#>  $ name                   : chr [1:60] "Atrioventricular block second degree" "Bundle branch block left" "Eye allergy" "Eye pruritus" ...
-#>  $ soc_name               : chr [1:60] "CARDIAC DISORDERS" "CARDIAC DISORDERS" "EYE DISORDERS" "EYE DISORDERS" ...
-#>  $ ci_lower               :'data.frame': 60 obs. of  1 variable:
-#>  $ ci_upper               :'data.frame': 60 obs. of  1 variable:
-#>  $ p                      :'data.frame': 60 obs. of  1 variable:
-#>  $ ae_listing             :'data.frame': 151 obs. of  15 variables:
-#>  $ tbl                    :'data.frame': 60 obs. of  14 variables:
+#>  $ name                   : chr [1:190] "Atrial fibrillation" "Atrial flutter" "Atrial hypertrophy" "Atrioventricular block first degree" ...
+#>  $ soc_name               : chr [1:190] "CARDIAC DISORDERS" "CARDIAC DISORDERS" "CARDIAC DISORDERS" "CARDIAC DISORDERS" ...
+#>  $ ci_lower               :'data.frame': 190 obs. of  1 variable:
+#>  $ ci_upper               :'data.frame': 190 obs. of  1 variable:
+#>  $ p                      :'data.frame': 190 obs. of  1 variable:
+#>  $ ae_listing             :'data.frame': 736 obs. of  15 variables:
+#>  $ tbl                    :'data.frame': 190 obs. of  14 variables:
 #>  $ reactable_columns      :List of 14
 #>  $ reactable_columns_group:List of 3
 #>  $ display                : chr [1:4] "n" "prop" "fig_prop" "fig_diff"

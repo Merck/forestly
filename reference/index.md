@@ -2,8 +2,6 @@
 
 ## Adverse event analysis
 
-- [`meta_forestly()`](https://merck.github.io/forestly/reference/meta_forestly.md)
-  : Create metadata for interactive forest plot
 - [`prepare_ae_forestly()`](https://merck.github.io/forestly/reference/prepare_ae_forestly.md)
   : Prepare datasets for interactive forest plot
 - [`format_ae_forestly()`](https://merck.github.io/forestly/reference/format_ae_forestly.md)

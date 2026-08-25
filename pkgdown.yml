@@ -1,5 +1,5 @@
 pandoc: 3.8.3
-pkgdown: 2.2.0
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   customize-ae-specific-columns: customize-ae-specific-columns.html
@@ -14,7 +14,7 @@ articles:
   design-pattern: design-pattern.html
   forest-plot-static: forest-plot-static.html
   forestly: forestly.html
-last_built: 2026-06-11T14:57Z
+last_built: 2026-08-25T13:00Z
 urls:
   reference: https://merck.github.io/forestly/reference
   article: https://merck.github.io/forestly/articles
