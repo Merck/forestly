@@ -1,5 +1,15 @@
 # Changelog
 
+## forestly 0.1.6
+
+### Improvements
+
+- Remove `meta_forestly()` and the dependency on
+  [`metalite.ae::meta_ae_example()`](https://merck.github.io/metalite.ae/reference/meta_ae_example.html);
+  examples now construct metadata directly with `metalite`
+  ([\#140](https://github.com/Merck/forestly/issues/140), thanks to
+  [@LittleBeannie](https://github.com/LittleBeannie)).
+
 ## forestly 0.1.5
 
 CRAN release: 2026-06-12

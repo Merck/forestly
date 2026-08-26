@@ -33,12 +33,12 @@ Source:
 [`DESCRIPTION`](https://github.com/Merck/forestly/blob/main/DESCRIPTION)
 
 Zhang Y, Wang B, Zhao Y, Fukuda H (2026). *forestly: Interactive Forest
-Plot*. R package version 0.1.5, <https://merck.github.io/forestly/>.
+Plot*. R package version 0.1.6, <https://merck.github.io/forestly/>.
 
     @Manual{,
       title = {forestly: Interactive Forest Plot},
       author = {Yilong Zhang and Benjamin Wang and Yujie Zhao and Hiroaki Fukuda},
       year = {2026},
-      note = {R package version 0.1.5},
+      note = {R package version 0.1.6},
       url = {https://merck.github.io/forestly/},
     }
