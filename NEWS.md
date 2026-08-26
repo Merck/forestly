@@ -1,3 +1,9 @@
+# forestly 0.1.6
+
+## Improvements
+
+- Remove `meta_forestly()` and the dependency on `metalite.ae::meta_ae_example()`; examples now construct metadata directly with `metalite` (#140, thanks to @LittleBeannie).
+
 # forestly 0.1.5
 
 ## New features
