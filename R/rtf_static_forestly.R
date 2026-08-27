@@ -38,6 +38,7 @@
 #' @export
 #'
 #' @examples
+#' \donttest{
 #' forestly_adsl$TRTA <- factor(
 #'   forestly_adsl$TRT01A,
 #'   levels = c("Xanomeline Low Dose", "Placebo"),
@@ -130,6 +131,7 @@
 #'   path_outdata = tempfile(fileext = ".Rdata"),
 #'   path_outtable =  tempfile(fileext = ".rtf")
 #' )
+#' }
 rtf_static_forestly <- function(
     outdata,
     plot_calls,
