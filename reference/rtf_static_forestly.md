@@ -83,6 +83,7 @@ RTF file and source dataset for baseline characteristic table.
 ## Examples
 
 ``` r
+# \donttest{
 forestly_adsl$TRTA <- factor(
   forestly_adsl$TRT01A,
   levels = c("Xanomeline Low Dose", "Placebo"),
@@ -175,6 +176,7 @@ outdata |> rtf_static_forestly(
   path_outdata = tempfile(fileext = ".Rdata"),
   path_outtable =  tempfile(fileext = ".rtf")
 )
-#> The outdata is saved in /tmp/Rtmp0s8M8t/file1a7c10ba83ac.Rdata
-#> The output is saved in /tmp/Rtmp0s8M8t/file1a7c7f4b01f5.rtf
+#> The outdata is saved in /tmp/RtmpUl3Ipn/file191d6f41102d.Rdata
+#> The output is saved in /tmp/RtmpUl3Ipn/file191d153f6622.rtf
+# }
 ```
