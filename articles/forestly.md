@@ -99,19 +99,19 @@ changes as needed.
 
 meta <- meta |>
   define_population(
-    name = "apat", 
-    group = "TRTA", 
+    name = "apat",
+    group = "TRTA",
     id = "USUBJID",
-    subset = SAFFL == "Y", 
+    subset = SAFFL == "Y",
     label = "All Patient as Treated",
     var = c("USUBJID", "SAFFL", "TRTA", "SITEID", "SEX", "RACE", "AGE")
   ) |>
   define_observation(
-    name = "apat", 
+    name = "apat",
     group = "TRTA",
-    subset = SAFFL == "Y", 
+    subset = SAFFL == "Y",
     label = "All Patient as Treated",
-    var = c("USUBJID", "SAFFL", "TRTA", "AEDECOD", "AEBODSYS", 
+    var = c("USUBJID", "SAFFL", "TRTA", "AEDECOD", "AEBODSYS",
             "AEREL", "AESER", "AEOUT", "AEACN", "AESDTH", "ASTDT", "AENDT")
   )
 ```
@@ -127,7 +127,7 @@ meta <- meta |>
     name = "any",
     subset = NULL,
     label = "Any AEs",
-    var = "AEDECOD", 
+    var = "AEDECOD",
     soc = "AEBODSYS"
   )
 ```
@@ -142,7 +142,7 @@ meta <- meta |>
     name = "drug-related",
     subset = toupper(AEREL) %in% c("PROBABLE", "POSSIBLE"),
     label = "Drug-related AEs",
-    var = "AEDECOD", 
+    var = "AEDECOD",
     soc = "AEBODSYS"
   )
 ```
@@ -156,14 +156,14 @@ meta <- meta |>
     name = "serious",
     subset = AESER == "Y",
     label = "Serious AEs",
-    var = "AEDECOD", 
+    var = "AEDECOD",
     soc = "AEBODSYS"
   ) |>
   define_parameter(
     name = "drug-related-serious",
     subset = AESER == "Y" & toupper(AEREL) %in% c("PROBABLE", "POSSIBLE"),
     label = "Drug-related serious AEs",
-    var = "AEDECOD", 
+    var = "AEDECOD",
     soc = "AEBODSYS"
   )
 ```
@@ -177,7 +177,7 @@ function.
 meta <- meta |> meta_build()
 ```
 
-### Step 3: generate the interative AE forest plot
+### Step 3: generate the interactive AE forest plot
 
 With the `meta` built as described above, users can generate the
 interactive AE forest seamlessly through a few simple function calls
@@ -185,7 +185,7 @@ connected with the pipe operator (`|>`). The
 [`prepare_ae_forestly()`](https://merck.github.io/forestly/reference/prepare_ae_forestly.md)
 prepares datasets (i.e., calculate all to-be-reported numbers). The
 [`format_ae_forestly()`](https://merck.github.io/forestly/reference/format_ae_forestly.md)
-takes care of formating, and the
+takes care of formatting, and the
 [`ae_forestly()`](https://merck.github.io/forestly/reference/ae_forestly.md)
 function realize the interactivity.
 

@@ -2,6 +2,8 @@
 
 ## forestly 0.1.6
 
+CRAN release: 2026-08-28
+
 ### Improvements
 
 - Remove `meta_forestly()` and the dependency on
