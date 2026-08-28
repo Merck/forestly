@@ -31,6 +31,55 @@
 #' @param max_page A numeric value of max page number shown in the table.
 #' @param dowload_button A logical value to display download button.
 #'
+#' @section Searching and filtering:
+#' The interactive table has a search box for each column (and, in the
+#' expandable detail listing, a table-wide search box). In addition to a
+#' plain substring match, the search terms understand two extra styles.
+#'
+#' **Negation with `!`.** Prefix a term with an exclamation mark to *exclude*
+#' matching rows instead of keeping them:
+#'
+#' \itemize{
+#'   \item `Rash` --- keep rows whose value contains "Rash".
+#'   \item `!Rash` --- keep rows whose value does *not* contain "Rash".
+#' }
+#'
+#' **Expressions.** If the term mentions the letter `x` (which stands for the
+#' value of the cell being searched), it is evaluated as a small expression and
+#' the row is kept when the expression is true. `x` behaves like the value in
+#' that column, so numeric columns can be compared with numbers and text
+#' columns with quoted text. Common patterns:
+#'
+#' \tabular{ll}{
+#'   \strong{Type this in the search box} \tab \strong{Keeps rows where} \cr
+#'   `x > 5`                       \tab the value is greater than 5 \cr
+#'   `x >= 5`                      \tab the value is 5 or more \cr
+#'   `x < 65`                      \tab the value is less than 65 \cr
+#'   `x >= 18 && x <= 65`          \tab the value is between 18 and 65 (inclusive) \cr
+#'   `x == 0`                      \tab the value equals 0 \cr
+#'   `x === "Rash"`                \tab the value is exactly "Rash" \cr
+#'   `x !== "Rash"`                \tab the value is anything except exactly "Rash" \cr
+#'   `x.includes("itch")`          \tab the text contains "itch" \cr
+#'   `!x.includes("itch")`         \tab the text does not contain "itch" \cr
+#'   `x.startsWith("Application")` \tab the text starts with "Application" \cr
+#'   `x.endsWith("itis")`          \tab the text ends with "itis" \cr
+#'   `x === "M" || x === "F"`      \tab the value is either "M" or "F" \cr
+#' }
+#'
+#' Notes for the expression style:
+#' \itemize{
+#'   \item Wrap text values in quotes (`"Rash"`); numbers need no quotes (`5`).
+#'   \item Use `&&` for "and", `||` for "or", and `!` in front of a condition
+#'     for "not".
+#'   \item Comparisons use doubled symbols: `===` (equal), `!==` (not equal),
+#'     together with `>`, `>=`, `<`, `<=`.
+#'   \item Matching is case-sensitive in the expression style, so `x === "m"`
+#'     will not match "M". Use the plain substring style (which ignores case)
+#'     when case does not matter.
+#'   \item A term that mentions `x` but is not a valid expression is treated as
+#'     an ordinary substring search, so everyday searches keep working.
+#' }
+#'
 #' @return An AE forest plot saved as a `shiny.tag.list` object.
 #'
 #' @export
