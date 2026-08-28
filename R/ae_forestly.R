@@ -256,6 +256,49 @@ ae_forestly <- function(outdata,
       # Extract labels for use in column definitions
       labels <- lapply(t_details, function(x) attr(x, "label"))
 
+      # Per-column filter supporting substring search, a leading `!` for
+      # negation (e.g. `!Rash`), and JS expressions referencing the cell
+      # value `x` (e.g. `x > 5`, `x !== "Rash"`, `!x.includes("Rash")`).
+      col_filter_method <- reactable::JS(
+        "function(rows, columnId, filterValue) {
+          var v = filterValue.trim();
+          if (v === '') return rows;
+          // JS expression mode: the term references the cell variable `x`.
+          if (/(^|[^\\w$])x([^\\w$]|$)/.test(v)) {
+            var fn;
+            try {
+              fn = new Function('x', 'return (' + v + ');');
+            } catch (e) {
+              fn = null;
+            }
+            if (fn) {
+              return rows.filter(function(row) {
+                var raw = row.values[columnId];
+                if (raw == null) return false;
+                try {
+                  var num = Number(raw);
+                  return !!fn(String(raw)) ||
+                    (raw !== '' && isFinite(num) && !!fn(num));
+                } catch (e) {
+                  return false;
+                }
+              });
+            }
+          }
+          // Substring mode with optional leading `!` for negation.
+          var negate = v.charAt(0) === '!';
+          var term = negate ? v.slice(1).trim() : v;
+          if (term === '') return rows;
+          var needle = term.toLowerCase();
+          return rows.filter(function(row) {
+            var raw = row.values[columnId];
+            var match = raw != null &&
+              String(raw).toLowerCase().indexOf(needle) > -1;
+            return negate ? !match : match;
+          });
+        }"
+      )
+
       # Create named column definitions using the labels
       col_defs <- stats::setNames(
         lapply(names(t_details), function(name) {
@@ -265,7 +308,8 @@ ae_forestly <- function(outdata,
             header = label_name, # Use header instead of name
             cell = function(value) format(value, nsmall = 1),
             align = "center",
-            minWidth = 70
+            minWidth = 70,
+            filterMethod = col_filter_method
           )
         }),
         names(t_details)
