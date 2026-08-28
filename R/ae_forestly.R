@@ -256,48 +256,9 @@ ae_forestly <- function(outdata,
       # Extract labels for use in column definitions
       labels <- lapply(t_details, function(x) attr(x, "label"))
 
-      # Per-column filter supporting substring search, a leading `!` for
-      # negation (e.g. `!Rash`), and JS expressions referencing the cell
-      # value `x` (e.g. `x > 5`, `x !== "Rash"`, `!x.includes("Rash")`).
-      col_filter_method <- reactable::JS(
-        "function(rows, columnId, filterValue) {
-          var v = filterValue.trim();
-          if (v === '') return rows;
-          // JS expression mode: the term references the cell variable `x`.
-          if (/(^|[^\\w$])x([^\\w$]|$)/.test(v)) {
-            var fn;
-            try {
-              fn = new Function('x', 'return (' + v + ');');
-            } catch (e) {
-              fn = null;
-            }
-            if (fn) {
-              return rows.filter(function(row) {
-                var raw = row.values[columnId];
-                if (raw == null) return false;
-                try {
-                  var num = Number(raw);
-                  return !!fn(String(raw)) ||
-                    (raw !== '' && isFinite(num) && !!fn(num));
-                } catch (e) {
-                  return false;
-                }
-              });
-            }
-          }
-          // Substring mode with optional leading `!` for negation.
-          var negate = v.charAt(0) === '!';
-          var term = negate ? v.slice(1).trim() : v;
-          if (term === '') return rows;
-          var needle = term.toLowerCase();
-          return rows.filter(function(row) {
-            var raw = row.values[columnId];
-            var match = raw != null &&
-              String(raw).toLowerCase().indexOf(needle) > -1;
-            return negate ? !match : match;
-          });
-        }"
-      )
+      # Per-column filter supporting substring search, `!` negation, and JS
+      # expressions referencing the cell value `x` (see search_filter_js()).
+      col_filter_method <- search_filter_js("column")
 
       # Create named column definitions using the labels
       col_defs <- stats::setNames(
@@ -323,58 +284,7 @@ ae_forestly <- function(outdata,
         resizable = TRUE,
         filterable = TRUE,
         searchable = TRUE,
-        searchMethod = reactable::JS(
-          "function(rows, columnIds, filterValue) {
-            var v = filterValue.trim();
-            if (v === '') return rows;
-            // JS expression mode: the term references the cell variable `x`
-            // (e.g. `x > 5`, `x.includes(\"A\")`, `x !== \"Rash\"`).
-            if (/(^|[^\\w$])x([^\\w$]|$)/.test(v)) {
-              var fn;
-              try {
-                fn = new Function('x', 'return (' + v + ');');
-              } catch (e) {
-                fn = null;
-              }
-              if (fn) {
-                // Negation expressions (leading `!` or `!=`) keep a row only when
-                // EVERY cell satisfies the test (i.e. no cell matches the excluded
-                // value). Positive expressions keep a row when ANY cell satisfies.
-                var isNegation = /^\\s*!|!=/.test(v);
-                var method = isNegation ? 'every' : 'some';
-                var evalCell = function(raw) {
-                  if (raw == null) return isNegation;
-                  try {
-                    var num = Number(raw);
-                    return !!fn(String(raw)) ||
-                      (raw !== '' && isFinite(num) && !!fn(num));
-                  } catch (e) {
-                    return false;
-                  }
-                };
-                return rows.filter(function(row) {
-                  return columnIds[method](function(id) {
-                    return evalCell(row.values[id]);
-                  });
-                });
-              }
-            }
-            // Substring mode with optional leading `!` for negation
-            // (e.g. `group A` keeps matching rows, `!group A` excludes them).
-            var negate = v.charAt(0) === '!';
-            var term = negate ? v.slice(1).trim() : v;
-            if (term === '') return rows;
-            var needle = term.toLowerCase();
-            return rows.filter(function(row) {
-              var match = columnIds.some(function(id) {
-                var raw = row.values[id];
-                return raw != null &&
-                  String(raw).toLowerCase().indexOf(needle) > -1;
-              });
-              return negate ? !match : match;
-            });
-          }"
-        ),
+        searchMethod = search_filter_js("table"),
         showPageSizeOptions = TRUE,
         borderless = TRUE,
         striped = TRUE,
