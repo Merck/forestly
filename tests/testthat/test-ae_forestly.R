@@ -18,6 +18,17 @@ test_that("ae_forestly(): test filter and width option", {
   expect_true(grepl("Number of AE in One or More Treatment Groups", html$children[[1]], fixed = TRUE))
 })
 
+test_that("ae_forestly(): detail table embeds custom search method", {
+  outdata <- test_ae_forestly()
+  html <- outdata |> ae_forestly()
+  html_text <- as.character(html)
+
+  # Custom searchMethod supporting substring, `!` negation, and JS expressions
+  expect_true(grepl("searchMethod", html_text, fixed = TRUE))
+  expect_true(grepl("var negate = v.charAt(0) === '!'", html_text, fixed = TRUE))
+  expect_true(grepl("new Function('x'", html_text, fixed = TRUE))
+})
+
 test_that("ae_forestly(): toggle risk difference button is hidden by default", {
   outdata <- metalite.ae::meta_ae_example() |>
     prepare_ae_forestly(
