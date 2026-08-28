@@ -278,6 +278,49 @@ format_ae_forestly <- function(
 
   # Column Definition ----
 
+  # Filter method for text columns: substring match, a leading `!` for
+  # negation (e.g. `!Rash`), and JS expressions referencing the cell value
+  # `x` (e.g. `x !== "Rash"`, `!x.includes("Rash")`).
+  text_filter_method <- reactable::JS(
+    "function(rows, columnId, filterValue) {
+      var v = filterValue.trim();
+      if (v === '') return rows;
+      // JS expression mode: the term references the cell variable `x`.
+      if (/(^|[^\\w$])x([^\\w$]|$)/.test(v)) {
+        var fn;
+        try {
+          fn = new Function('x', 'return (' + v + ');');
+        } catch (e) {
+          fn = null;
+        }
+        if (fn) {
+          return rows.filter(function(row) {
+            var raw = row.values[columnId];
+            if (raw == null) return false;
+            try {
+              var num = Number(raw);
+              return !!fn(String(raw)) ||
+                (raw !== '' && isFinite(num) && !!fn(num));
+            } catch (e) {
+              return false;
+            }
+          });
+        }
+      }
+      // Substring mode with optional leading `!` for negation.
+      var negate = v.charAt(0) === '!';
+      var term = negate ? v.slice(1).trim() : v;
+      if (term === '') return rows;
+      var needle = term.toLowerCase();
+      return rows.filter(function(row) {
+        var raw = row.values[columnId];
+        var match = raw != null &&
+          String(raw).toLowerCase().indexOf(needle) > -1;
+        return negate ? !match : match;
+      });
+    }"
+  )
+
   # Format variables for group
   col_var <- list(
     parameter = reactable::colDef(
@@ -286,7 +329,8 @@ format_ae_forestly <- function(
     ),
     name = reactable::colDef(
       header = ae_col_header,
-      minWidth = width_term, align = "right"
+      minWidth = width_term, align = "right",
+      filterMethod = text_filter_method
     ),
     soc_name = reactable::colDef(
       header = "SOC Name",
