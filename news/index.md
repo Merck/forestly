@@ -7,8 +7,8 @@ CRAN release: 2026-08-28
 ### Improvements
 
 - Remove `meta_forestly()` and the dependency on
-  [`metalite.ae::meta_ae_example()`](https://merck.github.io/metalite.ae/reference/meta_ae_example.html);
-  examples now construct metadata directly with `metalite`
+  `metalite.ae::meta_ae_example()`; examples now construct metadata
+  directly with `metalite`
   ([\#140](https://github.com/Merck/forestly/issues/140), thanks to
   [@LittleBeannie](https://github.com/LittleBeannie)).
 

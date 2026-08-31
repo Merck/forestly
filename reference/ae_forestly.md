@@ -69,6 +69,58 @@ ae_forestly(
 
 An AE forest plot saved as a `shiny.tag.list` object.
 
+## Searching and filtering
+
+The interactive table has a search box for each column (and, in the
+expandable detail listing, a table-wide search box). In addition to a
+plain substring match, the search terms understand two extra styles.
+
+**Negation with `!`.** Prefix a term with an exclamation mark to
+*exclude* matching rows instead of keeping them:
+
+- `Rash` — keep rows whose value contains "Rash".
+
+- `!Rash` — keep rows whose value does *not* contain "Rash".
+
+**Expressions.** If the term mentions the letter `x` (which stands for
+the value of the cell being searched), it is evaluated as a small
+expression and the row is kept when the expression is true. `x` behaves
+like the value in that column, so numeric columns can be compared with
+numbers and text columns with quoted text. Common patterns:
+
+|  |  |
+|----|----|
+| **Type this in the search box** | **Keeps rows where** |
+| `x > 5` | the value is greater than 5 |
+| `x >= 5` | the value is 5 or more |
+| `x < 65` | the value is less than 65 |
+| `x >= 18 && x <= 65` | the value is between 18 and 65 (inclusive) |
+| `x == 0` | the value equals 0 |
+| `x === "Rash"` | the value is exactly "Rash" |
+| `x !== "Rash"` | the value is anything except exactly "Rash" |
+| `x.includes("itch")` | the text contains "itch" |
+| `!x.includes("itch")` | the text does not contain "itch" |
+| `x.startsWith("Application")` | the text starts with "Application" |
+| `x.endsWith("itis")` | the text ends with "itis" |
+| `x === "M" || x === "F"` | the value is either "M" or "F" |
+
+Notes for the expression style:
+
+- Wrap text values in quotes (`"Rash"`); numbers need no quotes (`5`).
+
+- Use `&&` for "and", `||` for "or", and `!` in front of a condition for
+  "not".
+
+- Comparisons use doubled symbols: `===` (equal), `!==` (not equal),
+  together with `>`, `>=`, `<`, `<=`.
+
+- Matching is case-sensitive in the expression style, so `x === "m"`
+  will not match "M". Use the plain substring style (which ignores case)
+  when case does not matter.
+
+- A term that mentions `x` but is not a valid expression is treated as
+  an ordinary substring search, so everyday searches keep working.
+
 ## Examples
 
 ``` r

@@ -118,6 +118,33 @@ If only one value is provided, it will be used as the maximum and minimum will b
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>An AE forest plot saved as a <code>shiny.tag.list</code> object.</p>
     </div>
+    <div class="section level2">
+    <h2 id="searching-and-filtering">Searching and filtering<a class="anchor" aria-label="anchor" href="#searching-and-filtering"></a></h2>
+
+
+<p>The interactive table has a search box for each column (and, in the
+expandable detail listing, a table-wide search box). In addition to a
+plain substring match, the search terms understand two extra styles.</p>
+<p><strong>Negation with <code>!</code>.</strong> Prefix a term with an exclamation mark to <em>exclude</em>
+matching rows instead of keeping them:</p>
+<ul><li><p><code>Rash</code> — keep rows whose value contains "Rash".</p></li>
+<li><p><code>!Rash</code> — keep rows whose value does <em>not</em> contain "Rash".</p></li>
+</ul><p><strong>Expressions.</strong> If the term mentions the letter <code>x</code> (which stands for the
+value of the cell being searched), it is evaluated as a small expression and
+the row is kept when the expression is true. <code>x</code> behaves like the value in
+that column, so numeric columns can be compared with numbers and text
+columns with quoted text. Common patterns:</p>
+<table class="table table"><tr><td><strong>Type this in the search box</strong></td><td><strong>Keeps rows where</strong></td></tr><tr><td><code>x &gt; 5</code></td><td>the value is greater than 5</td></tr><tr><td><code>x &gt;= 5</code></td><td>the value is 5 or more</td></tr><tr><td><code>x &lt; 65</code></td><td>the value is less than 65</td></tr><tr><td><code>x &gt;= 18 &amp;&amp; x &lt;= 65</code></td><td>the value is between 18 and 65 (inclusive)</td></tr><tr><td><code>x == 0</code></td><td>the value equals 0</td></tr><tr><td><code>x === "Rash"</code></td><td>the value is exactly "Rash"</td></tr><tr><td><code>x !== "Rash"</code></td><td>the value is anything except exactly "Rash"</td></tr><tr><td><code>x.includes("itch")</code></td><td>the text contains "itch"</td></tr><tr><td><code>!x.includes("itch")</code></td><td>the text does not contain "itch"</td></tr><tr><td><code>x.startsWith("Application")</code></td><td>the text starts with "Application"</td></tr><tr><td><code>x.endsWith("itis")</code></td><td>the text ends with "itis"</td></tr><tr><td><code>x === "M" || x === "F"</code></td><td>the value is either "M" or "F"</td></tr></table><p>Notes for the expression style:</p><ul><li><p>Wrap text values in quotes (<code>"Rash"</code>); numbers need no quotes (<code>5</code>).</p></li>
+<li><p>Use <code>&amp;&amp;</code> for "and", <code>||</code> for "or", and <code>!</code> in front of a condition
+for "not".</p></li>
+<li><p>Comparisons use doubled symbols: <code>===</code> (equal), <code>!==</code> (not equal),
+together with <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code>.</p></li>
+<li><p>Matching is case-sensitive in the expression style, so <code>x === "m"</code>
+will not match "M". Use the plain substring style (which ignores case)
+when case does not matter.</p></li>
+<li><p>A term that mentions <code>x</code> but is not a valid expression is treated as
+an ordinary substring search, so everyday searches keep working.</p></li>
+</ul></div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
