@@ -46,6 +46,57 @@ An AE forest plot saved as a \code{shiny.tag.list} object.
 \description{
 Display interactive forest plot
 }
+\section{Searching and filtering}{
+
+The interactive table has a search box for each column (and, in the
+expandable detail listing, a table-wide search box). In addition to a
+plain substring match, the search terms understand two extra styles.
+
+\strong{Negation with \code{!}.} Prefix a term with an exclamation mark to \emph{exclude}
+matching rows instead of keeping them:
+
+\itemize{
+\item \code{Rash} --- keep rows whose value contains "Rash".
+\item \code{!Rash} --- keep rows whose value does \emph{not} contain "Rash".
+}
+
+\strong{Expressions.} If the term mentions the letter \code{x} (which stands for the
+value of the cell being searched), it is evaluated as a small expression and
+the row is kept when the expression is true. \code{x} behaves like the value in
+that column, so numeric columns can be compared with numbers and text
+columns with quoted text. Common patterns:
+
+\tabular{ll}{
+\strong{Type this in the search box} \tab \strong{Keeps rows where} \cr
+\code{x > 5}                       \tab the value is greater than 5 \cr
+\code{x >= 5}                      \tab the value is 5 or more \cr
+\code{x < 65}                      \tab the value is less than 65 \cr
+\code{x >= 18 && x <= 65}          \tab the value is between 18 and 65 (inclusive) \cr
+\code{x == 0}                      \tab the value equals 0 \cr
+\verb{x === "Rash"}                \tab the value is exactly "Rash" \cr
+\verb{x !== "Rash"}                \tab the value is anything except exactly "Rash" \cr
+\code{x.includes("itch")}          \tab the text contains "itch" \cr
+\code{!x.includes("itch")}         \tab the text does not contain "itch" \cr
+\code{x.startsWith("Application")} \tab the text starts with "Application" \cr
+\code{x.endsWith("itis")}          \tab the text ends with "itis" \cr
+\verb{x === "M" || x === "F"}      \tab the value is either "M" or "F" \cr
+}
+
+Notes for the expression style:
+\itemize{
+\item Wrap text values in quotes (\code{"Rash"}); numbers need no quotes (\code{5}).
+\item Use \code{&&} for "and", \code{||} for "or", and \code{!} in front of a condition
+for "not".
+\item Comparisons use doubled symbols: \verb{===} (equal), \verb{!==} (not equal),
+together with \code{>}, \code{>=}, \code{<}, \code{<=}.
+\item Matching is case-sensitive in the expression style, so \verb{x === "m"}
+will not match "M". Use the plain substring style (which ignores case)
+when case does not matter.
+\item A term that mentions \code{x} but is not a valid expression is treated as
+an ordinary substring search, so everyday searches keep working.
+}
+}
+
 \examples{
 adsl <- forestly_adsl
 adae <- forestly_adae

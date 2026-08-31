@@ -326,6 +326,10 @@ format_ae_forestly <- function(
 
   # Column Definition ----
 
+  # Filter method for the Adverse Event column: substring match, `!` negation,
+  # and JS expressions referencing the cell value `x` (see search_filter_js()).
+  text_filter_method <- search_filter_js("column")
+
   # Format variables for group
   col_var <- list(
     parameter = reactable::colDef(
@@ -334,7 +338,8 @@ format_ae_forestly <- function(
     ),
     name = reactable::colDef(
       header = ae_col_header,
-      minWidth = width_term, align = "right"
+      minWidth = width_term, align = "right",
+      filterMethod = text_filter_method
     ),
     soc_name = reactable::colDef(
       header = "SOC Name",
