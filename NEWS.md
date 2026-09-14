@@ -2,6 +2,7 @@
 
 ## Improvements
 
+- Speed up `ae_forestly()` by hoisting row-invariant work out of the per-row `details` callback, which `reactable` evaluates eagerly for every row (#147).
 - Remove `meta_forestly()` and the dependency on `metalite.ae::meta_ae_example()`; examples now construct metadata directly with `metalite` (#140, thanks to @LittleBeannie).
 
 # forestly 0.1.5
