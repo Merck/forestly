@@ -326,9 +326,11 @@ format_ae_forestly <- function(
 
   # Column Definition ----
 
-  # Filter method for the Adverse Event column: substring match, `!` negation,
-  # and JS expressions referencing the cell value `x` (see search_filter_js()).
-  text_filter_method <- search_filter_js("column")
+  # Filter method applied to every filterable column: substring match, `!`
+  # negation, and JS expressions referencing the cell value `x`, e.g. `x > 5`
+  # on a numeric column or `!x.includes("Rash")` on text (see
+  # search_filter_js()).
+  filter_method <- search_filter_js("column")
 
   # Format variables for group
   col_var <- list(
@@ -339,7 +341,7 @@ format_ae_forestly <- function(
     name = reactable::colDef(
       header = ae_col_header,
       minWidth = width_term, align = "right",
-      filterMethod = text_filter_method
+      filterMethod = filter_method
     ),
     soc_name = reactable::colDef(
       header = "SOC Name",
@@ -353,7 +355,8 @@ format_ae_forestly <- function(
     reactable::colDef(
       header = "n", defaultSortOrder = "desc",
       minWidth = width_n, align = "center",
-      show = display_n
+      show = display_n,
+      filterMethod = filter_method
     )
   })
   names(col_n) <- name_n
@@ -368,7 +371,8 @@ format_ae_forestly <- function(
         prefix = "(",
         digits = digits,
         suffix = ")"
-      )
+      ),
+      filterMethod = filter_method
     )
   })
   names(col_prop) <- name_prop
@@ -386,7 +390,8 @@ format_ae_forestly <- function(
         ),
         minWidth = width_diff,
         show = display_diff,
-        format = reactable::colFormat(digits = digits)
+        format = reactable::colFormat(digits = digits),
+        filterMethod = filter_method
       )
     }
   )
