@@ -6,6 +6,11 @@ CRAN release: 2026-08-28
 
 ### Improvements
 
+- Speed up
+  [`ae_forestly()`](https://merck.github.io/forestly/reference/ae_forestly.md)
+  by hoisting row-invariant work out of the per-row `details` callback,
+  which `reactable` evaluates eagerly for every row
+  ([\#147](https://github.com/Merck/forestly/issues/147)).
 - Remove `meta_forestly()` and the dependency on
   `metalite.ae::meta_ae_example()`; examples now construct metadata
   directly with `metalite`
