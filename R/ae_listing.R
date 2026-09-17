@@ -391,15 +391,14 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
       sep = " "
     ) # AE duration with unit
 
-    if (length(res[["Duration"]]) > 0) {
-      for (i in 1:length(res[["Duration"]])) {
-        if (is.na(res[["ADURN"]][i])) {
-          res[["Duration"]][i] <- ifelse(charmatch(toupper(res[["AEOUT"]][i]), "RECOVERING/RESOLVING") > 0 |
-            charmatch(toupper(res[["AEOUT"]][i]), "NOT RECOVERED/NOT RESOLVED") > 0,
-          "Continuing", "Unknown"
-          )
-        }
-      }
+    na_dur <- is.na(res[["ADURN"]])
+    if (any(na_dur)) {
+      aeout_na <- toupper(res[["AEOUT"]][na_dur])
+      res[["Duration"]][na_dur] <- ifelse(
+        charmatch(aeout_na, "RECOVERING/RESOLVING") > 0 |
+          charmatch(aeout_na, "NOT RECOVERED/NOT RESOLVED") > 0,
+        "Continuing", "Unknown"
+      )
     }
     res <- res[, !(names(res) %in% "ADURU")]
     res_columns <- res_columns[!(res_columns %in% "ADURU")]
@@ -429,38 +428,32 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
 
   # Action taken
   if ("AEACN" %in% toupper(names(res))) {
-    if (length(res[["AEACN"]]) > 0) {
-      for (i in 1:length(res[["AEACN"]])) {
-        res[["Action_Taken"]][i] <- switch(res[["AEACN"]][i],
-          "DOSE NOT CHANGED" = "None",
-          "DOSE REDUCED" = "Reduced",
-          "DRUG INTERRUPTED" = "Interrupted",
-          "DOSE INCREASED" = "Increased",
-          "NOT APPLICABLE" = "N/A",
-          "UNKNOWN" = "Unknown",
-          titlecase(res[["AEACN"]][i], lower = TRUE)
-        )
-      }
-    } else {
-      res[["Action_Taken"]] <- res[["AEACN"]]
-    }
+    acn <- res[["AEACN"]]
+    acn_map <- c(
+      "DOSE NOT CHANGED" = "None",
+      "DOSE REDUCED" = "Reduced",
+      "DRUG INTERRUPTED" = "Interrupted",
+      "DOSE INCREASED" = "Increased",
+      "NOT APPLICABLE" = "N/A",
+      "UNKNOWN" = "Unknown"
+    )
+    mapped <- acn_map[acn]
+    # Values not in the lookup fall back to title case of the original value.
+    res[["Action_Taken"]] <- ifelse(is.na(mapped), titlecase(acn, lower = TRUE), unname(mapped))
   }
 
   # Outcome
   if ("AEOUT" %in% toupper(names(res))) {
-    if (length(res[["AEOUT"]]) > 0) {
-      for (i in 1:length(res[["AEOUT"]])) {
-        res[["Outcome"]][i] <- switch(res[["AEOUT"]][i],
-          "RECOVERED/RESOLVED" = "Resolved",
-          "RECOVERING/RESOLVING" = "Resolving",
-          "RECOVERED/RESOLVED WITH SEQUELAE" = "Sequelae",
-          "NOT RECOVERED/NOT RESOLVED" = "Not Resolved",
-          titlecase(res[["AEOUT"]][i], lower = TRUE)
-        )
-      }
-    } else {
-      res[["Outcome"]] <- res[["AEOUT"]]
-    }
+    out <- res[["AEOUT"]]
+    out_map <- c(
+      "RECOVERED/RESOLVED" = "Resolved",
+      "RECOVERING/RESOLVING" = "Resolving",
+      "RECOVERED/RESOLVED WITH SEQUELAE" = "Sequelae",
+      "NOT RECOVERED/NOT RESOLVED" = "Not Resolved"
+    )
+    mapped <- out_map[out]
+    # Values not in the lookup fall back to title case of the original value.
+    res[["Outcome"]] <- ifelse(is.na(mapped), titlecase(out, lower = TRUE), unname(mapped))
   }
   # Total dose on day of AE onset
   if ("AEDOSDUR" %in% toupper(names(res))) {
