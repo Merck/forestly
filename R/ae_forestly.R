@@ -312,6 +312,44 @@ ae_forestly <- function(outdata,
     hidden_cols <- setdiff(hidden_cols, displayed_diff_cols)
   }
 
+  # Pre-compute values that do not depend on the expanded row. `reactable`
+  # evaluates the `details` callback eagerly for every row, so anything that is
+  # constant across rows is hoisted here to avoid recomputing it n times (see
+  # #147). This includes the AE listing lookup keys, the shared labels, the
+  # search/filter JS callbacks, and the nested-table column definitions (the
+  # displayed columns are the same for every row).
+  ae_listing <- outdata$ae_listing
+  ae_listing_event_upper <- toupper(ae_listing$Adverse_Event)
+  ae_listing_soc_upper <- toupper(ae_listing$SOC_Name)
+  ae_listing_param <- ae_listing$param
+
+  detail_cols <- names(ae_listing)[!(names(ae_listing) %in% c("param", "SOC_Name"))]
+  listing_label <- get_label(ae_listing)
+  detail_labels <- unname(listing_label[match(detail_cols, names(listing_label))])
+
+  # Per-column filter and table-wide search supporting substring search,
+  # `!` negation, and JS expressions referencing the cell value `x`
+  # (see search_filter_js()).
+  col_filter_method <- search_filter_js("column")
+  table_search_method <- search_filter_js("table")
+
+  detail_col_defs <- stats::setNames(
+    lapply(seq_along(detail_cols), function(i) {
+      label_name <- if (is.na(detail_labels[i])) detail_cols[i] else detail_labels[i]
+      reactable::colDef(
+        header = label_name,
+        cell = function(value) format(value, nsmall = 1),
+        align = "center",
+        minWidth = 70,
+        filterMethod = col_filter_method
+      )
+    }),
+    detail_cols
+  )
+
+  tbl_name <- outdata$tbl$name
+  tbl_parameter <- outdata$tbl$parameter
+
   p_reactable <- reactable2(
     tbl,
     columns = outdata$reactable_columns,
@@ -324,64 +362,25 @@ ae_forestly <- function(outdata,
     download = dowload_button,
     searchable = FALSE,
     details = function(index) {
-      t_row <- outdata$tbl$name[index]
-      t_param <- outdata$tbl$parameter[index]
+      t_row <- toupper(tbl_name[index])
+      t_param <- tbl_parameter[index]
 
-      t_details <- subset(
-        outdata$ae_listing,
-        ((toupper(outdata$ae_listing$Adverse_Event) %in% toupper(t_row)) &
-           (outdata$ae_listing$param == t_param)) |
-          ((toupper(outdata$ae_listing$SOC_Name) %in% toupper(t_row)) &
-             (outdata$ae_listing$param == t_param))
-      )
+      keep <- ((ae_listing_event_upper %in% t_row) |
+        (ae_listing_soc_upper %in% t_row)) &
+        (ae_listing_param == t_param)
 
-      # Exclude 'param' column from t_details
-      t_details <- t_details[, !(names(t_details) %in% c("param", "SOC_Name"))]
-
-      # Get all labels from the un-subset data
-      listing_label <- get_label(outdata$ae_listing)
-
-      # Assign labels
-      t_details <- assign_label(
-        data = t_details,
-        var = names(t_details),
-        label = listing_label[match(names(t_details), names(listing_label))]
-      )
-
+      t_details <- ae_listing[keep, detail_cols, drop = FALSE]
       row.names(t_details) <- NULL
-
-      # Extract labels for use in column definitions
-      labels <- lapply(t_details, function(x) attr(x, "label"))
-
-      # Per-column filter supporting substring search, `!` negation, and JS
-      # expressions referencing the cell value `x` (see search_filter_js()).
-      col_filter_method <- search_filter_js("column")
-
-      # Create named column definitions using the labels
-      col_defs <- stats::setNames(
-        lapply(names(t_details), function(name) {
-          # Use label from the list
-          label_name <- if (is.null(labels[[name]])) name else labels[[name]][[1]]
-          reactable::colDef(
-            header = label_name, # Use header instead of name
-            cell = function(value) format(value, nsmall = 1),
-            align = "center",
-            minWidth = 70,
-            filterMethod = col_filter_method
-          )
-        }),
-        names(t_details)
-      )
 
       # Create and return the reactable table for the nested view
       reactable::reactable(
         t_details,
-        columns = col_defs,
+        columns = detail_col_defs,
         width = "100%", # Adjust width as needed
         resizable = TRUE,
         filterable = TRUE,
         searchable = TRUE,
-        searchMethod = search_filter_js("table"),
+        searchMethod = table_search_method,
         showPageSizeOptions = TRUE,
         borderless = TRUE,
         striped = TRUE,
