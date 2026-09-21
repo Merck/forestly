@@ -75,3 +75,19 @@
 # expect_true("ae_listing" %in% names(ae_df))
 # expect_snapshot_output(ae_df)
 # })
+
+test_that("prepare_ae_forestly() retains a parameter with one AE record", {
+	meta <- meta_ae_test()
+	meta$data_observation$AESER <- "N"
+	meta$data_observation$AESER[1] <- "Y"
+
+	outdata <- prepare_ae_forestly(
+		meta,
+		population = "apat",
+		observation = "wk12",
+		parameter = "any;rel;ser"
+	)
+
+	expect_true("ser" %in% as.character(outdata$parameter_order))
+	expect_equal(sum(outdata$ae_listing$param == "ser"), 1)
+})
