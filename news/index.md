@@ -6,6 +6,9 @@ CRAN release: 2026-08-28
 
 ### Improvements
 
+- Speed up `format_ae_listing()` by vectorizing the per-row loops that
+  map `AEACN`, `AEOUT`, and missing `ADURN` durations to display labels,
+  avoiding quadratic-time column copies on large AE listings.
 - Speed up
   [`ae_forestly()`](https://merck.github.io/forestly/reference/ae_forestly.md)
   by hoisting row-invariant work out of the per-row `details` callback,
