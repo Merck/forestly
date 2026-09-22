@@ -217,6 +217,14 @@ sparkline_point_js <- function(
   # Convert x-axis label
   js_xlab <- xlab
 
+  # Only the axis (footer/header) should draw the x-axis line and ticks. Cell
+  # sparklines share this template but must not render an axis line: each cell
+  # plot is a fixed height, so its bottom axis line would otherwise appear as a
+  # stray horizontal rule inside the table row.
+  draw_axis <- type %in% c("footer", "header")
+  js_showline <- ifelse(draw_axis, "true", "false")
+  js_ticks <- ifelse(draw_axis, "outside", "")
+
   # Convert legend
   js_showlegend <- ifelse(legend, "true", "false")
   js_legend_title <- legend_title

@@ -6,6 +6,10 @@
 - Speed up `ae_forestly()` by hoisting row-invariant work out of the per-row `details` callback, which `reactable` evaluates eagerly for every row (#147).
 - Remove `meta_forestly()` and the dependency on `metalite.ae::meta_ae_example()`; examples now construct metadata directly with `metalite` (#140, thanks to @LittleBeannie).
 
+## Bug fixes
+
+- Stop `ae_forestly()` sparkline cells from drawing their own x-axis line, which could appear as stray horizontal lines across the AE proportion and risk difference columns; only the footer axis now renders the line and ticks (#156).
+
 # forestly 0.1.5
 
 ## New features

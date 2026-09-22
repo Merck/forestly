@@ -65,8 +65,8 @@ function(cell, state) {
           }
         },
         "range": x_range,
-        "showline": true,
-        "ticks": "outside",
+        "showline": <%=js_showline%>,
+        "ticks": "<%=js_ticks%>",
         "zeroline": false,
         "fixedrange": true
       },
