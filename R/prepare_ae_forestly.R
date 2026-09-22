@@ -190,11 +190,17 @@ prepare_ae_forestly <- function(
     }
   }
 
+  ae_row <- lapply(res, function(x) {
+    !is.na(x$soc_name) |
+      x$order >= 1000 |
+      x$name %in% x$ae_listing$Adverse_Event
+  })
+
   # Arrange data frame
   foo <- function(name) {
-    tmp <- lapply(res, function(x) {
-      x0 <- data.frame(x[[name]][x[["order"]] >= 1000, ])
-      names(x0) <- names(x[[name]])
+    tmp <- lapply(seq_along(res), function(i) {
+      x0 <- data.frame(res[[i]][[name]][ae_row[[i]], ])
+      names(x0) <- names(res[[i]][[name]])
       x0
     })
     do.call(rbind, tmp)
@@ -206,8 +212,8 @@ prepare_ae_forestly <- function(
 
   # Arrange vector
   foo <- function(name) {
-    tmp <- lapply(res, function(x) {
-      x[[name]][x[["order"]] >= 1000]
+    tmp <- lapply(seq_along(res), function(i) {
+      res[[i]][[name]][ae_row[[i]]]
     })
     n <- vapply(tmp, length, FUN.VALUE = numeric(1))
     tmp <- unlist(tmp)
