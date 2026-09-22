@@ -176,7 +176,7 @@ outdata |> rtf_static_forestly(
   path_outdata = tempfile(fileext = ".Rdata"),
   path_outtable =  tempfile(fileext = ".rtf")
 )
-#> The outdata is saved in /tmp/Rtmpykon2Z/file19bb61e02af2.Rdata
-#> The output is saved in /tmp/Rtmpykon2Z/file19bb56003022.rtf
+#> The outdata is saved in /tmp/Rtmp3OWw3u/file19c54f216421.Rdata
+#> The output is saved in /tmp/Rtmp3OWw3u/file19c51a971ae2.rtf
 # }
 ```
