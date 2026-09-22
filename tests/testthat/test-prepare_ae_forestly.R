@@ -77,19 +77,34 @@
 # })
 
 test_that("prepare_ae_forestly() retains a parameter with one AE record", {
-	meta <- meta_ae_test()
-	meta$data_observation$AESER <- "N"
-	meta$data_observation$AESER[1] <- "Y"
+  meta <- meta_ae_test()
+  meta$data_observation$AESER <- "N"
+  meta$data_observation$AESER[1] <- "Y"
 
-	outdata <- prepare_ae_forestly(
-		meta,
-		population = "apat",
-		observation = "wk12",
-		parameter = "any;rel;ser"
-	)
+  outdata <- prepare_ae_forestly(
+    meta,
+    population = "apat",
+    observation = "wk12",
+    parameter = "any;rel;ser"
+  )
 
-	expect_true("ser" %in% as.character(outdata$parameter_order))
-	expect_equal(sum(outdata$ae_listing$param == "ser"), 1)
+  # The single serious AE must survive into the forest-plot inference rows.
+  ser_rows <- as.character(outdata$parameter_order) == "ser"
+  expect_true(any(ser_rows))
+
+  # Exactly one retained ser row is a specific-AE row (non-missing SOC name),
+  # i.e. the fix keeps the low-frequency event row rather than a summary row.
+  expect_equal(sum(ser_rows & !is.na(outdata$soc_name)), 1)
+
+  # The retained inference row corresponds to the same AE term listed in the
+  # drill-down listing for the ser parameter.
+  ser_name <- outdata$name[ser_rows & !is.na(outdata$soc_name)]
+  ser_listing <- outdata$ae_listing[outdata$ae_listing$param == "ser", ]
+  expect_equal(nrow(ser_listing), 1)
+  expect_equal(
+    tolower(ser_name),
+    unique(tolower(ser_listing$Adverse_Event))
+  )
 })
 
 test_that("prepare_ae_forestly() retains a specific AE with missing SOC", {
