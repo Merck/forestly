@@ -91,3 +91,21 @@ test_that("prepare_ae_forestly() retains a parameter with one AE record", {
 	expect_true("ser" %in% as.character(outdata$parameter_order))
 	expect_equal(sum(outdata$ae_listing$param == "ser"), 1)
 })
+
+test_that("prepare_ae_forestly() retains a specific AE with missing SOC", {
+	meta <- meta_ae_test()
+	meta$data_observation$AESER <- "N"
+	meta$data_observation$AESER[1] <- "Y"
+	meta$data_observation$AEBODSYS[1] <- NA_character_
+
+	outdata <- prepare_ae_forestly(
+		meta,
+		population = "apat",
+		observation = "wk12",
+		parameter = "ser"
+	)
+
+	expect_equal(as.character(outdata$name), as.character(outdata$ae_listing$Adverse_Event))
+	expect_true(is.na(outdata$soc_name))
+	expect_equal(as.character(outdata$parameter_order), "ser")
+})
