@@ -38,74 +38,27 @@
 #'   table-wide `searchMethod` (signature
 #'   `function(rows, columnIds, filterValue)`).
 #'
-#' @return A `reactable::JS()` object.
+#' @return A `reactable::JS()` object referencing the shared implementation.
+#'
+#' @details The implementation lives in `inst/js/search-filter.js` and is
+#'   attached once per table via [html_dependency_search_filter()]. This
+#'   function returns only a short reference to that global (e.g.
+#'   `window.__forestly_filter_column`). The drill-down listing embeds one
+#'   nested `reactable` per row of the main table, so inlining the full
+#'   ~1.8 KB function body into every column of every nested table previously
+#'   duplicated it hundreds of thousands of times and inflated the
+#'   self-contained widget past a gigabyte; referencing a global keeps each
+#'   `filterMethod` / `searchMethod` to a few dozen bytes.
 #'
 #' @noRd
 search_filter_js <- function(scope = c("column", "table")) {
   scope <- match.arg(scope)
 
-  # The body is identical for both scopes once the set of searched column ids
-  # is normalized to an array: a per-column filter searches `[columnId]`, a
-  # table-wide search searches all `columnIds`. Iterating with some()/every()
-  # over a one-element array reduces to testing that single cell.
-  signature <- if (scope == "column") {
-    "function(rows, columnId, filterValue)"
+  ref <- if (scope == "column") {
+    "window.__forestly_filter_column"
   } else {
-    "function(rows, columnIds, filterValue)"
+    "window.__forestly_filter_table"
   }
-  ids <- if (scope == "column") "[columnId]" else "columnIds"
 
-  reactable::JS(sprintf(
-    "%s {
-      var v = filterValue.trim();
-      if (v === '') return rows;
-      var ids = %s;
-      // JS expression mode: the term references the cell variable `x`
-      // (e.g. `x > 5`, `x !== \"Rash\"`, `!x.includes(\"Rash\")`).
-      if (/(^|[^\\w$])x([^\\w$]|$)/.test(v)) {
-        var fn;
-        try {
-          fn = new Function('x', 'return (' + v + ');');
-        } catch (e) {
-          fn = null;
-        }
-        if (fn) {
-          // Negation expressions (leading `!` or `!=`) keep a row only when
-          // every searched cell satisfies the test; positive expressions keep
-          // a row when any searched cell satisfies it.
-          var isNegation = /^\\s*!|!=/.test(v);
-          var method = isNegation ? 'every' : 'some';
-          var evalCell = function(raw) {
-            if (raw == null) return isNegation;
-            try {
-              var num = Number(raw);
-              return !!fn(String(raw)) ||
-                (raw !== '' && isFinite(num) && !!fn(num));
-            } catch (e) {
-              return false;
-            }
-          };
-          return rows.filter(function(row) {
-            return ids[method](function(id) {
-              return evalCell(row.values[id]);
-            });
-          });
-        }
-      }
-      // Substring mode with optional leading `!` for negation.
-      var negate = v.charAt(0) === '!';
-      var term = negate ? v.slice(1).trim() : v;
-      if (term === '') return rows;
-      var needle = term.toLowerCase();
-      return rows.filter(function(row) {
-        var match = ids.some(function(id) {
-          var raw = row.values[id];
-          return raw != null &&
-            String(raw).toLowerCase().indexOf(needle) > -1;
-        });
-        return negate ? !match : match;
-      });
-    }",
-    signature, ids
-  ))
+  reactable::JS(ref)
 }
