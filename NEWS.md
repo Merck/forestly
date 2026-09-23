@@ -2,6 +2,7 @@
 
 ## Improvements
 
+- Shrink the `ae_forestly()` widget by moving the drill-down listing search/filter JavaScript into a shared `inst/js/search-filter.js` dependency and referencing it by name, instead of inlining the ~1.8 KB function body into every column of every per-row nested table. On large outputs this removes hundreds of megabytes of duplicated JavaScript (each nested table drops from ~27 KB to ~3 KB), which also speeds up widget construction and HTML serialization.
 - Speed up `format_ae_listing()` by vectorizing the per-row loops that map `AEACN`, `AEOUT`, and missing `ADURN` durations to display labels, avoiding quadratic-time column copies on large AE listings.
 - Speed up `ae_forestly()` by hoisting row-invariant work out of the per-row `details` callback, which `reactable` evaluates eagerly for every row (#147).
 - Remove `meta_forestly()` and the dependency on `metalite.ae::meta_ae_example()`; examples now construct metadata directly with `metalite` (#140, thanks to @LittleBeannie).

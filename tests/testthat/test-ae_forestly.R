@@ -23,10 +23,25 @@ test_that("ae_forestly(): detail table embeds custom search method", {
   html <- outdata |> ae_forestly()
   html_text <- as.character(html)
 
-  # Custom searchMethod supporting substring, `!` negation, and JS expressions
+  # The custom search / filter methods reference the shared globals defined in
+  # inst/js/search-filter.js (deduplicated to keep the widget small), rather
+  # than inlining the function body into every nested table.
   expect_true(grepl("searchMethod", html_text, fixed = TRUE))
-  expect_true(grepl("var negate = v.charAt(0) === '!'", html_text, fixed = TRUE))
-  expect_true(grepl("new Function('x'", html_text, fixed = TRUE))
+  expect_true(grepl("window.__forestly_filter_table", html_text, fixed = TRUE))
+  expect_true(grepl("window.__forestly_filter_column", html_text, fixed = TRUE))
+})
+
+test_that("search-filter.js defines the shared globals and search logic", {
+  js_path <- system.file("js", "search-filter.js", package = "forestly")
+  expect_true(file.exists(js_path))
+  js <- paste(readLines(js_path, warn = FALSE), collapse = "\n")
+
+  # Both globals referenced by search_filter_js() are defined here.
+  expect_true(grepl("window.__forestly_filter_column", js, fixed = TRUE))
+  expect_true(grepl("window.__forestly_filter_table", js, fixed = TRUE))
+  # Substring `!` negation and JS expression modes live in the shared body.
+  expect_true(grepl("var negate = v.charAt(0) === '!'", js, fixed = TRUE))
+  expect_true(grepl("new Function('x'", js, fixed = TRUE))
 })
 
 test_that("ae_forestly(): toggle risk difference button is hidden by default", {

@@ -417,6 +417,7 @@ ae_forestly <- function(outdata,
   htmltools::browsable(
     htmltools::tagList(
       html_dependency_filter_crosstalk(),
+      html_dependency_search_filter(),
       reactR::html_dependency_react(offline),
       html_dependency_plotly(offline),
       html_dependency_react_plotly(offline),

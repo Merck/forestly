@@ -62,3 +62,18 @@ html_dependency_filter_crosstalk <- function() {
     all_files = FALSE
   )
 }
+
+# Defines the shared `window.__forestly_filter_column` / `__forestly_filter_table`
+# globals used as the drill-down listing `filterMethod` / `searchMethod`, so the
+# implementation is emitted once instead of being inlined into every nested
+# table (see `search_filter_js()`).
+html_dependency_search_filter <- function() {
+  version <- "0.1.0"
+  htmltools::htmlDependency(
+    name = "forestly-search-filter",
+    version = version,
+    src = system.file("js", package = "forestly"),
+    script = c("search-filter.js"),
+    all_files = FALSE
+  )
+}
