@@ -149,26 +149,9 @@ plot_dot <- function(
   tbl <- tbl[, -y_id]
 
   n_trt <- length(label)
-  # Create vector for color
-  if (is.null(color)) {
-    if (n_trt <= 2) {
-      color <- c("#00857C", "#66203A")
-    } else {
-      if (n_trt > 3) stop("Must define color to display groups.")
-      color <- c("#66203A", rev(c("#00857C", "#6ECEB2", "#BFED33")[1:n_trt]))
-    }
-  }
-  color <- rep(color, length.out = n_trt)
-
-  # Create vector for shape
-  shape <- if (is.null(shape)) {
-    rep(
-      c("circle", "square", "diamond", "triangle"),
-      length.out = n_trt
-    )
-  } else {
-    rep(shape, length.out = n_trt)
-  }
+  cs <- panel_color_shape(color, shape, n_trt)
+  color <- cs$color
+  shape <- cs$shape
 
   # Get the number of columns for values
   n_col <- ncol(tbl)
@@ -459,24 +442,9 @@ plot_errorbar <- function(
   if (n_trt > 2 & grp_abbrev == "paired") {
     stop("Must set argument `grp_abbrev` as `\"grouped\"` for a grouped plot.")
   }
-  # Create vector for color
-  # Create vector for color
-  if (is.null(color)) {
-    if (n_trt <= 2) {
-      color <- c("#00857C", "#66203A")
-    } else {
-      if (n_trt > 3) stop("Must define color to display groups.")
-      color <- c("#66203A", rev(c("#00857C", "#6ECEB2", "#BFED33")[1:n_trt]))
-    }
-  }
-  color <- rep(color, length.out = n_trt)
-
-  # Create vector for shape
-  shape <- if (is.null(shape)) {
-    rep(c("circle", "square", "diamond", "triangle"), length.out = n_trt)
-  } else {
-    rep(shape, length.out = n_trt)
-  }
+  cs <- panel_color_shape(color, shape, n_trt)
+  color <- cs$color
+  shape <- cs$shape
 
   # Get the number of columns for values
   n_col <- ncol(tbl)
@@ -671,6 +639,40 @@ plot_errorbar <- function(
 #' nudge_unit(10)
 nudge_unit <- function(n) {
   -0.5 + (1:n - 0.5) / n
+}
+
+#' Build recycled color and shape vectors for treatment groups
+#'
+#' Shared default color/shape logic for [plot_dot()] and [plot_errorbar()].
+#'
+#' @param color Color for each treatment group, or `NULL` to use defaults.
+#' @param shape Shape for each treatment group, or `NULL` to use defaults.
+#' @param n_trt Number of treatment groups.
+#'
+#' @return A list with recycled `color` and `shape` vectors, each of
+#'   length `n_trt`.
+#'
+#' @noRd
+panel_color_shape <- function(color, shape, n_trt) {
+  # Create vector for color
+  if (is.null(color)) {
+    if (n_trt <= 2) {
+      color <- c("#00857C", "#66203A")
+    } else {
+      if (n_trt > 3) stop("Must define color to display groups.")
+      color <- c("#66203A", rev(c("#00857C", "#6ECEB2", "#BFED33")[1:n_trt]))
+    }
+  }
+  color <- rep(color, length.out = n_trt)
+
+  # Create vector for shape
+  shape <- if (is.null(shape)) {
+    rep(c("circle", "square", "diamond", "triangle"), length.out = n_trt)
+  } else {
+    rep(shape, length.out = n_trt)
+  }
+
+  list(color = color, shape = shape)
 }
 
 #' Create table panel ggplot2 object for rainfall or forest plot
