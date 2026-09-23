@@ -6,6 +6,15 @@ CRAN release: 2026-08-28
 
 ### Improvements
 
+- Shrink the
+  [`ae_forestly()`](https://merck.github.io/forestly/reference/ae_forestly.md)
+  widget by moving the drill-down listing search/filter JavaScript into
+  a shared `inst/js/search-filter.js` dependency and referencing it by
+  name, instead of inlining the ~1.8 KB function body into every column
+  of every per-row nested table. On large outputs this removes hundreds
+  of megabytes of duplicated JavaScript (each nested table drops from
+  ~27 KB to ~3 KB), which also speeds up widget construction and HTML
+  serialization.
 - Speed up `format_ae_listing()` by vectorizing the per-row loops that
   map `AEACN`, `AEOUT`, and missing `ADURN` durations to display labels,
   avoiding quadratic-time column copies on large AE listings.
@@ -19,6 +28,15 @@ CRAN release: 2026-08-28
   directly with `metalite`
   ([\#140](https://github.com/Merck/forestly/issues/140), thanks to
   [@LittleBeannie](https://github.com/LittleBeannie)).
+
+### Bug fixes
+
+- Stop
+  [`ae_forestly()`](https://merck.github.io/forestly/reference/ae_forestly.md)
+  sparkline cells from drawing their own x-axis line, which could appear
+  as stray horizontal lines across the AE proportion and risk difference
+  columns; only the footer axis now renders the line and ticks
+  ([\#156](https://github.com/Merck/forestly/issues/156)).
 
 ## forestly 0.1.5
 

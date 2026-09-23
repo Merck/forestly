@@ -51,9 +51,14 @@
 <h2 class="pkg-version" data-toc-text="0.1.6" id="forestly-016">forestly 0.1.6<a class="anchor" aria-label="anchor" href="#forestly-016"></a></h2><p class="text-muted">CRAN release: 2026-08-28</p>
 <div class="section level3">
 <h3 id="improvements-0-1-6">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-1-6"></a></h3>
-<ul><li>Speed up <code>format_ae_listing()</code> by vectorizing the per-row loops that map <code>AEACN</code>, <code>AEOUT</code>, and missing <code>ADURN</code> durations to display labels, avoiding quadratic-time column copies on large AE listings.</li>
+<ul><li>Shrink the <code><a href="../reference/ae_forestly.html">ae_forestly()</a></code> widget by moving the drill-down listing search/filter JavaScript into a shared <code>inst/js/search-filter.js</code> dependency and referencing it by name, instead of inlining the ~1.8 KB function body into every column of every per-row nested table. On large outputs this removes hundreds of megabytes of duplicated JavaScript (each nested table drops from ~27 KB to ~3 KB), which also speeds up widget construction and HTML serialization.</li>
+<li>Speed up <code>format_ae_listing()</code> by vectorizing the per-row loops that map <code>AEACN</code>, <code>AEOUT</code>, and missing <code>ADURN</code> durations to display labels, avoiding quadratic-time column copies on large AE listings.</li>
 <li>Speed up <code><a href="../reference/ae_forestly.html">ae_forestly()</a></code> by hoisting row-invariant work out of the per-row <code>details</code> callback, which <code>reactable</code> evaluates eagerly for every row (<a href="https://github.com/Merck/forestly/issues/147" class="external-link">#147</a>).</li>
 <li>Remove <code>meta_forestly()</code> and the dependency on <code>metalite.ae::meta_ae_example()</code>; examples now construct metadata directly with <code>metalite</code> (<a href="https://github.com/Merck/forestly/issues/140" class="external-link">#140</a>, thanks to <a href="https://github.com/LittleBeannie" class="external-link">@LittleBeannie</a>).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-1-6">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-1-6"></a></h3>
+<ul><li>Stop <code><a href="../reference/ae_forestly.html">ae_forestly()</a></code> sparkline cells from drawing their own x-axis line, which could appear as stray horizontal lines across the AE proportion and risk difference columns; only the footer axis now renders the line and ticks (<a href="https://github.com/Merck/forestly/issues/156" class="external-link">#156</a>).</li>
 </ul></div>
 </div>
     <div class="section level2">
