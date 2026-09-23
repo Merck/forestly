@@ -395,8 +395,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
     if (any(na_dur)) {
       aeout_na <- toupper(res[["AEOUT"]][na_dur])
       res[["Duration"]][na_dur] <- ifelse(
-        charmatch(aeout_na, "RECOVERING/RESOLVING") > 0 |
-          charmatch(aeout_na, "NOT RECOVERED/NOT RESOLVED") > 0,
+        aeout_na %in% c("RECOVERING/RESOLVING", "NOT RECOVERED/NOT RESOLVED"),
         "Continuing", "Unknown"
       )
     }
