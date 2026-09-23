@@ -456,47 +456,40 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   }
   # Total dose on day of AE onset
   if ("AEDOSDUR" %in% toupper(names(res))) {
-    res[["ymd"]] <- substring(res[["AEDOSDUR"]], unlist(gregexpr("/P", res[["AEDOSDUR"]])) + 2)
+    # Parse the ISO-8601-style duration (e.g. ".../P1Y2M3D") into a human
+    # readable string such as "1 year 2 months 3 days". This is vectorized: for
+    # each Y/M/D designator we pull the digits immediately preceding it (or NA
+    # when the designator is absent) and format that one component. See #160 for
+    # the previous per-row loop, which errored when a designator repeated.
+    ymd <- sub(".*?/P", "", res[["AEDOSDUR"]])
 
-    res[["Total_Dose_on_Day_of_AE_Onset"]] <- ""
-
-    if (length(res[["AEDOSDUR"]]) > 0) {
-      for (i in 1:length(res[["AEDOSDUR"]])) {
-        if (unlist(gregexpr("Y", res[["ymd"]][i])) > 0) {
-          val_year <- substring(res[["ymd"]][i], 1, unlist(gregexpr("Y", res[["ymd"]][i])) - 1)
-          if (as.numeric(val_year) != 1) {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], val_year, " years")
-          } else {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], "1 year")
-          }
-
-          res[["ymd"]][i] <- substring(res[["ymd"]][i], unlist(gregexpr("Y", res[["ymd"]][i])) + 1)
-        }
-        if (unlist(gregexpr("M", res[["ymd"]][i])) > 0) {
-          val_month <- substring(res[["ymd"]][i], 1, unlist(gregexpr("M", res[["ymd"]][i])) - 1)
-
-          if (as.numeric(val_month) != 1) {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], " ", val_month, " months")
-          } else {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], " 1 month")
-          }
-
-          res[["ymd"]][i] <- substring(res[["ymd"]][i], unlist(gregexpr("M", res[["ymd"]][i])) + 1)
-        }
-        if (unlist(gregexpr("D", res[["ymd"]][i])) > 0) {
-          val_day <- substring(res[["ymd"]][i], 1, unlist(gregexpr("D", res[["ymd"]][i])) - 1)
-
-          if (as.numeric(val_day) != 1) {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], " ", val_day, " days")
-          } else {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], " 1 day")
-          }
-        }
-      }
-    } else {
-      res[["Total_Dose_on_Day_of_AE_Onset"]] <- res[["AEDOSDUR"]]
+    # Digits directly before `letter`, or NA when the designator is absent.
+    extract_unit <- function(s, letter) {
+      val <- rep(NA_character_, length(s))
+      has <- grepl(letter, s, fixed = TRUE)
+      val[has] <- sub(paste0("^.*?([0-9]+)", letter, ".*$"), "\\1", s[has])
+      val
     }
-    res <- res[, !(names(res) == "ymd"), drop = FALSE]
+
+    # One formatted component ("", "1 year", "2 years", ...). `lead` is the
+    # separator placed before the component when it is present; the year
+    # component carries no leading space, months and days each carry one, which
+    # reproduces the spacing of the original implementation.
+    format_unit <- function(val, singular, plural, lead) {
+      n <- suppressWarnings(as.numeric(val))
+      content <- ifelse(
+        n == 1,
+        paste0("1 ", singular),
+        paste0(val, " ", plural)
+      )
+      ifelse(is.na(val), "", paste0(lead, content))
+    }
+
+    res[["Total_Dose_on_Day_of_AE_Onset"]] <- paste0(
+      format_unit(extract_unit(ymd, "Y"), "year", "years", ""),
+      format_unit(extract_unit(ymd, "M"), "month", "months", " "),
+      format_unit(extract_unit(ymd, "D"), "day", "days", " ")
+    )
   }
 
 
