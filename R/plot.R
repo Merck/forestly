@@ -164,7 +164,6 @@ plot_dot <- function(
 
   # Define display order, make the first item display on the top
   item <- factor(item, levels = rev(levels(item)))
-  names(tbl) <- paste0("x", 1:ncol(tbl))
   disp_order <- as.numeric(item)
   # Start create ana data frame for creating this panel
   ana <- data.frame(tbl, item = item, y = disp_order)
@@ -456,7 +455,6 @@ plot_errorbar <- function(
 
   # Define display order, make the first item display on the top
   item <- factor(item, levels = rev(levels(item)))
-  names(tbl) <- paste0("x", 1:ncol(tbl))
   disp_order <- as.numeric(item)
   # Start create ana data frame for creating this panel
   ana <- data.frame(tbl, item = item, y = disp_order)
