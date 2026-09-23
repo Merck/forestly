@@ -325,13 +325,10 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   )
   names(name_mapping) <- new_name
 
-  res_columns <- lapply(names(res), function(x) {
-    if (toupper(x) %in% names(name_mapping)) {
-      name_mapping[[toupper(x)]]
-    } else {
-      x
-    }
-  }) |> unlist()
+  # Map each column name to its display name, falling back to the original
+  # name when it is not in the lookup table.
+  mapped <- name_mapping[toupper(names(res))]
+  res_columns <- unname(ifelse(is.na(mapped), names(res), mapped))
 
   # Site ID
   if ("SITEID" %in% toupper(names(res))) {
