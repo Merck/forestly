@@ -191,8 +191,7 @@ plot_dot <- function(
   ana <- lapply(
     split(ana, ana$y),
     function(x) {
-      row_count <- max(sum(rowSums(is.na(x[, 1:n_col])) != n_col), 1)
-      x$y <- x$y + rev(nudge_unit(row_count))
+      x <- nudge_split_y(x, n_col)
       x$grp_order <- 1:nrow(x)
       x
     }
@@ -465,8 +464,7 @@ plot_errorbar <- function(
   ana <- lapply(
     split(ana, ana$y),
     function(x) {
-      row_count <- max(sum(rowSums(is.na(x[, 1:n_col])) != n_col), 1)
-      x$y <- x$y + rev(nudge_unit(row_count))
+      x <- nudge_split_y(x, n_col)
       x$grp_order <- 1:nrow(x)
       x
     }
@@ -675,6 +673,25 @@ panel_color_shape <- function(color, shape, n_trt) {
   list(color = color, shape = shape)
 }
 
+#' Nudge the y position of grouped rows within a unit
+#'
+#' Shared by the panel builders. Within one y-unit (item), spread the non-empty
+#' rows evenly using [nudge_unit()]. A row contributes to the count only when it
+#' has at least one non-missing value across the leading value columns.
+#'
+#' @param x A data frame for a single y-unit; its value columns are the first
+#'   `n_col` columns.
+#' @param n_col Number of leading value columns.
+#'
+#' @return `x` with its `y` column nudged.
+#'
+#' @noRd
+nudge_split_y <- function(x, n_col) {
+  row_count <- max(sum(rowSums(is.na(x[, 1:n_col])) != n_col), 1)
+  x$y <- x$y + rev(nudge_unit(row_count))
+  x
+}
+
 #' Create table panel ggplot2 object for rainfall or forest plot
 #'
 #' Creates a table panel ggplot2 object for rainfall or forest plot.
@@ -851,8 +868,7 @@ table_panel <- function(
     ana_wide <- lapply(
       split(ana_wide, ana_wide$y),
       function(x) {
-        row_count <- max(sum(rowSums(is.na(x[, 1:n_col])) != n_col), 1)
-        x$y <- x$y + rev(nudge_unit(row_count))
+        x <- nudge_split_y(x, n_col)
         if (text_format_by == "row") x$p_color <- rep(text_color, length.out = nrow(x))
         x
       }
