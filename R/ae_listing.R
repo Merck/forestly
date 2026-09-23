@@ -150,15 +150,12 @@ propercase <- function(x) {
   }
 }
 
-#' Convert character strings or factor to title case (optimized with memoization)
+#' Convert character strings or factor to title case
 #'
-#' This function provides a fast implementation of title case conversion that handles
-#' both character vectors and factors. For factors, it preserves the factor structure
-#' by modifying only the levels, which maintains the original ordering.
-#' This optimized version uses memoization to cache converted values, dramatically
-#' speeding up performance for large datasets with repeated values.
-#'
-#' Based on Yihui Xie's profiling and optimization approach for issue #129.
+#' Handles both character vectors and factors. For factors, it preserves the
+#' factor structure by modifying only the levels, which maintains the original
+#' ordering. `tools::toTitleCase()` is applied to the unique values only, which
+#' keeps it fast on large columns with many repeated values (issue #129).
 #'
 #' @param x A character vector or factor.
 #' @param lower Logical indicating whether to convert to lowercase first (default TRUE).
@@ -172,63 +169,23 @@ propercase <- function(x) {
 #' titlecase(factor(c("tHEre is oNe", "tHAt is tWo", "heRe is tHRee"))) # factor
 #' titlecase(c("F", "M")) # char vector
 #' titlecase(factor(c("F", "M"))) # factor
-titlecase <- local({
-  # Memoized version of tools::toTitleCase with preprocessing
-  # Maintains separate caches for lower=TRUE and lower=FALSE cases
-  cache_lower_true <- list()
-  cache_lower_false <- list()
-
-  function(x, lower = TRUE) {
-    # Helper function to apply memoized title case
-    memoized_titlecase <- function(text, to_lower = TRUE) {
-      if (length(text) == 0) return(character(0))
-
-      # Choose appropriate cache
-      cache <- if (to_lower) cache_lower_true else cache_lower_false
-
-      # Preprocess text if needed
-      if (to_lower) {
-        text <- tolower(text)
-      }
-
-      # Find values not yet in cache
-      not_cached <- !text %in% names(cache)
-
-      if (any(not_cached)) {
-        # Get unique values that need conversion
-        unique_new <- unique(text[not_cached])
-
-        # Convert using tools::toTitleCase and update cache
-        converted <- tools::toTitleCase(unique_new)
-        names(converted) <- unique_new
-
-        # Update the appropriate cache
-        if (to_lower) {
-          cache_lower_true <<- c(cache_lower_true, as.list(converted))
-        } else {
-          cache_lower_false <<- c(cache_lower_false, as.list(converted))
-        }
-
-        # Update local cache reference
-        cache <- if (to_lower) cache_lower_true else cache_lower_false
-      }
-
-      # Return cached results
-      unlist(cache[text], use.names = FALSE)
-    }
-
-    if (is.factor(x)) {
-      # For factors, apply title case to levels to preserve factor structure
-      levels(x) <- memoized_titlecase(levels(x), to_lower = lower)
-      # Return as character to match expected output type
-      return(as.character(x))
-    } else {
-      # For character vectors and other types, convert to character and apply title case
-      x_char <- as.character(x)
-      return(memoized_titlecase(x_char, to_lower = lower))
-    }
+titlecase <- function(x, lower = TRUE) {
+  # Title-case the distinct values once, then map back onto the full vector.
+  convert <- function(text) {
+    if (lower) text <- tolower(text)
+    u <- unique(text)
+    tools::toTitleCase(u)[match(text, u)]
   }
-})
+
+  if (is.factor(x)) {
+    # Operate on levels to preserve factor structure, then return as character
+    # to match the expected output type.
+    levels(x) <- convert(levels(x))
+    as.character(x)
+  } else {
+    convert(as.character(x))
+  }
+}
 
 #' Format AE listing analysis
 #'
