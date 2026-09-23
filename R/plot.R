@@ -208,7 +208,7 @@ plot_dot <- function(
   ana <- lapply(
     split(ana, ana$y),
     function(x) {
-      row_count <- max(nrow(x[!sum(is.na(x[, 1:n_col])) == n_col, ]), 1)
+      row_count <- max(sum(rowSums(is.na(x[, 1:n_col])) != n_col), 1)
       x$y <- x$y + rev(nudge_unit(row_count))
       x$grp_order <- 1:nrow(x)
       x
@@ -497,7 +497,7 @@ plot_errorbar <- function(
   ana <- lapply(
     split(ana, ana$y),
     function(x) {
-      row_count <- max(nrow(x[!sum(is.na(x[, 1:n_col])) == n_col, ]), 1)
+      row_count <- max(sum(rowSums(is.na(x[, 1:n_col])) != n_col), 1)
       x$y <- x$y + rev(nudge_unit(row_count))
       x$grp_order <- 1:nrow(x)
       x
@@ -849,7 +849,7 @@ table_panel <- function(
     ana_wide <- lapply(
       split(ana_wide, ana_wide$y),
       function(x) {
-        row_count <- max(nrow(x[!sum(is.na(x[, 1:n_col])) == n_col, ]), 1)
+        row_count <- max(sum(rowSums(is.na(x[, 1:n_col])) != n_col), 1)
         x$y <- x$y + rev(nudge_unit(row_count))
         if (text_format_by == "row") x$p_color <- rep(text_color, length.out = nrow(x))
         x
