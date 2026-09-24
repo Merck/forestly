@@ -463,33 +463,29 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
     # the previous per-row loop, which errored when a designator repeated.
     ymd <- sub(".*?/P", "", res[["AEDOSDUR"]])
 
-    # Digits directly before `letter`, or NA when the designator is absent.
+    # Digits directly before `letter`, or NA when there is no such number (the
+    # designator is absent, or present without a preceding number as in a
+    # malformed "ABCY2M3D").
     extract_unit <- function(s, letter) {
       val <- rep(NA_character_, length(s))
-      has <- grepl(letter, s, fixed = TRUE)
+      has <- grepl(paste0("[0-9]+", letter), s)
       val[has] <- sub(paste0("^.*?([0-9]+)", letter, ".*$"), "\\1", s[has])
       val
     }
 
-    # One formatted component ("", "1 year", "2 years", ...). `lead` is the
-    # separator placed before the component when it is present; the year
-    # component carries no leading space, months and days each carry one, which
-    # reproduces the spacing of the original implementation.
-    format_unit <- function(val, singular, plural, lead) {
+    # One formatted component, each with a leading space ("", " 1 year",
+    # " 2 years", ...); the leading space is trimmed off the assembled string.
+    format_unit <- function(val, singular) {
       n <- suppressWarnings(as.numeric(val))
-      content <- ifelse(
-        n == 1,
-        paste0("1 ", singular),
-        paste0(val, " ", plural)
-      )
-      ifelse(is.na(val), "", paste0(lead, content))
+      content <- ifelse(n == 1, paste0("1 ", singular), paste0(val, " ", singular, "s"))
+      ifelse(is.na(val), "", paste0(" ", content))
     }
 
-    res[["Total_Dose_on_Day_of_AE_Onset"]] <- paste0(
-      format_unit(extract_unit(ymd, "Y"), "year", "years", ""),
-      format_unit(extract_unit(ymd, "M"), "month", "months", " "),
-      format_unit(extract_unit(ymd, "D"), "day", "days", " ")
-    )
+    res[["Total_Dose_on_Day_of_AE_Onset"]] <- trimws(paste0(
+      format_unit(extract_unit(ymd, "Y"), "year"),
+      format_unit(extract_unit(ymd, "M"), "month"),
+      format_unit(extract_unit(ymd, "D"), "day")
+    ))
   }
 
 
