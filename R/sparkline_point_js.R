@@ -280,14 +280,7 @@ sparkline_point_js <- function(
 
   data_trace <- data_trace_js(length(x))
 
-  # Brew
-  plotly_file <- tempfile(fileext = ".js")
-  brew::brew(
-    system.file("js/sparkline.js", package = "forestly"),
-    output = plotly_file
-  )
-
-  js <- paste(readLines(plotly_file), collapse = "\n")
-
-  js
+  # Render the Plotly template, substituting each `<%=var%>` with its value
+  # from this function's environment (base-R replacement for brew).
+  brew(system.file("js/sparkline.js", package = "forestly"))
 }

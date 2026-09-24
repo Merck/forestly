@@ -246,7 +246,7 @@ ae_forestly <- function(outdata,
   # Set default to be the first item
   default_param <- as.character(unique(outdata$tbl$parameter)[1])
 
-  random_id <- paste0("filter_ae_", uuid::UUIDgenerate(), "|", default_param)
+  random_id <- paste0("filter_ae_", basename(tempfile("")), "|", default_param)
 
   if (is.null(ae_label)) {
     ae_label <- "AE Criteria"
@@ -402,13 +402,6 @@ ae_forestly <- function(outdata,
       filter_subject,
       p_reactable
     )
-  )
-
-  # Define JavaScript for crosstalk
-  # remove (All)
-  brew::brew(
-    system.file("js/filter-crosstalk.js", package = "forestly"),
-    output = file.path(tempdir(), "filter-crosstalk.js")
   )
 
   # Assemble html file

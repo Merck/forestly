@@ -57,7 +57,7 @@ html_dependency_filter_crosstalk <- function() {
   htmltools::htmlDependency(
     name = "filter-crosstalk",
     version = version,
-    src = tempdir(),
+    src = system.file("js", package = "forestly"),
     script = c("filter-crosstalk.js"),
     all_files = FALSE
   )
