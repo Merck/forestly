@@ -149,26 +149,9 @@ plot_dot <- function(
   tbl <- tbl[, -y_id]
 
   n_trt <- length(label)
-  # Create vector for color
-  if (is.null(color)) {
-    if (n_trt <= 2) {
-      color <- c("#00857C", "#66203A")
-    } else {
-      if (n_trt > 3) stop("Must define color to display groups.")
-      color <- c("#66203A", rev(c("#00857C", "#6ECEB2", "#BFED33")[1:n_trt]))
-    }
-  }
-  color <- rep(color, length.out = n_trt)
-
-  # Create vector for shape
-  shape <- if (is.null(shape)) {
-    rep(
-      c("circle", "square", "diamond", "triangle"),
-      length.out = n_trt
-    )
-  } else {
-    rep(shape, length.out = n_trt)
-  }
+  cs <- panel_color_shape(color, shape, n_trt)
+  color <- cs$color
+  shape <- cs$shape
 
   # Get the number of columns for values
   n_col <- ncol(tbl)
@@ -181,7 +164,6 @@ plot_dot <- function(
 
   # Define display order, make the first item display on the top
   item <- factor(item, levels = rev(levels(item)))
-  names(tbl) <- paste0("x", 1:ncol(tbl))
   disp_order <- as.numeric(item)
   # Start create ana data frame for creating this panel
   ana <- data.frame(tbl, item = item, y = disp_order)
@@ -208,8 +190,7 @@ plot_dot <- function(
   ana <- lapply(
     split(ana, ana$y),
     function(x) {
-      row_count <- max(sum(rowSums(is.na(x[, 1:n_col])) != n_col), 1)
-      x$y <- x$y + rev(nudge_unit(row_count))
+      x <- nudge_split_y(x, n_col)
       x$grp_order <- 1:nrow(x)
       x
     }
@@ -459,24 +440,9 @@ plot_errorbar <- function(
   if (n_trt > 2 & grp_abbrev == "paired") {
     stop("Must set argument `grp_abbrev` as `\"grouped\"` for a grouped plot.")
   }
-  # Create vector for color
-  # Create vector for color
-  if (is.null(color)) {
-    if (n_trt <= 2) {
-      color <- c("#00857C", "#66203A")
-    } else {
-      if (n_trt > 3) stop("Must define color to display groups.")
-      color <- c("#66203A", rev(c("#00857C", "#6ECEB2", "#BFED33")[1:n_trt]))
-    }
-  }
-  color <- rep(color, length.out = n_trt)
-
-  # Create vector for shape
-  shape <- if (is.null(shape)) {
-    rep(c("circle", "square", "diamond", "triangle"), length.out = n_trt)
-  } else {
-    rep(shape, length.out = n_trt)
-  }
+  cs <- panel_color_shape(color, shape, n_trt)
+  color <- cs$color
+  shape <- cs$shape
 
   # Get the number of columns for values
   n_col <- ncol(tbl)
@@ -489,7 +455,6 @@ plot_errorbar <- function(
 
   # Define display order, make the first item display on the top
   item <- factor(item, levels = rev(levels(item)))
-  names(tbl) <- paste0("x", 1:ncol(tbl))
   disp_order <- as.numeric(item)
   # Start create ana data frame for creating this panel
   ana <- data.frame(tbl, item = item, y = disp_order)
@@ -497,8 +462,7 @@ plot_errorbar <- function(
   ana <- lapply(
     split(ana, ana$y),
     function(x) {
-      row_count <- max(sum(rowSums(is.na(x[, 1:n_col])) != n_col), 1)
-      x$y <- x$y + rev(nudge_unit(row_count))
+      x <- nudge_split_y(x, n_col)
       x$grp_order <- 1:nrow(x)
       x
     }
@@ -671,6 +635,59 @@ plot_errorbar <- function(
 #' nudge_unit(10)
 nudge_unit <- function(n) {
   -0.5 + (1:n - 0.5) / n
+}
+
+#' Build recycled color and shape vectors for treatment groups
+#'
+#' Shared default color/shape logic for [plot_dot()] and [plot_errorbar()].
+#'
+#' @param color Color for each treatment group, or `NULL` to use defaults.
+#' @param shape Shape for each treatment group, or `NULL` to use defaults.
+#' @param n_trt Number of treatment groups.
+#'
+#' @return A list with recycled `color` and `shape` vectors, each of
+#'   length `n_trt`.
+#'
+#' @noRd
+panel_color_shape <- function(color, shape, n_trt) {
+  # Create vector for color
+  if (is.null(color)) {
+    if (n_trt <= 2) {
+      color <- c("#00857C", "#66203A")
+    } else {
+      if (n_trt > 3) stop("Must define color to display groups.")
+      color <- c("#66203A", rev(c("#00857C", "#6ECEB2", "#BFED33")[1:n_trt]))
+    }
+  }
+  color <- rep(color, length.out = n_trt)
+
+  # Create vector for shape
+  shape <- if (is.null(shape)) {
+    rep(c("circle", "square", "diamond", "triangle"), length.out = n_trt)
+  } else {
+    rep(shape, length.out = n_trt)
+  }
+
+  list(color = color, shape = shape)
+}
+
+#' Nudge the y position of grouped rows within a unit
+#'
+#' Shared by the panel builders. Within one y-unit (item), spread the non-empty
+#' rows evenly using [nudge_unit()]. A row contributes to the count only when it
+#' has at least one non-missing value across the leading value columns.
+#'
+#' @param x A data frame for a single y-unit; its value columns are the first
+#'   `n_col` columns.
+#' @param n_col Number of leading value columns.
+#'
+#' @return `x` with its `y` column nudged.
+#'
+#' @noRd
+nudge_split_y <- function(x, n_col) {
+  row_count <- max(sum(rowSums(is.na(x[, 1:n_col])) != n_col), 1)
+  x$y <- x$y + rev(nudge_unit(row_count))
+  x
 }
 
 #' Create table panel ggplot2 object for rainfall or forest plot
@@ -849,8 +866,7 @@ table_panel <- function(
     ana_wide <- lapply(
       split(ana_wide, ana_wide$y),
       function(x) {
-        row_count <- max(sum(rowSums(is.na(x[, 1:n_col])) != n_col), 1)
-        x$y <- x$y + rev(nudge_unit(row_count))
+        x <- nudge_split_y(x, n_col)
         if (text_format_by == "row") x$p_color <- rep(text_color, length.out = nrow(x))
         x
       }
