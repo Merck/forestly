@@ -352,8 +352,7 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
     if (any(na_dur)) {
       aeout_na <- toupper(res[["AEOUT"]][na_dur])
       res[["Duration"]][na_dur] <- ifelse(
-        charmatch(aeout_na, "RECOVERING/RESOLVING") > 0 |
-          charmatch(aeout_na, "NOT RECOVERED/NOT RESOLVED") > 0,
+        aeout_na %in% c("RECOVERING/RESOLVING", "NOT RECOVERED/NOT RESOLVED"),
         "Continuing", "Unknown"
       )
     }
@@ -414,47 +413,36 @@ format_ae_listing <- function(outdata, display_unique_records = FALSE) {
   }
   # Total dose on day of AE onset
   if ("AEDOSDUR" %in% toupper(names(res))) {
-    res[["ymd"]] <- substring(res[["AEDOSDUR"]], unlist(gregexpr("/P", res[["AEDOSDUR"]])) + 2)
+    # Parse the ISO-8601-style duration (e.g. ".../P1Y2M3D") into a human
+    # readable string such as "1 year 2 months 3 days". This is vectorized: for
+    # each Y/M/D designator we pull the digits immediately preceding it (or NA
+    # when the designator is absent) and format that one component. See #160 for
+    # the previous per-row loop, which errored when a designator repeated.
+    ymd <- sub(".*?/P", "", res[["AEDOSDUR"]])
 
-    res[["Total_Dose_on_Day_of_AE_Onset"]] <- ""
-
-    if (length(res[["AEDOSDUR"]]) > 0) {
-      for (i in 1:length(res[["AEDOSDUR"]])) {
-        if (unlist(gregexpr("Y", res[["ymd"]][i])) > 0) {
-          val_year <- substring(res[["ymd"]][i], 1, unlist(gregexpr("Y", res[["ymd"]][i])) - 1)
-          if (as.numeric(val_year) != 1) {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], val_year, " years")
-          } else {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], "1 year")
-          }
-
-          res[["ymd"]][i] <- substring(res[["ymd"]][i], unlist(gregexpr("Y", res[["ymd"]][i])) + 1)
-        }
-        if (unlist(gregexpr("M", res[["ymd"]][i])) > 0) {
-          val_month <- substring(res[["ymd"]][i], 1, unlist(gregexpr("M", res[["ymd"]][i])) - 1)
-
-          if (as.numeric(val_month) != 1) {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], " ", val_month, " months")
-          } else {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], " 1 month")
-          }
-
-          res[["ymd"]][i] <- substring(res[["ymd"]][i], unlist(gregexpr("M", res[["ymd"]][i])) + 1)
-        }
-        if (unlist(gregexpr("D", res[["ymd"]][i])) > 0) {
-          val_day <- substring(res[["ymd"]][i], 1, unlist(gregexpr("D", res[["ymd"]][i])) - 1)
-
-          if (as.numeric(val_day) != 1) {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], " ", val_day, " days")
-          } else {
-            res[["Total_Dose_on_Day_of_AE_Onset"]][i] <- paste0(res[["Total_Dose_on_Day_of_AE_Onset"]][i], " 1 day")
-          }
-        }
-      }
-    } else {
-      res[["Total_Dose_on_Day_of_AE_Onset"]] <- res[["AEDOSDUR"]]
+    # Digits directly before `letter`, or NA when there is no such number (the
+    # designator is absent, or present without a preceding number as in a
+    # malformed "ABCY2M3D").
+    extract_unit <- function(s, letter) {
+      val <- rep(NA_character_, length(s))
+      has <- grepl(paste0("[0-9]+", letter), s)
+      val[has] <- sub(paste0("^.*?([0-9]+)", letter, ".*$"), "\\1", s[has])
+      val
     }
-    res <- res[, !(names(res) == "ymd"), drop = FALSE]
+
+    # One formatted component, each with a leading space ("", " 1 year",
+    # " 2 years", ...); the leading space is trimmed off the assembled string.
+    format_unit <- function(val, singular) {
+      n <- suppressWarnings(as.numeric(val))
+      content <- ifelse(n == 1, paste0("1 ", singular), paste0(val, " ", singular, "s"))
+      ifelse(is.na(val), "", paste0(" ", content))
+    }
+
+    res[["Total_Dose_on_Day_of_AE_Onset"]] <- trimws(paste0(
+      format_unit(extract_unit(ymd, "Y"), "year"),
+      format_unit(extract_unit(ymd, "M"), "month"),
+      format_unit(extract_unit(ymd, "D"), "day")
+    ))
   }
 
 
