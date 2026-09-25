@@ -30,16 +30,13 @@ LazyData: true
 Depends:
     R (>= 4.1)
 Imports:
-    brew,
     crosstalk,
-    glue,
     htmltools,
     metalite,
     metalite.ae,
     reactable,
     reactR,
-    ggplot2,
-    uuid
+    ggplot2
 Suggests:
     covr,
     dplyr,

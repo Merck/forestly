@@ -268,7 +268,7 @@ format_ae_forestly <- function(
   fig_diff_color <- fig_prop_color[index_diff]
 
   iter <- 1:ncol(outdata$diff) - 1
-  text <- glue::glue("x[{iter}] + '(' + x_lower[{iter}] + ', ' + x_upper[{iter}] + ')'")
+  text <- sprintf("x[%d] + '(' + x_lower[%d] + ', ' + x_upper[%d] + ')'", iter, iter, iter)
   js_diff_fig_cell <- sparkline_point_js(
     tbl = tbl,
     type = "cell",
