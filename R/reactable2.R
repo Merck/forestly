@@ -217,9 +217,11 @@ assign_label <- function(data, var = names(data), label = names(data)) {
     label <- c(label, diff)
   }
 
-  # Assign label
-  for (i in seq(name)) {
-    attr(data[[i]], "label") <- label[names(data[i]) == var]
+  # Assign label. Resolve each column's position in `var` once via match()
+  # instead of scanning `var` for every column.
+  idx <- match(name, var)
+  for (i in seq_along(name)) {
+    attr(data[[i]], "label") <- label[idx[i]]
   }
 
   data

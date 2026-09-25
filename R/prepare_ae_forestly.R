@@ -182,13 +182,16 @@ prepare_ae_forestly <- function(
       format_ae_listing(display_unique_records = ae_listing_unique)
   })
 
-  ae_listing <- data.frame()
-  for (i in 1:length(res)) {
-    if (nrow(res[[i]]$ae_listing) > 0) {
-      res[[i]]$ae_listing$param <- res[[i]]$parameter
-      ae_listing <- rbind(ae_listing, res[[i]]$ae_listing)
+  # Tag each non-empty listing with its parameter and bind them in one pass
+  # rather than growing a data frame row-block by row-block.
+  ae_listing_parts <- lapply(res, function(x) {
+    if (nrow(x$ae_listing) > 0) {
+      x$ae_listing$param <- x$parameter
+      x$ae_listing
     }
-  }
+  })
+  ae_listing <- do.call(rbind, ae_listing_parts)
+  if (is.null(ae_listing)) ae_listing <- data.frame()
 
   ae_row <- lapply(res, function(x) {
     !is.na(x$soc_name) |
