@@ -314,9 +314,12 @@ ae_forestly <- function(outdata,
 
   # Lazy client-side drill-down listings. Instead of emitting a full nested
   # reactable per row (which duplicates scaffolding and inflated the widget past
-  # a gigabyte, see #147/#158), build one lightweight `lt` interactive-table
-  # spec per main-table row, embed the specs once, and render the matching spec
-  # with LT.render() in a client-side `details` callback when a row is expanded.
+  # a gigabyte, see #147/#158), we render a lightweight `lt` interactive table
+  # on demand when a row is expanded. The columns, labels, number formatting and
+  # interactive options are identical for every row, so we build that `lt` spec
+  # skeleton once and embed only a per-row data slice; the client merges the two
+  # and renders with LT.render(). This avoids materializing ~one spec per row
+  # (thousands of them) and keeps the payload to the listing data alone.
   ae_listing <- outdata$ae_listing
   ae_listing_event_upper <- toupper(ae_listing$Adverse_Event)
   ae_listing_soc_upper <- toupper(ae_listing$SOC_Name)
@@ -337,38 +340,53 @@ ae_forestly <- function(outdata,
   tbl_name <- outdata$tbl$name
   tbl_parameter <- outdata$tbl$parameter
 
-  # One `lt` spec per row: the listing rows whose AE term or SOC matches the
-  # row, within the same parameter (same filter the nested table used).
-  build_detail_spec <- function(i) {
-    t_row <- toupper(tbl_name[i])
-    t_param <- tbl_parameter[i]
-    keep <- ((ae_listing_event_upper %in% t_row) |
-      (ae_listing_soc_upper %in% t_row)) &
-      (ae_listing_param == t_param)
-    t_details <- ae_listing[keep, detail_cols, drop = FALSE]
-    row.names(t_details) <- NULL
-
-    x <- lt::lt(t_details)
-    x <- lt::lt_label(x, detail_label_map)
-    if (length(numeric_detail_cols)) {
-      x <- lt::lt_format(x, numeric_detail_cols, decimals = 1)
-    }
-    lt::lt_spec(lt::lt_interactive(
-      x, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
-    ))
+  # Shared spec skeleton, built once from an empty (zero-row) slice: it carries
+  # the columns, labels, formatting and interactive options that every row's
+  # listing shares. Only `spec$data` differs per row, and `lt`'s `data` is just
+  # the sliced data frame, so per-row work is a plain subset (no lt pipeline).
+  skeleton_df <- ae_listing[0, detail_cols, drop = FALSE]
+  row.names(skeleton_df) <- NULL
+  x <- lt::lt(skeleton_df)
+  x <- lt::lt_label(x, detail_label_map)
+  if (length(numeric_detail_cols)) {
+    x <- lt::lt_format(x, numeric_detail_cols, decimals = 1)
   }
+  detail_tpl <- lt::lt_spec(lt::lt_interactive(
+    x, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
+  ))
 
-  detail_specs <- lapply(seq_along(tbl_name), build_detail_spec)
+  # Per-row listing data: the rows whose AE term or SOC matches the main-table
+  # row, within the same parameter (same filter the nested table used). A row's
+  # matches are looked up from a precomputed parameter+term -> row-index map, so
+  # slicing is O(matches) instead of a full scan of the listing per row (which
+  # is O(rows^2) over the whole table).
+  row_idx <- seq_len(nrow(ae_listing))
+  key_event <- paste(ae_listing_param, ae_listing_event_upper, sep = "\r")
+  key_soc <- paste(ae_listing_param, ae_listing_soc_upper, sep = "\r")
+  map_event <- split(row_idx, key_event)
+  map_soc <- split(row_idx, key_soc)
 
-  # Embed the specs once under a widget-unique global; the `details` callback
-  # looks up the spec by row index and renders it lazily on expand. Guard the
-  # payload against a literal `</script>` closing the inline block early.
+  build_detail_data <- function(i) {
+    key <- paste(tbl_parameter[i], toupper(tbl_name[i]), sep = "\r")
+    idx <- c(map_event[[key]], map_soc[[key]])
+    if (length(idx)) idx <- sort.int(unique(idx))
+    d <- ae_listing[idx, detail_cols, drop = FALSE]
+    row.names(d) <- NULL
+    d
+  }
+  detail_data <- lapply(seq_along(tbl_name), build_detail_data)
+
+  # Embed the skeleton and per-row data once under a widget-unique global; the
+  # `details` callback rebuilds a row's spec by merging the skeleton with its
+  # data slice and renders it lazily on expand. Guard the payload against a
+  # literal `</script>` closing the inline block early.
   specs_var <- paste0(
     "__forestly_ae_specs_",
     gsub("[^A-Za-z0-9]", "", basename(tempfile("")))
   )
   specs_json <- gsub(
-    "</(script)", "<\\\\/\\1", xfun::tojson(detail_specs),
+    "</(script)", "<\\\\/\\1",
+    xfun::tojson(list(tpl = detail_tpl, data = detail_data)),
     perl = TRUE, ignore.case = TRUE
   )
   specs_script <- htmltools::tags$script(htmltools::HTML(
@@ -378,14 +396,16 @@ ae_forestly <- function(outdata,
   # Client-side detail renderer. reactable renders a table-level `details`
   # string as a React text node (it is escaped, not parsed as HTML), so we
   # return a real element instead: an empty container whose `ref` callback fires
-  # on mount and renders the lt table into it with LT.render() (which triggers
-  # the interactive plugin). `React` is a global from reactR's dependency.
-  # `rowInfo.index` (0-based, stable across sort/filter) matches the spec array.
+  # on mount, merges the shared skeleton with the row's data slice, and renders
+  # the lt table with LT.render() (which triggers the interactive plugin).
+  # `React` is a global from reactR's dependency. `rowInfo.index` (0-based,
+  # stable across sort/filter) matches the data array.
   detail_js <- reactable::JS(paste0(
     "function(rowInfo) {\n",
-    "  var specs = window.", specs_var, ";\n",
-    "  var spec = specs && specs[rowInfo.index];\n",
-    "  if (!spec) return null;\n",
+    "  var store = window.", specs_var, ";\n",
+    "  var data = store && store.data && store.data[rowInfo.index];\n",
+    "  if (!data) return null;\n",
+    "  var spec = Object.assign({}, store.tpl, {data: data});\n",
     "  return window.React.createElement('div', {\n",
     "    className: 'forestly-ae-drilldown',\n",
     "    ref: function(el) {\n",
