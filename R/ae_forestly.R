@@ -312,12 +312,11 @@ ae_forestly <- function(outdata,
     hidden_cols <- setdiff(hidden_cols, displayed_diff_cols)
   }
 
-  # Pre-compute values that do not depend on the expanded row. `reactable`
-  # evaluates the `details` callback eagerly for every row, so anything that is
-  # constant across rows is hoisted here to avoid recomputing it n times (see
-  # #147). This includes the AE listing lookup keys, the shared labels, the
-  # search/filter JS callbacks, and the nested-table column definitions (the
-  # displayed columns are the same for every row).
+  # Lazy client-side drill-down listings. Instead of emitting a full nested
+  # reactable per row (which duplicates scaffolding and inflated the widget past
+  # a gigabyte, see #147/#158), build one lightweight `lt` interactive-table
+  # spec per main-table row, embed the specs once, and render the matching spec
+  # with LT.render() in a client-side `details` callback when a row is expanded.
   ae_listing <- outdata$ae_listing
   ae_listing_event_upper <- toupper(ae_listing$Adverse_Event)
   ae_listing_soc_upper <- toupper(ae_listing$SOC_Name)
@@ -326,29 +325,76 @@ ae_forestly <- function(outdata,
   detail_cols <- names(ae_listing)[!(names(ae_listing) %in% c("param", "SOC_Name"))]
   listing_label <- get_label(ae_listing)
   detail_labels <- unname(listing_label[match(detail_cols, names(listing_label))])
-
-  # Per-column filter and table-wide search supporting substring search,
-  # `!` negation, and JS expressions referencing the cell value `x`
-  # (see search_filter_js()).
-  col_filter_method <- search_filter_js("column")
-  table_search_method <- search_filter_js("table")
-
-  detail_col_defs <- stats::setNames(
-    lapply(seq_along(detail_cols), function(i) {
-      label_name <- if (is.na(detail_labels[i])) detail_cols[i] else detail_labels[i]
-      reactable::colDef(
-        header = label_name,
-        cell = function(value) format(value, nsmall = 1),
-        align = "center",
-        minWidth = 70,
-        filterMethod = col_filter_method
-      )
-    }),
-    detail_cols
+  detail_label_map <- stats::setNames(
+    ifelse(is.na(detail_labels), detail_cols, detail_labels), detail_cols
   )
+  # Only numeric columns need decimal formatting; keeping the raw numeric values
+  # in the spec lets lt's search/filter evaluate `x`-expressions numerically.
+  numeric_detail_cols <- detail_cols[
+    vapply(ae_listing[detail_cols], is.numeric, logical(1))
+  ]
 
   tbl_name <- outdata$tbl$name
   tbl_parameter <- outdata$tbl$parameter
+
+  # One `lt` spec per row: the listing rows whose AE term or SOC matches the
+  # row, within the same parameter (same filter the nested table used).
+  build_detail_spec <- function(i) {
+    t_row <- toupper(tbl_name[i])
+    t_param <- tbl_parameter[i]
+    keep <- ((ae_listing_event_upper %in% t_row) |
+      (ae_listing_soc_upper %in% t_row)) &
+      (ae_listing_param == t_param)
+    t_details <- ae_listing[keep, detail_cols, drop = FALSE]
+    row.names(t_details) <- NULL
+
+    x <- lt::lt(t_details)
+    x <- lt::lt_label(x, detail_label_map)
+    x <- lt::lt_align(x, detail_cols, "center")
+    if (length(numeric_detail_cols)) {
+      x <- lt::lt_format(x, numeric_detail_cols, decimals = 1)
+    }
+    lt::lt_spec(lt::lt_interactive(
+      x, sort = TRUE, search = TRUE, filter = TRUE, resize = TRUE
+    ))
+  }
+
+  detail_specs <- lapply(seq_along(tbl_name), build_detail_spec)
+
+  # Embed the specs once under a widget-unique global; the `details` callback
+  # looks up the spec by row index and renders it lazily on expand. Guard the
+  # payload against a literal `</script>` closing the inline block early.
+  specs_var <- paste0(
+    "__forestly_ae_specs_",
+    gsub("[^A-Za-z0-9]", "", basename(tempfile("")))
+  )
+  specs_json <- gsub(
+    "</(script)", "<\\\\/\\1", xfun::tojson(detail_specs),
+    perl = TRUE, ignore.case = TRUE
+  )
+  specs_script <- htmltools::tags$script(htmltools::HTML(
+    paste0("window.", specs_var, "=", specs_json, ";")
+  ))
+
+  # Client-side detail renderer: return a placeholder, then render the lt table
+  # into it once (LT.render fires the interactive plugin's mount hook). Reading
+  # `rowInfo.index` (0-based, stable across sort/filter) matches the spec array.
+  detail_js <- reactable::JS(paste0(
+    "function(rowInfo) {\n",
+    "  var specs = window.", specs_var, ";\n",
+    "  var spec = specs && specs[rowInfo.index];\n",
+    "  if (!spec) return '';\n",
+    "  var id = '", specs_var, "_' + rowInfo.index;\n",
+    "  setTimeout(function() {\n",
+    "    var el = document.getElementById(id);\n",
+    "    if (el && !el.dataset.ltDone && window.LT) {\n",
+    "      el.dataset.ltDone = '1';\n",
+    "      window.LT.render(el, spec);\n",
+    "    }\n",
+    "  }, 0);\n",
+    "  return '<div id=\"' + id + '\" class=\"forestly-ae-drilldown\"></div>';\n",
+    "}"
+  ))
 
   p_reactable <- reactable2(
     tbl,
@@ -361,32 +407,7 @@ ae_forestly <- function(outdata,
     width = width,
     download = dowload_button,
     searchable = FALSE,
-    details = function(index) {
-      t_row <- toupper(tbl_name[index])
-      t_param <- tbl_parameter[index]
-
-      keep <- ((ae_listing_event_upper %in% t_row) |
-        (ae_listing_soc_upper %in% t_row)) &
-        (ae_listing_param == t_param)
-
-      t_details <- ae_listing[keep, detail_cols, drop = FALSE]
-      row.names(t_details) <- NULL
-
-      # Create and return the reactable table for the nested view
-      reactable::reactable(
-        t_details,
-        columns = detail_col_defs,
-        width = "100%", # Adjust width as needed
-        resizable = TRUE,
-        filterable = TRUE,
-        searchable = TRUE,
-        searchMethod = table_search_method,
-        showPageSizeOptions = TRUE,
-        borderless = TRUE,
-        striped = TRUE,
-        highlight = TRUE
-      )
-    },
+    details = detail_js,
     pageSizeOptions = max_page,
 
     # Default sort variable
@@ -414,6 +435,8 @@ ae_forestly <- function(outdata,
       reactR::html_dependency_react(offline),
       html_dependency_plotly(offline),
       html_dependency_react_plotly(offline),
+      lt::lt_dependency(interactive = TRUE),
+      specs_script,
       p
     )
   )

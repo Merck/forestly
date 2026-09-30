@@ -18,17 +18,32 @@ test_that("ae_forestly(): test filter and width option", {
   expect_true(grepl("Number of AE in One or More Treatment Groups", html$children[[1]], fixed = TRUE))
 })
 
-test_that("ae_forestly(): detail table embeds custom search method", {
+test_that("ae_forestly(): main table uses the shared column filter global", {
   outdata <- test_ae_forestly()
   html <- outdata |> ae_forestly()
   html_text <- as.character(html)
 
-  # The custom search / filter methods reference the shared globals defined in
+  # The main table's per-column filter references the shared global defined in
   # inst/js/search-filter.js (deduplicated to keep the widget small), rather
-  # than inlining the function body into every nested table.
-  expect_true(grepl("searchMethod", html_text, fixed = TRUE))
-  expect_true(grepl("window.__forestly_filter_table", html_text, fixed = TRUE))
+  # than inlining the function body into every column.
   expect_true(grepl("window.__forestly_filter_column", html_text, fixed = TRUE))
+})
+
+test_that("ae_forestly(): drill-down listings render lazily via lt", {
+  outdata <- test_ae_forestly()
+  html <- outdata |> ae_forestly()
+  html_text <- as.character(html)
+
+  # Detail listings are lightweight `lt` interactive tables rendered on expand
+  # (see #158), not eager per-row nested reactables. The specs are embedded once
+  # under a widget-unique global and rendered client-side with LT.render().
+  expect_true(grepl("__forestly_ae_specs_", html_text, fixed = TRUE))
+  expect_true(grepl("window.LT.render", html_text, fixed = TRUE))
+  # The lt interactivity extension is bundled as an HTML dependency.
+  deps <- htmltools::findDependencies(html)
+  lt_dep <- Filter(function(d) identical(d$name, "lt"), deps)
+  expect_true(length(lt_dep) > 0)
+  expect_true("lt-interactive.js" %in% lt_dep[[1]]$script)
 })
 
 test_that("search-filter.js defines the shared globals and search logic", {
