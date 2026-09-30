@@ -376,23 +376,26 @@ ae_forestly <- function(outdata,
     paste0("window.", specs_var, "=", specs_json, ";")
   ))
 
-  # Client-side detail renderer: return a placeholder, then render the lt table
-  # into it once (LT.render fires the interactive plugin's mount hook). Reading
+  # Client-side detail renderer. reactable renders a table-level `details`
+  # string as a React text node (it is escaped, not parsed as HTML), so we
+  # return a real element instead: an empty container whose `ref` callback fires
+  # on mount and renders the lt table into it with LT.render() (which triggers
+  # the interactive plugin). `React` is a global from reactR's dependency.
   # `rowInfo.index` (0-based, stable across sort/filter) matches the spec array.
   detail_js <- reactable::JS(paste0(
     "function(rowInfo) {\n",
     "  var specs = window.", specs_var, ";\n",
     "  var spec = specs && specs[rowInfo.index];\n",
-    "  if (!spec) return '';\n",
-    "  var id = '", specs_var, "_' + rowInfo.index;\n",
-    "  setTimeout(function() {\n",
-    "    var el = document.getElementById(id);\n",
-    "    if (el && !el.dataset.ltDone && window.LT) {\n",
-    "      el.dataset.ltDone = '1';\n",
-    "      window.LT.render(el, spec);\n",
+    "  if (!spec) return null;\n",
+    "  return window.React.createElement('div', {\n",
+    "    className: 'forestly-ae-drilldown',\n",
+    "    ref: function(el) {\n",
+    "      if (el && !el.dataset.ltDone && window.LT) {\n",
+    "        el.dataset.ltDone = '1';\n",
+    "        window.LT.render(el, spec);\n",
+    "      }\n",
     "    }\n",
-    "  }, 0);\n",
-    "  return '<div id=\"' + id + '\" class=\"forestly-ae-drilldown\"></div>';\n",
+    "  });\n",
     "}"
   ))
 
