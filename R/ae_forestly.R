@@ -355,26 +355,33 @@ ae_forestly <- function(outdata,
     x, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
   ))
 
-  # Per-row listing data: the rows whose AE term or SOC matches the main-table
-  # row, within the same parameter (same filter the nested table used). A row's
-  # matches are looked up from a precomputed parameter+term -> row-index map, so
-  # slicing is O(matches) instead of a full scan of the listing per row (which
-  # is O(rows^2) over the whole table).
+  # Per-row listing data. Rather than embed a data slice per row -- which copies
+  # every listing record into each row it matches (its AE-term row *and* its SOC
+  # row, so a record ships two or more times) and dominated the widget on large
+  # trials -- we embed the listing columns *once* and, per row, only the 0-based
+  # indices of the records it needs. The client gathers those indices out of the
+  # shared record store to rebuild the slice. Matches are looked up from a
+  # precomputed parameter+term -> row-index map, so building each index vector is
+  # O(matches) instead of a full scan of the listing per row.
   row_idx <- seq_len(nrow(ae_listing))
   key_event <- paste(ae_listing_param, ae_listing_event_upper, sep = "\r")
   key_soc <- paste(ae_listing_param, ae_listing_soc_upper, sep = "\r")
   map_event <- split(row_idx, key_event)
   map_soc <- split(row_idx, key_soc)
 
-  build_detail_data <- function(i) {
+  build_detail_index <- function(i) {
     key <- paste(tbl_parameter[i], toupper(tbl_name[i]), sep = "\r")
     idx <- c(map_event[[key]], map_soc[[key]])
     if (length(idx)) idx <- sort.int(unique(idx))
-    d <- ae_listing[idx, detail_cols, drop = FALSE]
-    row.names(d) <- NULL
-    d
+    idx - 1L # 0-based for the client-side gather
   }
-  detail_data <- lapply(seq_along(tbl_name), build_detail_data)
+  detail_index <- lapply(seq_along(tbl_name), build_detail_index)
+
+  # The full listing serialized once (columnar: `{column: [values]}`), shared by
+  # every expanded row. Numeric columns stay raw so lt's formatting/filtering can
+  # act on the values; the skeleton spec carries the decimal formatting.
+  detail_records <- ae_listing[detail_cols]
+  row.names(detail_records) <- NULL
 
   # Embed the skeleton and per-row data once under a widget-unique global; the
   # `details` callback rebuilds a row's spec by merging the skeleton with its
@@ -386,7 +393,12 @@ ae_forestly <- function(outdata,
   )
   specs_json <- gsub(
     "</(script)", "<\\\\/\\1",
-    xfun::tojson(list(tpl = detail_tpl, data = detail_data)),
+    xfun::tojson(list(
+      tpl = detail_tpl,
+      columns = detail_cols,
+      records = detail_records,
+      index = detail_index
+    )),
     perl = TRUE, ignore.case = TRUE
   )
   specs_script <- htmltools::tags$script(htmltools::HTML(
@@ -396,15 +408,25 @@ ae_forestly <- function(outdata,
   # Client-side detail renderer. reactable renders a table-level `details`
   # string as a React text node (it is escaped, not parsed as HTML), so we
   # return a real element instead: an empty container whose `ref` callback fires
-  # on mount, merges the shared skeleton with the row's data slice, and renders
-  # the lt table with LT.render() (which triggers the interactive plugin).
-  # `React` is a global from reactR's dependency. `rowInfo.index` (0-based,
-  # stable across sort/filter) matches the data array.
+  # on mount, rebuilds the row's data slice by gathering the row's record
+  # indices out of the shared columnar store, merges it into the shared skeleton
+  # and renders the lt table with LT.render() (which triggers the interactive
+  # plugin). `React` is a global from reactR's dependency. `rowInfo.index`
+  # (0-based, stable across sort/filter) matches the `index` array; a length-1
+  # index vector serializes as a bare number, so coerce to an array.
   detail_js <- reactable::JS(paste0(
     "function(rowInfo) {\n",
     "  var store = window.", specs_var, ";\n",
-    "  var data = store && store.data && store.data[rowInfo.index];\n",
-    "  if (!data) return null;\n",
+    "  if (!store || !store.index) return null;\n",
+    "  var idx = store.index[rowInfo.index];\n",
+    "  if (idx == null) return null;\n",
+    "  if (!Array.isArray(idx)) idx = [idx];\n",
+    "  var recs = store.records, cols = store.columns, data = {};\n",
+    "  for (var c = 0; c < cols.length; c++) {\n",
+    "    var name = cols[c], col = recs[name], out = new Array(idx.length);\n",
+    "    for (var j = 0; j < idx.length; j++) out[j] = col[idx[j]];\n",
+    "    data[name] = out;\n",
+    "  }\n",
     "  var spec = Object.assign({}, store.tpl, {data: data});\n",
     "  return window.React.createElement('div', {\n",
     "    className: 'forestly-ae-drilldown',\n",

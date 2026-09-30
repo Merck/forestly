@@ -39,6 +39,11 @@ test_that("ae_forestly(): drill-down listings render lazily via lt", {
   # under a widget-unique global and rendered client-side with LT.render().
   expect_true(grepl("__forestly_ae_specs_", html_text, fixed = TRUE))
   expect_true(grepl("window.LT.render", html_text, fixed = TRUE))
+  # The listing is embedded once as a shared record store; each row carries only
+  # the indices it needs and the client gathers its slice on expand (see #147),
+  # rather than shipping a full data slice per row.
+  expect_true(grepl("store.records", html_text, fixed = TRUE))
+  expect_true(grepl("store.index", html_text, fixed = TRUE))
   # The lt interactivity extension is bundled as an HTML dependency.
   deps <- htmltools::findDependencies(html)
   lt_dep <- Filter(function(d) identical(d$name, "lt"), deps)
