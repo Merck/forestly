@@ -350,12 +350,11 @@ ae_forestly <- function(outdata,
 
     x <- lt::lt(t_details)
     x <- lt::lt_label(x, detail_label_map)
-    x <- lt::lt_align(x, detail_cols, "center")
     if (length(numeric_detail_cols)) {
       x <- lt::lt_format(x, numeric_detail_cols, decimals = 1)
     }
     lt::lt_spec(lt::lt_interactive(
-      x, sort = TRUE, search = TRUE, filter = TRUE, resize = TRUE
+      x, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
     ))
   }
 
@@ -439,6 +438,7 @@ ae_forestly <- function(outdata,
       html_dependency_plotly(offline),
       html_dependency_react_plotly(offline),
       lt::lt_dependency(interactive = TRUE),
+      html_dependency_ae_drilldown(),
       specs_script,
       p
     )
