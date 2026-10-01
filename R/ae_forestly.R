@@ -321,14 +321,21 @@ ae_forestly <- function(outdata,
   ae_listing_soc_upper <- toupper(ae_listing$SOC_Name)
   ae_listing_param <- ae_listing$param
 
+  # Group each drill-down's records together (param, then SOC, then term) so its
+  # index is a contiguous block the run-length encoding below can collapse.
+  ord <- order(ae_listing_param, ae_listing_soc_upper, ae_listing_event_upper)
+  ae_listing <- ae_listing[ord, , drop = FALSE]
+  ae_listing_event_upper <- ae_listing_event_upper[ord]
+  ae_listing_soc_upper <- ae_listing_soc_upper[ord]
+  ae_listing_param <- ae_listing_param[ord]
+
   detail_cols <- names(ae_listing)[!(names(ae_listing) %in% c("param", "SOC_Name"))]
   listing_label <- get_label(ae_listing)
   detail_labels <- unname(listing_label[match(detail_cols, names(listing_label))])
   detail_label_map <- stats::setNames(
     ifelse(is.na(detail_labels), detail_cols, detail_labels), detail_cols
   )
-  # Numeric columns are rounded to this many decimals on the R side (see
-  # `detail_records`), so they ship pre-formatted and lt needs no lt_format().
+  # Numeric columns ship rounded (see `detail_records`), so lt needs no lt_format().
   detail_decimals <- 1L
 
   tbl_name <- outdata$tbl$name
@@ -344,78 +351,89 @@ ae_forestly <- function(outdata,
     x, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
   ))
 
-  # Per row, embed only the 0-based indices of the records it needs (not a data
-  # slice, which would ship each record once per matching row). The client
-  # gathers them from the shared store. A precomputed parameter+term -> row-index
-  # map makes each lookup O(matches) instead of a full listing scan.
+  # Per row, embed only the 0-based record indices it needs (not a data slice,
+  # which would ship each record once per matching row); the client gathers them
+  # from the shared store. Precomputed param+term/param+SOC -> row-index maps make
+  # each lookup O(matches) instead of a full scan.
   row_idx <- seq_len(nrow(ae_listing))
   key_event <- paste(ae_listing_param, ae_listing_event_upper, sep = "\r")
   key_soc <- paste(ae_listing_param, ae_listing_soc_upper, sep = "\r")
   map_event <- split(row_idx, key_event)
   map_soc <- split(row_idx, key_soc)
 
-  # Build all row keys once (vectorized); the loop body is then two hash lookups
-  # and a merge.
   tbl_keys <- paste(tbl_parameter, toupper(tbl_name), sep = "\r")
-  detail_index <- lapply(tbl_keys, function(key) {
+  # `index` dominates the payload, so encode it tightly (one compact `js()` blob):
+  #   * contiguous run (common after the sort) -> `[start, -count]`; the negative
+  #     second element is the run marker, since deltas are always positive.
+  #   * otherwise -> delta-encode the sorted 0-based array (`[first, gap, ...]`).
+  # Dict-encoding can't help (indices are distinct per row). Client reverses both.
+  index_arrays <- vapply(tbl_keys, function(key) {
     idx <- c(map_event[[key]], map_soc[[key]])
-    if (length(idx)) idx <- sort.int(unique(idx))
-    # 0-based for the client gather; I() keeps a length-1 vector a JSON array.
-    I(idx - 1L)
-  })
+    if (!length(idx)) return("[]")
+    idx <- sort.int(unique(idx)) - 1L
+    n <- length(idx)
+    if (n >= 2L && idx[n] - idx[1] + 1L == n) {
+      paste0("[", idx[1], ",", -n, "]")
+    } else {
+      paste0("[", paste0(c(idx[1], diff(idx)), collapse = ","), "]")
+    }
+  }, character(1))
+  detail_index <- xfun::js(paste0("[", paste0(index_arrays, collapse = ","), "]"))
 
-  # The listing serialized once, shared by every row. AE listings repeat the same
-  # terms/subjects/body systems across many rows, so non-numeric columns go out as
-  # factors and are dictionary-encoded by xfun::tojson(factor = "dict") (unique
-  # values once + a code per row), roughly halving the payload and HTML. Numeric
-  # columns are rounded to `detail_decimals`, trimming digits the viewer never
-  # sees from the JSON and giving lt its display precision without lt_format().
+  # The listing serialized once, shared by every row. Columns repeat values across
+  # rows, so xfun::tojson(dict=) dictionary-encodes them (uniques once + a code per
+  # row) when shorter. Rounding numerics trims unseen digits and boosts repeats.
   detail_records <- lapply(ae_listing[detail_cols], function(x) {
     if (is.numeric(x)) round(x, detail_decimals) else as.factor(x)
   })
   names(detail_records) <- detail_cols
 
-  # Embed skeleton + records + indices once under a widget-unique global.
-  specs_var <- paste0(
-    "__forestly_ae_specs_",
-    gsub("[^A-Za-z0-9]", "", basename(tempfile("")))
-  )
+  # dict < 1 gates near-unique columns out at the cheap unique() check instead of
+  # serializing them twice (codes + plain) only to discard the encoding.
   specs_json <- xfun::tojson(list(
     tpl = detail_tpl,
     records = detail_records,
     index = detail_index
-  ), factor = "dict")
-  specs_script <- htmltools::tags$script(htmltools::HTML(
-    paste0("window.", specs_var, "=", specs_json, ";")
-  ))
+  ), dict = 0.5, pretty = FALSE)
 
-  # Client-side detail renderer. reactable renders a `details` string as escaped
-  # text, so we return a real element: a container whose `ref` fires on mount,
-  # gathers the row's records from the shared store (via `rowInfo.index`, 0-based
-  # and stable across sort/filter), merges them into the skeleton, and renders
-  # with LT.render(). `React` is a reactR global; gathering from the store's own
-  # entries preserves column order, so no column-name list is needed.
+  # Client-side detail renderer. reactR evals this once, so the IIFE captures the
+  # store in a closure (one copy, no global). reactable escapes a string
+  # `details`, so return a real element whose `ref` fires on mount: gather this
+  # row's records by `rowInfo.index` (0-based, stable across sort/filter) into the
+  # skeleton, and render with LT.render(). A 2-element index entry with a negative
+  # second value is a contiguous run [start, -count]; otherwise it is delta-
+  # encoded ([first, gap, ...]) and recovered with a running sum.
   detail_js <- reactable::JS(sprintf(
-    "(rowInfo) => {
-  const store = window.%s;
-  const idx = store && store.index && store.index[rowInfo.index];
-  if (!idx) return null;
-  const spec = {
-    ...store.tpl,
-    data: Object.fromEntries(
-      Object.entries(store.records).map(([k, col]) => [k, idx.map((i) => col[i])])
-    )
-  };
-  return window.React.createElement('div', {
-    className: 'forestly-ae-drilldown',
-    ref: (el) => {
-      if (el && !el.dataset.ltDone && window.LT) {
-        el.dataset.ltDone = '1';
-        window.LT.render(el, spec);
-      }
+    "(() => {
+  const store = %s;
+  return (rowInfo) => {
+    const enc = store.index[rowInfo.index];
+    if (!enc) return null;
+    let abs;
+    if (enc.length === 2 && enc[1] < 0) {
+      const start = enc[0], count = -enc[1];
+      abs = Array.from({ length: count }, (_, k) => start + k);
+    } else {
+      let acc = 0;
+      abs = enc.map((d) => (acc += d));
     }
-  });
-}", specs_var))
+    const spec = {
+      ...store.tpl,
+      data: Object.fromEntries(
+        Object.entries(store.records).map(([k, col]) => [k, abs.map((i) => col[i])])
+      )
+    };
+    return window.React.createElement('div', {
+      className: 'forestly-ae-drilldown',
+      ref: (el) => {
+        if (el && !el.dataset.ltDone && window.LT) {
+          el.dataset.ltDone = '1';
+          window.LT.render(el, spec);
+        }
+      }
+    });
+  };
+})()", specs_json))
 
   p_reactable <- reactable2(
     tbl,
@@ -458,7 +476,6 @@ ae_forestly <- function(outdata,
       html_dependency_react_plotly(offline),
       lt::lt_dependency(interactive = TRUE),
       html_dependency_ae_drilldown(),
-      specs_script,
       p
     )
   )

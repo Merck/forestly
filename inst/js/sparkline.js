@@ -19,8 +19,13 @@
  *
  */
 
-function(cell, state) {
-  const Plot = createPlotlyComponent(Plotly);
+(function() {
+// createPlotlyComponent() returns a new React type each call; a fresh type per
+// render forces unmount/remount, racing react-plotly's async newPlot into a null
+// ref ("DOM element null or undefined"). Build it once in this closure.
+let Plot;
+return function(cell, state) {
+  Plot = Plot || createPlotlyComponent(Plotly);
   var x = [<%=js_x%>];
   var y = [<%=js_y%>];
   var x_lower = [<%=js_x_lower%>];
@@ -79,7 +84,9 @@ function(cell, state) {
         "showticklabels": false,
         "fixedrange": true
       },
-      "shapes": [
+      // Draw the reference line only when a vline value is given; vline is []
+      // (no line) otherwise, which would render a degenerate NaN-x shape.
+      "shapes": Array.isArray(vline) ? [] : [
         {
           "type": "line",
           "y0": y_range[0],
@@ -114,4 +121,5 @@ function(cell, state) {
       "displayModeBar": false
     }
   })
-}
+};
+})()

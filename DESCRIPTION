@@ -38,7 +38,7 @@ Imports:
     reactable,
     reactR,
     ggplot2,
-    xfun (>= 0.61.3)
+    xfun (>= 0.61.4)
 Suggests:
     covr,
     dplyr,

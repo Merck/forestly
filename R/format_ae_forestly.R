@@ -197,7 +197,7 @@ format_ae_forestly <- function(
     round(outdata$diff, digits = digits),
     round(outdata$ci_lower, digits = digits),
     round(outdata$ci_upper, digits = digits),
-    hide_prop = apply(outdata$prop[, 1:n_group], 1, max, na.rm = TRUE),
+    hide_prop = round(apply(outdata$prop[, 1:n_group], 1, max, na.rm = TRUE), digits + 2),
     hide_n = apply(outdata$n[, 1:n_group], 1, max, na.rm = TRUE)
   )
 

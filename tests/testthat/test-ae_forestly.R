@@ -36,8 +36,8 @@ test_that("ae_forestly(): drill-down listings render lazily via lt", {
 
   # Detail listings are lightweight `lt` interactive tables rendered on expand
   # (see #158), not eager per-row nested reactables. The specs are embedded once
-  # under a widget-unique global and rendered client-side with LT.render().
-  expect_true(grepl("__forestly_ae_specs_", html_text, fixed = TRUE))
+  # in a closure captured by the `details` renderer and drawn with LT.render().
+  expect_true(grepl("const store =", html_text, fixed = TRUE))
   expect_true(grepl("window.LT.render", html_text, fixed = TRUE))
   # The listing is embedded once as a shared record store; each row carries only
   # the indices it needs and the client gathers its slice on expand (see #147),
