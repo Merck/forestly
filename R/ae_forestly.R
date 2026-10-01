@@ -327,24 +327,19 @@ ae_forestly <- function(outdata,
   detail_label_map <- stats::setNames(
     ifelse(is.na(detail_labels), detail_cols, detail_labels), detail_cols
   )
-  # Numeric columns stay raw (not formatted here) so lt's search/filter can
-  # evaluate `x`-expressions numerically.
-  numeric_detail_cols <- detail_cols[
-    vapply(ae_listing[detail_cols], is.numeric, logical(1))
-  ]
+  # Numeric columns are rounded to this many decimals on the R side (see
+  # `detail_records`), so they ship pre-formatted and lt needs no lt_format().
+  detail_decimals <- 1L
 
   tbl_name <- outdata$tbl$name
   tbl_parameter <- outdata$tbl$parameter
 
-  # Spec skeleton, built once from a zero-row slice: columns, labels, formatting
-  # and interactive options shared by every row. Only `spec$data` differs per row.
+  # Spec skeleton, built once from a zero-row slice: columns, labels and
+  # interactive options shared by every row. Only `spec$data` differs per row.
   skeleton_df <- ae_listing[0, detail_cols, drop = FALSE]
   row.names(skeleton_df) <- NULL
   x <- lt::lt(skeleton_df)
   x <- lt::lt_label(x, detail_label_map)
-  if (length(numeric_detail_cols)) {
-    x <- lt::lt_format(x, numeric_detail_cols, decimals = 1)
-  }
   detail_tpl <- lt::lt_spec(lt::lt_interactive(
     x, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
   ))
@@ -373,9 +368,10 @@ ae_forestly <- function(outdata,
   # terms/subjects/body systems across many rows, so non-numeric columns go out as
   # factors and are dictionary-encoded by xfun::tojson(factor = "dict") (unique
   # values once + a code per row), roughly halving the payload and HTML. Numeric
-  # columns stay raw for lt's formatting/filtering.
+  # columns are rounded to `detail_decimals`, trimming digits the viewer never
+  # sees from the JSON and giving lt its display precision without lt_format().
   detail_records <- lapply(ae_listing[detail_cols], function(x) {
-    if (is.numeric(x)) x else as.factor(x)
+    if (is.numeric(x)) round(x, detail_decimals) else as.factor(x)
   })
   names(detail_records) <- detail_cols
 
