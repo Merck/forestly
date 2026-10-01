@@ -38,7 +38,7 @@ Imports:
     reactable,
     reactR,
     ggplot2,
-    xfun
+    xfun (>= 0.61.3)
 Suggests:
     covr,
     dplyr,
@@ -48,7 +48,8 @@ Suggests:
     patchwork,
     testthat (>= 3.0.0)
 Remotes:
-    yihui/lt
+    yihui/lt,
+    yihui/xfun
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)

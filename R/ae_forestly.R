@@ -369,22 +369,34 @@ ae_forestly <- function(outdata,
   map_event <- split(row_idx, key_event)
   map_soc <- split(row_idx, key_soc)
 
-  build_detail_index <- function(i) {
-    key <- paste(tbl_parameter[i], toupper(tbl_name[i]), sep = "\r")
+  # Build every row's lookup key once (vectorized) rather than pasting and
+  # upper-casing inside the per-row loop, which dominated this stage on large
+  # trials. The loop body is then just two hash lookups and a merge.
+  tbl_keys <- paste(tbl_parameter, toupper(tbl_name), sep = "\r")
+  detail_index <- lapply(tbl_keys, function(key) {
     idx <- c(map_event[[key]], map_soc[[key]])
     if (length(idx)) idx <- sort.int(unique(idx))
     # 0-based for the client-side gather. `I()` keeps a length-1 index vector a
     # JSON array (`[7]`) instead of a bare number, so the client never has to
     # special-case it.
     I(idx - 1L)
-  }
-  detail_index <- lapply(seq_along(tbl_name), build_detail_index)
+  })
 
-  # The full listing serialized once (columnar: `{column: [values]}`), shared by
-  # every expanded row. Numeric columns stay raw so lt's formatting/filtering can
-  # act on the values; the skeleton spec carries the decimal formatting.
-  detail_records <- ae_listing[detail_cols]
-  row.names(detail_records) <- NULL
+  # The full listing serialized once, shared by every expanded row. Clinical AE
+  # listings are heavily repetitive (the same subject id, preferred term, body
+  # system, relationship, outcome, period, ... recur across hundreds of rows), so
+  # shipping each non-numeric column as a raw string array wastes most of the
+  # payload on duplicated text. We hand such columns to `xfun::tojson(factor =
+  # "dict")` as factors, which serializes each as a compact, self-decoding JS
+  # expression (`[codes].map(i => [levels][i])`) -- unique values once plus a
+  # 0-based integer per row -- shrinking the serialized store, the `tojson` work
+  # and the HTML, and cutting R-side memory on large trials. Numeric columns stay
+  # raw so lt's formatting/filtering can act on the values; the skeleton spec
+  # carries the decimal formatting.
+  detail_records <- lapply(ae_listing[detail_cols], function(x) {
+    if (is.numeric(x)) x else as.factor(x)
+  })
+  names(detail_records) <- detail_cols
 
   # Embed the skeleton and per-row data once under a widget-unique global; the
   # `details` callback rebuilds a row's spec by merging the skeleton with its
@@ -394,15 +406,14 @@ ae_forestly <- function(outdata,
     "__forestly_ae_specs_",
     gsub("[^A-Za-z0-9]", "", basename(tempfile("")))
   )
-  specs_json <- gsub(
-    "</(script)", "<\\\\/\\1",
-    xfun::tojson(list(
-      tpl = detail_tpl,
-      records = detail_records,
-      index = detail_index
-    )),
-    perl = TRUE, ignore.case = TRUE
-  )
+  # `factor = "dict"` dictionary-encodes the (factor) listing columns; xfun also
+  # escapes any literal `</script` so the inline block cannot be closed early, so
+  # no post-processing of the payload is needed here.
+  specs_json <- xfun::tojson(list(
+    tpl = detail_tpl,
+    records = detail_records,
+    index = detail_index
+  ), factor = "dict")
   specs_script <- htmltools::tags$script(htmltools::HTML(
     paste0("window.", specs_var, "=", specs_json, ";")
   ))
