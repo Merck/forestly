@@ -1,10 +1,6 @@
-/* Cosmetics for the expandable AE drill-down listings (rendered by lt) that
- * lt's default stylesheet does not provide: bold headers (lt sets `th` to
- * normal weight), zebra rows, and a row-hover highlight -- the equivalents of
- * reactable's `striped` / `highlight`. Also tightens vertical spacing and drops
- * lt's top table rule, which reads as heavy inside an expanded row.
- * Scoped to `.forestly-ae-drilldown` so the main forest-plot table is
- * untouched. */
+/* Cosmetics for the lt-rendered AE drill-down listings: bold headers, zebra
+ * rows, row-hover highlight, tighter spacing, no top rule. Scoped to
+ * `.forestly-ae-drilldown` so the main forest-plot table is untouched. */
 .forestly-ae-drilldown .lt-table {
   border-top: none;
   th, td { padding-block: 2px; }

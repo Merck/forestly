@@ -78,9 +78,8 @@ html_dependency_search_filter <- function() {
   )
 }
 
-# Cosmetics for the lt-rendered AE drill-down listings (bold headers, zebra
-# rows, row-hover highlight) that lt's default stylesheet does not provide,
-# scoped to `.forestly-ae-drilldown` (see inst/css/ae-drilldown.css).
+# Cosmetics for the lt-rendered AE drill-down listings (see
+# inst/css/ae-drilldown.css).
 html_dependency_ae_drilldown <- function() {
   version <- "0.1.0"
   htmltools::htmlDependency(

@@ -312,14 +312,10 @@ ae_forestly <- function(outdata,
     hidden_cols <- setdiff(hidden_cols, displayed_diff_cols)
   }
 
-  # Lazy client-side drill-down listings. Instead of emitting a full nested
-  # reactable per row (which duplicates scaffolding and inflated the widget past
-  # a gigabyte, see #147/#158), we render a lightweight `lt` interactive table
-  # on demand when a row is expanded. The columns, labels, number formatting and
-  # interactive options are identical for every row, so we build that `lt` spec
-  # skeleton once and embed only a per-row data slice; the client merges the two
-  # and renders with LT.render(). This avoids materializing ~one spec per row
-  # (thousands of them) and keeps the payload to the listing data alone.
+  # Lazy client-side drill-down listings. A nested reactable per row inflated the
+  # widget past a gigabyte (see #147/#158). Instead we build one shared `lt` spec
+  # skeleton (same columns/labels/formatting for every row), embed the listing
+  # once, and render a lightweight `lt` table on expand via LT.render().
   ae_listing <- outdata$ae_listing
   ae_listing_event_upper <- toupper(ae_listing$Adverse_Event)
   ae_listing_soc_upper <- toupper(ae_listing$SOC_Name)
@@ -331,8 +327,8 @@ ae_forestly <- function(outdata,
   detail_label_map <- stats::setNames(
     ifelse(is.na(detail_labels), detail_cols, detail_labels), detail_cols
   )
-  # Only numeric columns need decimal formatting; keeping the raw numeric values
-  # in the spec lets lt's search/filter evaluate `x`-expressions numerically.
+  # Numeric columns stay raw (not formatted here) so lt's search/filter can
+  # evaluate `x`-expressions numerically.
   numeric_detail_cols <- detail_cols[
     vapply(ae_listing[detail_cols], is.numeric, logical(1))
   ]
@@ -340,10 +336,8 @@ ae_forestly <- function(outdata,
   tbl_name <- outdata$tbl$name
   tbl_parameter <- outdata$tbl$parameter
 
-  # Shared spec skeleton, built once from an empty (zero-row) slice: it carries
-  # the columns, labels, formatting and interactive options that every row's
-  # listing shares. Only `spec$data` differs per row, and `lt`'s `data` is just
-  # the sliced data frame, so per-row work is a plain subset (no lt pipeline).
+  # Spec skeleton, built once from a zero-row slice: columns, labels, formatting
+  # and interactive options shared by every row. Only `spec$data` differs per row.
   skeleton_df <- ae_listing[0, detail_cols, drop = FALSE]
   row.names(skeleton_df) <- NULL
   x <- lt::lt(skeleton_df)
@@ -355,60 +349,43 @@ ae_forestly <- function(outdata,
     x, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
   ))
 
-  # Per-row listing data. Rather than embed a data slice per row -- which copies
-  # every listing record into each row it matches (its AE-term row *and* its SOC
-  # row, so a record ships two or more times) and dominated the widget on large
-  # trials -- we embed the listing columns *once* and, per row, only the 0-based
-  # indices of the records it needs. The client gathers those indices out of the
-  # shared record store to rebuild the slice. Matches are looked up from a
-  # precomputed parameter+term -> row-index map, so building each index vector is
-  # O(matches) instead of a full scan of the listing per row.
+  # Per row, embed only the 0-based indices of the records it needs (not a data
+  # slice, which would ship each record once per matching row). The client
+  # gathers them from the shared store. A precomputed parameter+term -> row-index
+  # map makes each lookup O(matches) instead of a full listing scan.
   row_idx <- seq_len(nrow(ae_listing))
   key_event <- paste(ae_listing_param, ae_listing_event_upper, sep = "\r")
   key_soc <- paste(ae_listing_param, ae_listing_soc_upper, sep = "\r")
   map_event <- split(row_idx, key_event)
   map_soc <- split(row_idx, key_soc)
 
-  # Build every row's lookup key once (vectorized) rather than pasting and
-  # upper-casing inside the per-row loop, which dominated this stage on large
-  # trials. The loop body is then just two hash lookups and a merge.
+  # Build all row keys once (vectorized); the loop body is then two hash lookups
+  # and a merge.
   tbl_keys <- paste(tbl_parameter, toupper(tbl_name), sep = "\r")
   detail_index <- lapply(tbl_keys, function(key) {
     idx <- c(map_event[[key]], map_soc[[key]])
     if (length(idx)) idx <- sort.int(unique(idx))
-    # 0-based for the client-side gather. `I()` keeps a length-1 index vector a
-    # JSON array (`[7]`) instead of a bare number, so the client never has to
-    # special-case it.
+    # 0-based for the client gather; I() keeps a length-1 vector a JSON array.
     I(idx - 1L)
   })
 
-  # The full listing serialized once, shared by every expanded row. Clinical AE
-  # listings are heavily repetitive (the same subject id, preferred term, body
-  # system, relationship, outcome, period, ... recur across hundreds of rows), so
-  # shipping each non-numeric column as a raw string array wastes most of the
-  # payload on duplicated text. We hand such columns to `xfun::tojson(factor =
-  # "dict")` as factors, which serializes each as a compact, self-decoding JS
-  # expression (`[codes].map(i => [levels][i])`) -- unique values once plus a
-  # 0-based integer per row -- shrinking the serialized store, the `tojson` work
-  # and the HTML, and cutting R-side memory on large trials. Numeric columns stay
-  # raw so lt's formatting/filtering can act on the values; the skeleton spec
-  # carries the decimal formatting.
+  # The listing serialized once, shared by every row. AE listings repeat the same
+  # terms/subjects/body systems across many rows, so non-numeric columns go out as
+  # factors and are dictionary-encoded by xfun::tojson(factor = "dict") (unique
+  # values once + a code per row), roughly halving the payload and HTML. Numeric
+  # columns stay raw for lt's formatting/filtering.
   detail_records <- lapply(ae_listing[detail_cols], function(x) {
     if (is.numeric(x)) x else as.factor(x)
   })
   names(detail_records) <- detail_cols
 
-  # Embed the skeleton and per-row data once under a widget-unique global; the
-  # `details` callback rebuilds a row's spec by merging the skeleton with its
-  # data slice and renders it lazily on expand. Guard the payload against a
-  # literal `</script>` closing the inline block early.
+  # Embed skeleton + records + indices once under a widget-unique global. xfun
+  # dictionary-encodes the factor columns (factor = "dict") and escapes any
+  # `</script`, so no post-processing of the payload is needed.
   specs_var <- paste0(
     "__forestly_ae_specs_",
     gsub("[^A-Za-z0-9]", "", basename(tempfile("")))
   )
-  # `factor = "dict"` dictionary-encodes the (factor) listing columns; xfun also
-  # escapes any literal `</script` so the inline block cannot be closed early, so
-  # no post-processing of the payload is needed here.
   specs_json <- xfun::tojson(list(
     tpl = detail_tpl,
     records = detail_records,
@@ -418,16 +395,12 @@ ae_forestly <- function(outdata,
     paste0("window.", specs_var, "=", specs_json, ";")
   ))
 
-  # Client-side detail renderer. reactable renders a table-level `details`
-  # string as a React text node (it is escaped, not parsed as HTML), so we
-  # return a real element instead: an empty container whose `ref` callback fires
-  # on mount, rebuilds the row's data slice by gathering the row's record
-  # indices out of the shared columnar store, merges it into the shared skeleton
-  # and renders the lt table with LT.render() (which triggers the interactive
-  # plugin). `React` is a global from reactR's dependency. `rowInfo.index`
-  # (0-based, stable across sort/filter) indexes the `index` array. Gathering
-  # straight from the record store's own entries keeps the serialized column
-  # order, so no separate column-name list is needed.
+  # Client-side detail renderer. reactable renders a `details` string as escaped
+  # text, so we return a real element: a container whose `ref` fires on mount,
+  # gathers the row's records from the shared store (via `rowInfo.index`, 0-based
+  # and stable across sort/filter), merges them into the skeleton, and renders
+  # with LT.render(). `React` is a reactR global; gathering from the store's own
+  # entries preserves column order, so no column-name list is needed.
   detail_js <- reactable::JS(sprintf(
     "(rowInfo) => {
   const store = window.%s;
