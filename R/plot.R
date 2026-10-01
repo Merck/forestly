@@ -667,7 +667,7 @@ panel_color_shape <- function(color, shape, n_trt) {
 #' Nudge the y position of grouped rows within a unit
 #'
 #' Shared by the panel builders. Within one y-unit (item), spread the non-empty
-#' rows evenly using [nudge_unit()]. A row contributes to the count only when it
+#' rows evenly using `nudge_unit()`. A row contributes to the count only when it
 #' has at least one non-missing value across the leading value columns.
 #'
 #' @param x A data frame for a single y-unit; its value columns are the first
