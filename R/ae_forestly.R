@@ -379,9 +379,7 @@ ae_forestly <- function(outdata,
   })
   names(detail_records) <- detail_cols
 
-  # Embed skeleton + records + indices once under a widget-unique global. xfun
-  # dictionary-encodes the factor columns (factor = "dict") and escapes any
-  # `</script`, so no post-processing of the payload is needed.
+  # Embed skeleton + records + indices once under a widget-unique global.
   specs_var <- paste0(
     "__forestly_ae_specs_",
     gsub("[^A-Za-z0-9]", "", basename(tempfile("")))
