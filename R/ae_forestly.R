@@ -373,7 +373,10 @@ ae_forestly <- function(outdata,
     key <- paste(tbl_parameter[i], toupper(tbl_name[i]), sep = "\r")
     idx <- c(map_event[[key]], map_soc[[key]])
     if (length(idx)) idx <- sort.int(unique(idx))
-    idx - 1L # 0-based for the client-side gather
+    # 0-based for the client-side gather. `I()` keeps a length-1 index vector a
+    # JSON array (`[7]`) instead of a bare number, so the client never has to
+    # special-case it.
+    I(idx - 1L)
   }
   detail_index <- lapply(seq_along(tbl_name), build_detail_index)
 
@@ -395,7 +398,6 @@ ae_forestly <- function(outdata,
     "</(script)", "<\\\\/\\1",
     xfun::tojson(list(
       tpl = detail_tpl,
-      columns = detail_cols,
       records = detail_records,
       index = detail_index
     )),
@@ -412,33 +414,30 @@ ae_forestly <- function(outdata,
   # indices out of the shared columnar store, merges it into the shared skeleton
   # and renders the lt table with LT.render() (which triggers the interactive
   # plugin). `React` is a global from reactR's dependency. `rowInfo.index`
-  # (0-based, stable across sort/filter) matches the `index` array; a length-1
-  # index vector serializes as a bare number, so coerce to an array.
-  detail_js <- reactable::JS(paste0(
-    "function(rowInfo) {\n",
-    "  var store = window.", specs_var, ";\n",
-    "  if (!store || !store.index) return null;\n",
-    "  var idx = store.index[rowInfo.index];\n",
-    "  if (idx == null) return null;\n",
-    "  if (!Array.isArray(idx)) idx = [idx];\n",
-    "  var recs = store.records, cols = store.columns, data = {};\n",
-    "  for (var c = 0; c < cols.length; c++) {\n",
-    "    var name = cols[c], col = recs[name], out = new Array(idx.length);\n",
-    "    for (var j = 0; j < idx.length; j++) out[j] = col[idx[j]];\n",
-    "    data[name] = out;\n",
-    "  }\n",
-    "  var spec = Object.assign({}, store.tpl, {data: data});\n",
-    "  return window.React.createElement('div', {\n",
-    "    className: 'forestly-ae-drilldown',\n",
-    "    ref: function(el) {\n",
-    "      if (el && !el.dataset.ltDone && window.LT) {\n",
-    "        el.dataset.ltDone = '1';\n",
-    "        window.LT.render(el, spec);\n",
-    "      }\n",
-    "    }\n",
-    "  });\n",
-    "}"
-  ))
+  # (0-based, stable across sort/filter) indexes the `index` array. Gathering
+  # straight from the record store's own entries keeps the serialized column
+  # order, so no separate column-name list is needed.
+  detail_js <- reactable::JS(sprintf(
+    "(rowInfo) => {
+  const store = window.%s;
+  const idx = store && store.index && store.index[rowInfo.index];
+  if (!idx) return null;
+  const spec = {
+    ...store.tpl,
+    data: Object.fromEntries(
+      Object.entries(store.records).map(([k, col]) => [k, idx.map((i) => col[i])])
+    )
+  };
+  return window.React.createElement('div', {
+    className: 'forestly-ae-drilldown',
+    ref: (el) => {
+      if (el && !el.dataset.ltDone && window.LT) {
+        el.dataset.ltDone = '1';
+        window.LT.render(el, spec);
+      }
+    }
+  });
+}", specs_var))
 
   p_reactable <- reactable2(
     tbl,
