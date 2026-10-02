@@ -41,7 +41,7 @@
 #' @return A `reactable::JS()` object referencing the shared implementation.
 #'
 #' @details The implementation lives in `inst/js/search-filter.js` and is
-#'   attached once per table via [html_dependency_search_filter()]. This
+#'   attached once per table via `html_dependency_search_filter()`. This
 #'   function returns only a short reference to that global (e.g.
 #'   `window.__forestly_filter_column`). The drill-down listing embeds one
 #'   nested `reactable` per row of the main table, so inlining the full

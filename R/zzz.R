@@ -16,4 +16,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-utils::globalVariables(c("SAFFL"))
+# Keep each @importFrom on a single line: roxygen2 reads only the first line of
+# an @importFrom tag, so wrapping silently drops the symbols on continuation lines.
+#' @importFrom ggplot2 ggplot geom_point aes xlab ylab scale_y_discrete scale_colour_manual scale_shape_manual scale_x_continuous dup_axis guides guide_legend geom_vline geom_errorbar sec_axis annotate scale_x_discrete theme element_blank element_line margin element_rect element_text theme_minimal geom_rect
+#' @importFrom utils tail
+NULL
+
+utils::globalVariables(
+  unique(
+    c(
+      # From `plot_dot()`
+      c(".data"),
+      # From `plot_errorbar()`
+      c(".data", "x1", "x2", "x3", "y")
+    )
+  )
+)

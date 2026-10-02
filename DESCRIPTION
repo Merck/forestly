@@ -32,11 +32,13 @@ Depends:
 Imports:
     crosstalk,
     htmltools,
+    lt (>= 0.4.10),
     metalite,
     metalite.ae,
     reactable,
     reactR,
-    ggplot2
+    ggplot2,
+    xfun (>= 0.61.4)
 Suggests:
     covr,
     dplyr,
@@ -45,7 +47,10 @@ Suggests:
     rmarkdown,
     patchwork,
     testthat (>= 3.0.0)
+Remotes:
+    yihui/lt,
+    yihui/xfun
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
+Config/roxygen2/version: 8.1.0

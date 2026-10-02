@@ -77,3 +77,16 @@ html_dependency_search_filter <- function() {
     all_files = FALSE
   )
 }
+
+# Cosmetics for the lt-rendered AE drill-down listings (see
+# inst/css/ae-drilldown.css).
+html_dependency_ae_drilldown <- function() {
+  version <- "0.1.0"
+  htmltools::htmlDependency(
+    name = "forestly-ae-drilldown",
+    version = version,
+    src = system.file("css", package = "forestly"),
+    stylesheet = c("ae-drilldown.css"),
+    all_files = FALSE
+  )
+}

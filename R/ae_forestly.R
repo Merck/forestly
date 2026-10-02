@@ -312,43 +312,128 @@ ae_forestly <- function(outdata,
     hidden_cols <- setdiff(hidden_cols, displayed_diff_cols)
   }
 
-  # Pre-compute values that do not depend on the expanded row. `reactable`
-  # evaluates the `details` callback eagerly for every row, so anything that is
-  # constant across rows is hoisted here to avoid recomputing it n times (see
-  # #147). This includes the AE listing lookup keys, the shared labels, the
-  # search/filter JS callbacks, and the nested-table column definitions (the
-  # displayed columns are the same for every row).
+  # Lazy client-side drill-down listings. A nested reactable per row inflated the
+  # widget past a gigabyte (see #147/#158). Instead we build one shared `lt` spec
+  # skeleton (same columns/labels/formatting for every row), embed the listing
+  # once, and render a lightweight `lt` table on expand via LT.render().
   ae_listing <- outdata$ae_listing
   ae_listing_event_upper <- toupper(ae_listing$Adverse_Event)
   ae_listing_soc_upper <- toupper(ae_listing$SOC_Name)
   ae_listing_param <- ae_listing$param
 
+  # Group each drill-down's records together (param, then SOC, then term) so its
+  # index is a contiguous block the run-length encoding below can collapse.
+  ord <- order(ae_listing_param, ae_listing_soc_upper, ae_listing_event_upper)
+  ae_listing <- ae_listing[ord, , drop = FALSE]
+  ae_listing_event_upper <- ae_listing_event_upper[ord]
+  ae_listing_soc_upper <- ae_listing_soc_upper[ord]
+  ae_listing_param <- ae_listing_param[ord]
+
   detail_cols <- names(ae_listing)[!(names(ae_listing) %in% c("param", "SOC_Name"))]
   listing_label <- get_label(ae_listing)
   detail_labels <- unname(listing_label[match(detail_cols, names(listing_label))])
-
-  # Per-column filter and table-wide search supporting substring search,
-  # `!` negation, and JS expressions referencing the cell value `x`
-  # (see search_filter_js()).
-  col_filter_method <- search_filter_js("column")
-  table_search_method <- search_filter_js("table")
-
-  detail_col_defs <- stats::setNames(
-    lapply(seq_along(detail_cols), function(i) {
-      label_name <- if (is.na(detail_labels[i])) detail_cols[i] else detail_labels[i]
-      reactable::colDef(
-        header = label_name,
-        cell = function(value) format(value, nsmall = 1),
-        align = "center",
-        minWidth = 70,
-        filterMethod = col_filter_method
-      )
-    }),
-    detail_cols
+  detail_label_map <- stats::setNames(
+    ifelse(is.na(detail_labels), detail_cols, detail_labels), detail_cols
   )
+  # Numeric columns ship rounded (see `detail_records`), so lt needs no lt_format().
+  detail_decimals <- 1L
 
   tbl_name <- outdata$tbl$name
   tbl_parameter <- outdata$tbl$parameter
+
+  # Spec skeleton, built once from a zero-row slice: columns, labels and
+  # interactive options shared by every row. Only `spec$data` differs per row.
+  skeleton_df <- ae_listing[0, detail_cols, drop = FALSE]
+  row.names(skeleton_df) <- NULL
+  x <- lt::lt(skeleton_df)
+  x <- lt::lt_label(x, detail_label_map)
+  detail_tpl <- lt::lt_spec(lt::lt_interactive(
+    x, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
+  ))
+
+  # Per row, embed only the 0-based record indices it needs (not a data slice,
+  # which would ship each record once per matching row); the client gathers them
+  # from the shared store. Precomputed param+term/param+SOC -> row-index maps make
+  # each lookup O(matches) instead of a full scan.
+  row_idx <- seq_len(nrow(ae_listing))
+  key_event <- paste(ae_listing_param, ae_listing_event_upper, sep = "\r")
+  key_soc <- paste(ae_listing_param, ae_listing_soc_upper, sep = "\r")
+  map_event <- split(row_idx, key_event)
+  map_soc <- split(row_idx, key_soc)
+
+  tbl_keys <- paste(tbl_parameter, toupper(tbl_name), sep = "\r")
+  # `index` dominates the payload, so encode it tightly (one compact `js()` blob):
+  #   * contiguous run (common after the sort) -> `[start, -count]`; the negative
+  #     second element is the run marker, since deltas are always positive.
+  #   * otherwise -> delta-encode the sorted 0-based array (`[first, gap, ...]`).
+  # Dict-encoding can't help (indices are distinct per row). Client reverses both.
+  index_arrays <- vapply(tbl_keys, function(key) {
+    idx <- c(map_event[[key]], map_soc[[key]])
+    if (!length(idx)) return("[]")
+    idx <- sort.int(unique(idx)) - 1L
+    n <- length(idx)
+    if (n >= 2L && idx[n] - idx[1] + 1L == n) {
+      paste0("[", idx[1], ",", -n, "]")
+    } else {
+      paste0("[", paste0(c(idx[1], diff(idx)), collapse = ","), "]")
+    }
+  }, character(1))
+  detail_index <- xfun::js(paste0("[", paste0(index_arrays, collapse = ","), "]"))
+
+  # The listing serialized once, shared by every row. Columns repeat values across
+  # rows, so xfun::tojson(dict=) dictionary-encodes them (uniques once + a code per
+  # row) when shorter. Rounding numerics trims unseen digits and boosts repeats.
+  detail_records <- lapply(ae_listing[detail_cols], function(x) {
+    if (is.numeric(x)) round(x, detail_decimals) else as.factor(x)
+  })
+  names(detail_records) <- detail_cols
+
+  # dict < 1 gates near-unique columns out at the cheap unique() check instead of
+  # serializing them twice (codes + plain) only to discard the encoding.
+  specs_json <- xfun::tojson(list(
+    tpl = detail_tpl,
+    records = detail_records,
+    index = detail_index
+  ), dict = 0.5, pretty = FALSE)
+
+  # Client-side detail renderer. reactR evals this once, so the IIFE captures the
+  # store in a closure (one copy, no global). reactable escapes a string
+  # `details`, so return a real element whose `ref` fires on mount: gather this
+  # row's records by `rowInfo.index` (0-based, stable across sort/filter) into the
+  # skeleton, and render with LT.render(). A 2-element index entry with a negative
+  # second value is a contiguous run [start, -count]; otherwise it is delta-
+  # encoded ([first, gap, ...]) and recovered with a running sum.
+  detail_js <- reactable::JS(sprintf(
+    "(() => {
+  const store = %s;
+  return (rowInfo) => {
+    const enc = store.index[rowInfo.index];
+    if (!enc) return null;
+    let abs;
+    if (enc.length === 2 && enc[1] < 0) {
+      const start = enc[0], count = -enc[1];
+      abs = Array.from({ length: count }, (_, k) => start + k);
+    } else {
+      let acc = 0;
+      abs = enc.map((d) => (acc += d));
+    }
+    const spec = {
+      ...store.tpl,
+      data: Object.fromEntries(
+        Object.entries(store.records).map(([k, col]) => [k, abs.map((i) => col[i])])
+      )
+    };
+    return window.React.createElement('div', {
+      className: 'forestly-ae-drilldown',
+      ref: (el) => {
+        if (el && !el.dataset.ltDone && window.LT) {
+          el.dataset.ltDone = '1';
+          window.LT.render(el, spec);
+        }
+      }
+    });
+  };
+})()", specs_json))
 
   p_reactable <- reactable2(
     tbl,
@@ -361,32 +446,7 @@ ae_forestly <- function(outdata,
     width = width,
     download = dowload_button,
     searchable = FALSE,
-    details = function(index) {
-      t_row <- toupper(tbl_name[index])
-      t_param <- tbl_parameter[index]
-
-      keep <- ((ae_listing_event_upper %in% t_row) |
-        (ae_listing_soc_upper %in% t_row)) &
-        (ae_listing_param == t_param)
-
-      t_details <- ae_listing[keep, detail_cols, drop = FALSE]
-      row.names(t_details) <- NULL
-
-      # Create and return the reactable table for the nested view
-      reactable::reactable(
-        t_details,
-        columns = detail_col_defs,
-        width = "100%", # Adjust width as needed
-        resizable = TRUE,
-        filterable = TRUE,
-        searchable = TRUE,
-        searchMethod = table_search_method,
-        showPageSizeOptions = TRUE,
-        borderless = TRUE,
-        striped = TRUE,
-        highlight = TRUE
-      )
-    },
+    details = detail_js,
     pageSizeOptions = max_page,
 
     # Default sort variable
@@ -414,6 +474,8 @@ ae_forestly <- function(outdata,
       reactR::html_dependency_react(offline),
       html_dependency_plotly(offline),
       html_dependency_react_plotly(offline),
+      lt::lt_dependency(interactive = TRUE),
+      html_dependency_ae_drilldown(),
       p
     )
   )

@@ -53,10 +53,6 @@
 #'
 #' @return AEs incidence plot by item and treatment group.
 #'
-#' @importFrom ggplot2 ggplot geom_point aes xlab ylab scale_y_discrete
-#' scale_colour_manual scale_shape_manual scale_x_continuous dup_axis
-#' guides guide_legend
-#'
 #' @export
 #'
 #' @examples
@@ -331,9 +327,6 @@ plot_dot <- function(
 #' @param title Plot title. Default is `"Risk Diff. + 95% CI \\n (Percentage Points)"`.
 #'
 #' @return A risk difference plot for each item.
-#'
-#' @importFrom ggplot2 ggplot geom_point geom_vline geom_errorbar aes
-#' scale_x_continuous scale_y_discrete xlab ylab sec_axis guides guide_legend
 #'
 #' @export
 #'
@@ -674,7 +667,7 @@ panel_color_shape <- function(color, shape, n_trt) {
 #' Nudge the y position of grouped rows within a unit
 #'
 #' Shared by the panel builders. Within one y-unit (item), spread the non-empty
-#' rows evenly using [nudge_unit()]. A row contributes to the count only when it
+#' rows evenly using `nudge_unit()`. A row contributes to the count only when it
 #' has at least one non-missing value across the leading value columns.
 #'
 #' @param x A data frame for a single y-unit; its value columns are the first
@@ -719,9 +712,6 @@ nudge_split_y <- function(x, n_col) {
 #'   Users are suggested to use [theme_panel()].
 #'
 #' @return A ggplot2 object for table panel.
-#'
-#' @importFrom ggplot2 annotate scale_x_discrete scale_y_discrete xlab ylab
-#' @importFrom utils tail
 #'
 #' @export
 #'
@@ -971,9 +961,6 @@ table_panel <- function(
 #'
 #' @return Theme for a specific panel.
 #'
-#' @importFrom ggplot2 ggplot theme element_blank element_line margin
-#' element_rect element_text theme_minimal
-#'
 #' @export
 #'
 #' @examples
@@ -1017,8 +1004,6 @@ theme_panel <- function(show_text = TRUE, show_ticks = TRUE) {
 #' @param background_alpha Opacity of a geom. Default is 0.3.
 #'
 #' @return Plot as a colored background to add panels for rainfall or forest plot.
-#'
-#' @importFrom ggplot2 ggplot aes geom_rect
 #'
 #' @export
 #'
