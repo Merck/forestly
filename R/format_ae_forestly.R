@@ -203,13 +203,11 @@ format_ae_forestly <- function(
 
   rownames(tbl) <- NULL
 
-  # JavaScript for plotly figures ----
+  # Shared x-axis ranges for the inline figures ----
+  # Computed once across every row so the proportion dot plot and the risk
+  # difference error-bar cells are comparable from row to row. `ae_forestly()`
+  # feeds these to `lt_dotplot(limits=)` / `lt_errorbar(limits=)`.
   tbl_prop <- outdata$prop[, 1:n_group]
-  y <- rep(NA, n_group)
-  y[outdata$reference_group] <- mean(1:n_group1)
-  y[-outdata$reference_group] <- rev(1:n_group1)
-
-  # Calculate the range of the forest plot
   if (is.null(prop_range)) {
     fig_prop_range <- round(range(tbl_prop, na.rm = TRUE) + c(-2, 2))
   } else {
@@ -221,40 +219,6 @@ format_ae_forestly <- function(
   }
   fig_prop_color <- color[1:n_group]
 
-  # Function to create proportion of subjects figure
-  js_prop_fig_cell <- sparkline_point_js(
-    tbl = tbl,
-    type = "cell",
-    x = names(tbl_prop),
-    y = y,
-    xlim = fig_prop_range,
-    color = fig_prop_color,
-    width = width_fig,
-    height = 30,
-    text = paste0("x[", 1:n_group - 1, "]"),
-    margin = c(0, 0, 0, 0, 0)
-  )
-
-  # Function to create Axis
-  js_prop_fig_footer <- sparkline_point_js(
-    tbl = data.frame(x = 1),
-    x = rep("x", n_group),
-    y = -1,
-    type = "footer",
-    xlab = "",
-    xlim = fig_prop_range,
-    height = footer_space,
-    width = width_fig,
-    color = fig_prop_color,
-    legend = TRUE,
-    legend_label = outdata$group[1:n_group],
-    legend_title = "",
-    legend_position = -0.8,
-    legend_type = "point",
-    margin = c(footer_space - 20, 0, 0, 0, 0)
-  )
-
-  # Function to create proportion difference figure
   tbl_diff <- data.frame(outdata$diff, outdata$ci_lower, outdata$ci_upper)
   if (is.null(diff_range)) {
     fig_diff_range <- round(range(tbl_diff, na.rm = TRUE) + c(-2, 2))
@@ -267,208 +231,34 @@ format_ae_forestly <- function(
   }
   fig_diff_color <- fig_prop_color[index_diff]
 
-  iter <- 1:ncol(outdata$diff) - 1
-  text <- sprintf("x[%d] + '(' + x_lower[%d] + ', ' + x_upper[%d] + ')'", iter, iter, iter)
-  js_diff_fig_cell <- sparkline_point_js(
-    tbl = tbl,
-    type = "cell",
-    x = names(outdata$diff),
-    x_lower = names(outdata$ci_lower),
-    x_upper = names(outdata$ci_upper),
-    y = rev(1:ncol(outdata$diff)),
-    xlim = fig_diff_range,
-    color = fig_diff_color,
-    width = width_fig,
-    text = text,
-    margin = c(0, 20, 0, 0, 0)
-  )
-
-  # Function to create Axis
-  js_diff_fig_footer <- sparkline_point_js(
-    tbl = data.frame(x = 1),
-    x = "x",
-    y = -1,
-    type = "footer",
-    xlab = diff_label,
-    xlim = fig_diff_range,
-    height = footer_space,
-    width = width_fig,
-    legend = FALSE,
-    margin = c(footer_space - 20, 20, 0, 0, 0)
-  )
-
-  # Column Group information ----
-  columnGroups <- list()
-  for (i in 1:m_group) {
-    columnGroups[[i]] <- reactable::colGroup(
-      name = paste0(
-        '<span title="',
-        paste0(outdata$group[i], " (N=", outdata$n_pop[i], ")"),
-        '">',
-        paste0(outdata$group[i], "<br> (N=", outdata$n_pop[i], ")"),
-        '</span>'
-      ),
-      html = TRUE,
-      columns = c(name_n[i], name_prop[i])
-    )
-  }
-  columnGroups[[m_group + 1]] <- reactable::colGroup(
-    name = paste0(
-      '<span title="',
-      htmltools::htmlEscape(gsub(" <br> ", " ", diff_col_header, fixed = TRUE)),
-      '">',
-      diff_col_header,
-      '</span>'
-    ),
-    html = TRUE,
-    columns = names(outdata$diff)
-  )
-
-  # Column Definition ----
-
-  # Filter method applied to every filterable column: substring match, `!`
-  # negation, and JS expressions referencing the cell value `x`, e.g. `x > 5`
-  # on a numeric column or `!x.includes("Rash")` on text (see
-  # search_filter_js()).
-  filter_method <- search_filter_js("column")
-
-  # Format variables for group
-  col_var <- list(
-    parameter = reactable::colDef(
-      header = "Type",
-      show = FALSE
-    ),
-    name = reactable::colDef(
-      header = ae_col_header,
-      minWidth = width_term, align = "right",
-      filterMethod = filter_method
-    ),
-    soc_name = reactable::colDef(
-      header = "SOC Name",
-      minWidth = width_term, align = "right",
-      show = FALSE
-    )
-  )
-
-  # n column format
-  col_n <- lapply(name_n, function(x) {
-    reactable::colDef(
-      header = "n", defaultSortOrder = "desc",
-      minWidth = width_n, align = "center",
-      show = display_n,
-      filterMethod = filter_method
-    )
-  })
-  names(col_n) <- name_n
-
-  # prop column format
-  col_prop <- lapply(name_prop, function(x) {
-    reactable::colDef(
-      header = "(%)", defaultSortOrder = "desc",
-      minWidth = width_prop, align = "center",
-      show = display_prop,
-      format = reactable::colFormat(
-        prefix = "(",
-        digits = digits,
-        suffix = ")"
-      ),
-      filterMethod = filter_method
-    )
-  })
-  names(col_prop) <- name_prop
-
-  # Define diff column
-  diff_name <- c(names(outdata$diff))
-  col_diff <- lapply(
-    diff_name,
-    function(x) {
-      i <- as.numeric(gsub("diff_", "", x, fixed = TRUE))
-      reactable::colDef(
-        header = htmltools::tags$span(
-          title = outdata$group[i],
-          outdata$group[i]
-        ),
-        minWidth = width_diff,
-        show = display_diff,
-        format = reactable::colFormat(digits = digits),
-        filterMethod = filter_method
-      )
-    }
-  )
-  names(col_diff) <- diff_name
-
-  # Define ci columns
-  ci_name <- c(names(outdata$ci_lower), names(outdata$ci_upper))
-  col_ci <- lapply(
-    ci_name,
-    function(x) {
-      reactable::colDef(show = FALSE)
-    }
-  )
-  names(col_ci) <- ci_name
-
-  # proportion format
-  col_prop_fig <- list(prop_fig = reactable::colDef(
-    header = "AE Proportion (%)",
-    width = ifelse("fig_prop" %in% display, width_fig, 0),
-    align = "center",
-    sortable = FALSE,
-    filterable = FALSE,
-    cell = reactable::JS(js_prop_fig_cell),
-    footer = reactable::JS(js_prop_fig_footer),
-    html = TRUE,
-    style = "font-size: 0px; padding: 0px; margin: 0px;",
-    footerStyle = "font-size: 0px; padding: 0px; margin: 0px;"
-  ))
-
-  # difference format
-  col_diff_fig <- list(diff_fig = reactable::colDef(
-    header = diff_fig_header,
-    defaultSortOrder = "desc",
-    width = ifelse("fig_diff" %in% display, width_fig, 0),
-    align = "center",
-    sortable = FALSE,
-    filterable = FALSE,
-    cell = reactable::JS(js_diff_fig_cell),
-    footer = reactable::JS(js_diff_fig_footer),
-    html = TRUE,
-    style = "font-size: 0px; padding: 0px; margin: 0px;",
-    footerStyle = "font-size: 0px; padding: 0px; margin: 0px;"
-  ))
-
-  # Format variables for slider bar
-  col_sider <- list(
-    hide_prop = reactable::colDef(show = FALSE),
-    hide_n = reactable::colDef(show = FALSE)
-  )
-
-  # Combine column definition
-  columns <- c(
-    col_var, col_n, col_prop,
-    col_diff, col_ci, col_sider,
-    col_prop_fig, col_diff_fig
-  )
-
-  # column hidden
-  columns <- lapply(columns, function(x) {
-    if (!"show" %in% names(x)) {
-      x$show <- TRUE
-    }
-    return(x)
-  })
-
-  hidden_item <- names(columns)[(!names(columns) %in% "soc_name") & (sapply(columns, function(x) {
-    return(!x$show)
-  }))]
-
-  # Create outdata
+  # Create outdata ----
+  # `tbl` is the single source of truth for the interactive table; everything
+  # else here is metadata `ae_forestly()` needs to turn `tbl` into an `lt`
+  # table (ranges, colors, headers, per-arm column groupings, widths). No
+  # reactable/plotly column specs are produced any more.
   outdata$tbl <- tbl
-  outdata$reactable_columns <- columns
-  outdata$reactable_columns_group <- columnGroups
   outdata$display <- display
+  outdata$digits <- digits
+  outdata$fig_prop_range <- fig_prop_range
+  outdata$fig_diff_range <- fig_diff_range
   outdata$fig_prop_color <- fig_prop_color
   outdata$fig_diff_color <- fig_diff_color
-  outdata$hidden_column <- hidden_item
+  outdata$diff_label <- diff_label
+  outdata$ae_col_header <- ae_col_header
+  outdata$diff_col_header <- diff_col_header
+  outdata$diff_fig_header <- diff_fig_header
+  outdata$n_group <- n_group
+  outdata$m_group <- m_group
+  outdata$name_n <- name_n
+  outdata$name_prop <- name_prop
+  outdata$diff_name <- names(outdata$diff)
+  outdata$ci_lower_name <- names(outdata$ci_lower)
+  outdata$ci_upper_name <- names(outdata$ci_upper)
+  outdata$index_diff <- index_diff
+  outdata$widths <- list(
+    term = width_term, fig = width_fig, n = width_n,
+    prop = width_prop, diff = width_diff, footer = footer_space
+  )
 
   outdata
 }

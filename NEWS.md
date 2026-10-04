@@ -1,3 +1,14 @@
+# forestly 0.1.7
+
+## Improvements
+
+- Migrate the main interactive AE forest table from `reactable` + vendored Plotly to the `lt` package (yihui/lt). The table, the per-arm proportion dot plot (`lt_dotplot`), and the risk-difference error bar (`lt_errorbar`) are now one `lt` table made interactive with `lt_interactive()`; the drill-down listings continue to render lazily on expand (following #168). This drops the `reactable`, `reactR`, `crosstalk`, and vendored `plotly` JavaScript from the critical path and substantially shrinks the widget. The parameter dropdown, incidence range slider, and CSV download are now dependency-free HTML controls that drive the table through `lt`'s `el._lt.filter()` contract (see `inst/js/forestly-widgets.js`).
+- Drop the `crosstalk`, `reactable`, and `reactR` package dependencies; require `lt (>= 0.4.21)`.
+
+## Note
+
+- `ae_forestly()`'s argument names are unchanged, including the historically misspelled `dowload_button`, to preserve backward compatibility.
+
 # forestly 0.1.6
 
 ## Improvements

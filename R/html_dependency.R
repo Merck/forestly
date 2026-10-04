@@ -16,64 +16,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-html_dependency_react_plotly <- function(offline = TRUE) {
-  version <- "1.0.2"
-  hd <- htmltools::htmlDependency(
-    name = "react-plotly",
-    version = version,
-    src = system.file("js", package = "forestly"),
-    script = c("create-plotly-component.js"),
-    all_files = FALSE
-  )
-
-  if (!offline) {
-    hd$src <- list(href = "https://unpkg.com")
-    hd$script <- c("react-plotly.js@1.0.2/dist/create-plotly-component.js")
-  }
-
-  hd
-}
-
-html_dependency_plotly <- function(offline = TRUE) {
-  version <- "1.58.5"
-  hd <- htmltools::htmlDependency(
-    name = "plotly",
-    version = version,
-    src = system.file("js", package = "forestly"),
-    script = c("plotly-min.js"),
-    all_files = FALSE
-  )
-
-  if (!offline) {
-    hd$src <- list(href = "https://cdn.plot.ly")
-    hd$script <- c("plotly-1.58.5.min.js")
-  }
-
-  hd
-}
-
-html_dependency_filter_crosstalk <- function() {
-  version <- "0.1.0"
+# Script + styles for the forestly-owned controls around the main AE forest
+# table (parameter dropdown, incidence range slider, CSV download). They drive
+# the lt table through its `el._lt.filter()` contract (see
+# inst/js/forestly-widgets.js).
+html_dependency_forestly_widgets <- function() {
   htmltools::htmlDependency(
-    name = "filter-crosstalk",
-    version = version,
-    src = system.file("js", package = "forestly"),
-    script = c("filter-crosstalk.js"),
-    all_files = FALSE
-  )
-}
-
-# Defines the shared `window.__forestly_filter_column` / `__forestly_filter_table`
-# globals used as the drill-down listing `filterMethod` / `searchMethod`, so the
-# implementation is emitted once instead of being inlined into every nested
-# table (see `search_filter_js()`).
-html_dependency_search_filter <- function() {
-  version <- "0.1.0"
-  htmltools::htmlDependency(
-    name = "forestly-search-filter",
-    version = version,
-    src = system.file("js", package = "forestly"),
-    script = c("search-filter.js"),
+    name = "forestly-widgets",
+    version = "0.1.0",
+    src = system.file(package = "forestly"),
+    script = c("js/forestly-widgets.js"),
+    stylesheet = c("css/forestly-widgets.css"),
     all_files = FALSE
   )
 }

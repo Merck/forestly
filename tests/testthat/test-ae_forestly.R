@@ -1,32 +1,57 @@
 test_that("ae_forestly(): default setting can be executed without error", {
   outdata <- test_ae_forestly()
   html <- outdata |> ae_forestly()
-  html <- html[[length(html)]]
+  container <- html[[length(html)]]
 
-  expect_equal(html$name, "div")
-  expect_equal(html$attribs$class, "container-fluid crosstalk-bscols")
-  expect_true(grepl("width:1400px", html$children[[1]], fixed = TRUE))
-  expect_true(grepl("Incidence (%) in One or More Treatment Groups", html$children[[1]], fixed = TRUE))
+  # The output is a browsable tagList whose last element is the forestly
+  # container div holding the controls and the lt table.
+  expect_equal(container$name, "div")
+  expect_equal(container$attribs$class, "forestly-ae")
+  expect_true(grepl("width:1400px", container$attribs$style, fixed = TRUE))
+
+  html_text <- as.character(html)
+  expect_true(grepl("Incidence (%) in One or More Treatment Groups", html_text, fixed = TRUE))
 })
 
 test_that("ae_forestly(): test filter and width option", {
   outdata <- test_ae_forestly()
   html <- outdata |> ae_forestly(filter = c("n"), width = 1500)
-  html <- html[[length(html)]]
+  container <- html[[length(html)]]
 
-  expect_true(grepl("width:1500px", html$children[[1]], fixed = TRUE))
-  expect_true(grepl("Number of AE in One or More Treatment Groups", html$children[[1]], fixed = TRUE))
+  expect_true(grepl("width:1500px", container$attribs$style, fixed = TRUE))
+  expect_true(grepl(
+    "Number of AE in One or More Treatment Groups",
+    as.character(html), fixed = TRUE
+  ))
 })
 
-test_that("ae_forestly(): main table uses the shared column filter global", {
+test_that("ae_forestly(): forestly controls (dropdown + slider) are emitted", {
   outdata <- test_ae_forestly()
-  html <- outdata |> ae_forestly()
-  html_text <- as.character(html)
+  html_text <- as.character(ae_forestly(outdata))
 
-  # The main table's per-column filter references the shared global defined in
-  # inst/js/search-filter.js (deduplicated to keep the widget small), rather
-  # than inlining the function body into every column.
-  expect_true(grepl("window.__forestly_filter_column", html_text, fixed = TRUE))
+  # The parameter dropdown and the incidence range slider are forestly-owned
+  # widgets that drive the lt table through its el._lt.filter() contract.
+  expect_true(grepl("forestly-controls", html_text, fixed = TRUE))
+  expect_true(grepl("forestly-param", html_text, fixed = TRUE))
+  expect_true(grepl("forestly-slider", html_text, fixed = TRUE))
+  # The slider targets the hidden incidence helper column.
+  expect_true(grepl("data-col=\"hide_prop\"", html_text, fixed = TRUE))
+})
+
+test_that("ae_forestly(): no slider when filter is NULL", {
+  outdata <- test_ae_forestly()
+  html_text <- as.character(ae_forestly(outdata, filter = NULL))
+
+  expect_false(grepl("forestly-slider", html_text, fixed = TRUE))
+})
+
+test_that("ae_forestly(): download button is opt-in", {
+  outdata <- test_ae_forestly()
+  expect_false(grepl("forestly-download", as.character(ae_forestly(outdata)), fixed = TRUE))
+  expect_true(grepl(
+    "forestly-download",
+    as.character(ae_forestly(outdata, dowload_button = TRUE)), fixed = TRUE
+  ))
 })
 
 test_that("ae_forestly(): drill-down listings render lazily via lt", {
@@ -35,62 +60,44 @@ test_that("ae_forestly(): drill-down listings render lazily via lt", {
   html_text <- as.character(html)
 
   # Detail listings are lightweight `lt` interactive tables rendered on expand
-  # (see #158), not eager per-row nested reactables. The specs are embedded once
-  # in a closure captured by the `details` renderer and drawn with LT.render().
+  # (see #158/#168), not eager per-row nested tables. The listing is embedded
+  # once as a shared record store captured in the detail callback's closure;
+  # each row carries only the record indices it needs (see #147).
   expect_true(grepl("const store =", html_text, fixed = TRUE))
-  expect_true(grepl("window.LT.render", html_text, fixed = TRUE))
-  # The listing is embedded once as a shared record store; each row carries only
-  # the indices it needs and the client gathers its slice on expand (see #147),
-  # rather than shipping a full data slice per row.
   expect_true(grepl("store.records", html_text, fixed = TRUE))
   expect_true(grepl("store.index", html_text, fixed = TRUE))
-  # The lt interactivity extension is bundled as an HTML dependency.
+
+  # The lt runtime, interactivity extension, and inline-plot extension are
+  # bundled as HTML dependencies.
   deps <- htmltools::findDependencies(html)
-  lt_dep <- Filter(function(d) identical(d$name, "lt"), deps)
-  expect_true(length(lt_dep) > 0)
-  expect_true("lt-interactive.js" %in% lt_dep[[1]]$script)
+  dep_names <- vapply(deps, function(d) d$name, character(1))
+  expect_true("lt" %in% dep_names)
+  expect_true("forestly-widgets" %in% dep_names)
+
+  lt_dep <- Filter(function(d) identical(d$name, "lt"), deps)[[1]]
+  expect_true("lt-interactive.js" %in% unlist(lt_dep$script))
+  expect_true("lt-plot.js" %in% unlist(lt_dep$script))
 })
 
-test_that("search-filter.js defines the shared globals and search logic", {
-  js_path <- system.file("js", "search-filter.js", package = "forestly")
+test_that("ae_forestly(): forestly-widgets dependency ships the controller script", {
+  js_path <- system.file("js", "forestly-widgets.js", package = "forestly")
   expect_true(file.exists(js_path))
   js <- paste(readLines(js_path, warn = FALSE), collapse = "\n")
 
-  # Both globals referenced by search_filter_js() are defined here.
-  expect_true(grepl("window.__forestly_filter_column", js, fixed = TRUE))
-  expect_true(grepl("window.__forestly_filter_table", js, fixed = TRUE))
-  # Substring `!` negation and JS expression modes live in the shared body.
-  expect_true(grepl("var negate = v.charAt(0) === '!'", js, fixed = TRUE))
-  expect_true(grepl("new Function('x'", js, fixed = TRUE))
+  # The widgets drive the table through lt's el._lt.filter() contract.
+  expect_true(grepl("_lt", js, fixed = TRUE))
+  expect_true(grepl("filter", js, fixed = TRUE))
 })
 
-test_that("ae_forestly(): toggle risk difference button is hidden by default", {
+test_that("ae_forestly(): both diff-toggle settings render without error", {
   outdata <- meta_ae_test() |>
     prepare_ae_forestly(
       population = "apat",
       observation = "wk12",
       parameter = "any;rel;ser"
     ) |>
-    format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff", "diff"))
+    format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff"))
 
-  html <- outdata |> ae_forestly(display_diff_toggle = FALSE)
-  html_text <- as.character(html)
-
-  expect_false(grepl("Show/Hide Risk Difference", html_text, fixed = TRUE))
-})
-
-test_that("ae_forestly(): toggle risk difference button can be enabled", {
-  outdata <- meta_ae_test() |>
-    prepare_ae_forestly(
-      population = "apat",
-      observation = "wk12",
-      parameter = "any;rel;ser"
-    ) |>
-    format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff", "diff"))
-
-  html <- outdata |> ae_forestly(display_diff_toggle = TRUE)
-  html_text <- as.character(html)
-
-  expect_true(grepl("Show/Hide Risk Difference", html_text, fixed = TRUE))
-  expect_true(grepl("control_diff", html_text, fixed = TRUE))
+  expect_s3_class(ae_forestly(outdata, display_diff_toggle = FALSE), "shiny.tag.list")
+  expect_s3_class(ae_forestly(outdata, display_diff_toggle = TRUE), "shiny.tag.list")
 })

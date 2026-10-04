@@ -242,80 +242,15 @@ ae_forestly <- function(outdata,
     labels = par_label
   )
 
-  tbl <- crosstalk::SharedData$new(outdata$tbl)
-  # Set default to be the first item
-  default_param <- as.character(unique(outdata$tbl$parameter)[1])
-
-  random_id <- paste0("filter_ae_", basename(tempfile("")), "|", default_param)
-
   if (is.null(ae_label)) {
     ae_label <- "AE Criteria"
   }
 
-  filter_ae <- crosstalk::filter_select(
-    id = random_id,
-    label = ae_label,
-    sharedData = tbl,
-    group = ~parameter,
-    multiple = FALSE
-  )
-
-  # Make a select list
-  # Make a slider bar of the incidence percentage
-  if (display_filter) {
-    if (filter == "prop") {
-      filter_subject <- crosstalk::filter_slider(
-        id = "filter_subject",
-        label = filter_label,
-        sharedData = tbl,
-        column = ~hide_prop, # whose values will be used for this slider
-        step = 1, # specifies interval between each select-able value on the slider
-        width = 250, # width of the slider control
-        min = filter_range[1], # the leftmost value of the slider
-        max = filter_range[2] # the rightmost value of the slider
-      )
-    }
-
-    if (filter == "n") {
-      filter_subject <- crosstalk::filter_slider(
-        id = "filter_subject",
-        label = filter_label,
-        sharedData = tbl,
-        column = ~hide_n,
-        step = 1,
-        width = 250,
-        min = filter_range[1], # the leftmost value of the slider
-        max = filter_range[2] # the rightmost value of the slider
-      )
-    }
-
-    # Set the slider attributes to match our filter_range
-    filter_subject$children[[2]]$attribs$`data-from` <- filter_range[1]
-    filter_subject$children[[2]]$attribs$`data-to` <- filter_range[2]
-    filter_subject$children[[2]]$attribs$`data-max` <- filter_range[2]
-  } else {
-    filter_subject <- NULL
-  }
-
-  diff_cols <- c(
-    names(outdata$diff)
-  )
-
-  all_diff_cols <- c(diff_cols, "diff_fig")
-  displayed_diff_cols <- intersect(all_diff_cols, c(
-    if ("diff" %in% outdata$display) diff_cols else NULL,
-    if ("fig_diff" %in% outdata$display) "diff_fig" else NULL
-  ))
-
-  hidden_cols <- outdata$hidden_column
-  if (display_diff_toggle) {
-    hidden_cols <- setdiff(hidden_cols, displayed_diff_cols)
-  }
-
-  # Lazy client-side drill-down listings. A nested reactable per row inflated the
-  # widget past a gigabyte (see #147/#158). Instead we build one shared `lt` spec
-  # skeleton (same columns/labels/formatting for every row), embed the listing
-  # once, and render a lightweight `lt` table on expand via LT.render().
+  # ---- Drill-down detail (native lt row detail) ----
+  # The listing is embedded once; each table row carries only the 0-based record
+  # indices it needs (contiguous runs or delta-encoded), and lt's detail callback
+  # assembles that row's listing on expand. This keeps the widget small -- the
+  # listing is never duplicated per row (see #147/#158).
   ae_listing <- outdata$ae_listing
   ae_listing_event_upper <- toupper(ae_listing$Adverse_Event)
   ae_listing_soc_upper <- toupper(ae_listing$SOC_Name)
@@ -345,10 +280,10 @@ ae_forestly <- function(outdata,
   # interactive options shared by every row. Only `spec$data` differs per row.
   skeleton_df <- ae_listing[0, detail_cols, drop = FALSE]
   row.names(skeleton_df) <- NULL
-  x <- lt::lt(skeleton_df)
-  x <- lt::lt_label(x, detail_label_map)
+  skeleton <- lt::lt(skeleton_df, auto_format = FALSE, auto_label = FALSE)
+  skeleton <- lt::lt_label(skeleton, detail_label_map)
   detail_tpl <- lt::lt_spec(lt::lt_interactive(
-    x, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
+    skeleton, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
   ))
 
   # Per row, embed only the 0-based record indices it needs (not a data slice,
@@ -396,19 +331,18 @@ ae_forestly <- function(outdata,
     index = detail_index
   ), dict = 0.5, pretty = FALSE)
 
-  # Client-side detail renderer. reactR evals this once, so the IIFE captures the
-  # store in a closure (one copy, no global). reactable escapes a string
-  # `details`, so return a real element whose `ref` fires on mount: gather this
-  # row's records by `rowInfo.index` (0-based, stable across sort/filter) into the
-  # skeleton, and render with LT.render(). A 2-element index entry with a negative
-  # second value is a contiguous run [start, -count]; otherwise it is delta-
-  # encoded ([first, gap, ...]) and recovered with a running sum.
-  detail_js <- reactable::JS(sprintf(
+  # lt calls the detail callback as (rawRow, index1Based, displayRow) and renders
+  # the returned spec via LT.render (so the listing can itself be interactive).
+  # The IIFE captures the store in a closure (one copy, no global). A 2-element
+  # index entry with a negative second value is a contiguous run [start, -count];
+  # otherwise it is delta-encoded ([first, gap, ...]) and recovered with a running
+  # sum. Returning null leaves a row with no listing un-expandable.
+  detail_cb <- xfun::js(sprintf(
     "(() => {
   const store = %s;
-  return (rowInfo) => {
-    const enc = store.index[rowInfo.index];
-    if (!enc) return null;
+  return (row, index) => {
+    const enc = store.index[index - 1];
+    if (!enc || !enc.length) return null;
     let abs;
     if (enc.length === 2 && enc[1] < 0) {
       const start = enc[0], count = -enc[1];
@@ -417,66 +351,99 @@ ae_forestly <- function(outdata,
       let acc = 0;
       abs = enc.map((d) => (acc += d));
     }
-    const spec = {
+    return {
       ...store.tpl,
       data: Object.fromEntries(
         Object.entries(store.records).map(([k, col]) => [k, abs.map((i) => col[i])])
       )
     };
-    return window.React.createElement('div', {
-      className: 'forestly-ae-drilldown',
-      ref: (el) => {
-        if (el && !el.dataset.ltDone && window.LT) {
-          el.dataset.ltDone = '1';
-          window.LT.render(el, spec);
-        }
-      }
-    });
   };
 })()", specs_json))
 
-  p_reactable <- reactable2(
-    tbl,
-    columns = outdata$reactable_columns,
-    columnGroups = outdata$reactable_columns_group,
-    hidden_item = paste0("'", hidden_cols, "'", collapse = ", "),
-    soc_toggle = display_soc_toggle,
-    diff_toggle = display_diff_toggle,
-    diff_columns = displayed_diff_cols,
-    width = width,
-    download = dowload_button,
-    searchable = FALSE,
-    details = detail_js,
-    pageSizeOptions = max_page,
-
-    # Default sort variable
-    defaultSorted = c("parameter", names(outdata$diff)),
-    defaultSortOrder = "desc"
+  # ---- Build the interactive lt table ----
+  built <- format_lt_forestly(
+    outdata,
+    display_soc_toggle = display_soc_toggle,
+    display_diff_toggle = display_diff_toggle
+  )
+  x <- lt::lt_interactive(
+    built$x,
+    sort = TRUE,
+    search = FALSE,
+    filter = TRUE,
+    pager = max_page,
+    resize = TRUE,
+    hide = built$hide_menu,
+    detail = detail_cb
   )
 
-  p <- suppressWarnings(
-    crosstalk::bscols(
-      # Width of the select list and reactable
-      widths = c(3, 9, 12, 0),
-      filter_ae,
-      filter_subject,
-      p_reactable
+  # ---- forestly-owned controls (drive the table via el._lt.filter) ----
+  param_levels <- levels(outdata$tbl$parameter)
+  param_select <- htmltools::tags$label(
+    class = "forestly-param", ae_label,
+    htmltools::tags$select(
+      lapply(param_levels, function(p) htmltools::tags$option(p))
     )
   )
 
-  # Assemble html file
-  offline <- TRUE
+  if (display_filter) {
+    slider_col <- if (filter == "prop") "hide_prop" else "hide_n"
+    lo <- filter_range[1]
+    hi <- filter_range[2]
+    slider <- htmltools::div(
+      class = "forestly-slider", `data-col` = slider_col,
+      htmltools::tags$label(filter_label),
+      htmltools::div(
+        class = "forestly-slider-track",
+        htmltools::tags$input(
+          type = "range", class = "lo",
+          min = lo, max = hi, value = lo, step = 1
+        ),
+        htmltools::tags$input(
+          type = "range", class = "hi",
+          min = lo, max = hi, value = hi, step = 1
+        )
+      ),
+      htmltools::div(
+        class = "forestly-slider-out",
+        htmltools::tags$span(class = "lo-out", lo),
+        htmltools::HTML("&ndash;"),
+        htmltools::tags$span(class = "hi-out", hi)
+      )
+    )
+  } else {
+    slider <- NULL
+  }
 
+  download_btn <- if (dowload_button) {
+    htmltools::tags$button(class = "forestly-download", "Download as CSV")
+  } else {
+    NULL
+  }
+
+  controls <- htmltools::div(
+    class = "forestly-controls",
+    param_select, slider, download_btn
+  )
+
+  container <- htmltools::div(
+    class = "forestly-ae",
+    style = htmltools::css(width = paste0(width, "px"), `max-width` = "100%"),
+    controls,
+    htmltools::div(
+      class = "forestly-table",
+      style = "overflow-x: auto;",
+      htmltools::HTML(format(x, assets = FALSE))
+    )
+  )
+
+  # ---- Assemble: lt runtime (interactive + plot) + forestly widgets ----
   htmltools::browsable(
     htmltools::tagList(
-      html_dependency_filter_crosstalk(),
-      html_dependency_search_filter(),
-      reactR::html_dependency_react(offline),
-      html_dependency_plotly(offline),
-      html_dependency_react_plotly(offline),
-      lt::lt_dependency(interactive = TRUE),
+      lt::lt_dependency(interactive = TRUE, plot = TRUE),
+      html_dependency_forestly_widgets(),
       html_dependency_ae_drilldown(),
-      p
+      container
     )
   )
 }

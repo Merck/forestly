@@ -17,7 +17,7 @@ Authors@R: c(
     person("Merck & Co., Inc., Rahway, NJ, USA and its affiliates", role = "cph")
     )
 Description: Interactive forest plot for clinical trial safety analysis
-    using 'metalite', 'reactable', 'plotly', and Analysis Data Model (ADaM)
+    using 'metalite', 'lt', and Analysis Data Model (ADaM)
     datasets. Includes functionality for adverse event filtering,
     incidence-based group filtering, hover-over reveals, and search and sort
     operations. The workflow allows for metadata construction, data preparation,
@@ -30,13 +30,10 @@ LazyData: true
 Depends:
     R (>= 4.1)
 Imports:
-    crosstalk,
     htmltools,
-    lt (>= 0.4.10),
+    lt (>= 0.4.21),
     metalite,
     metalite.ae,
-    reactable,
-    reactR,
     ggplot2,
     xfun (>= 0.61.4)
 Suggests:
