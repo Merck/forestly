@@ -580,7 +580,7 @@ plot_errorbar <- function(
           labels = brk_labels,
           limits = x_limit,
           # Second x-axis for adding panel title
-          sec.axis = ggplot2::sec_axis(trans = ~., name = "", breaks = midpoint, labels = title)
+          sec.axis = ggplot2::sec_axis(transform = ~., name = "", breaks = midpoint, labels = title)
         )
     }
   } else {
