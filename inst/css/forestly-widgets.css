@@ -95,3 +95,26 @@
   padding: 0.3em 0.8em;
   cursor: pointer;
 }
+
+/* Keep each body cell on a single line, truncating overflow with an ellipsis
+   instead of wrapping (which would make the rows ragged). On hover the cell
+   wraps and grows so the reader can see the full text. Figure cells hold an
+   SVG that must not be clipped, and the drill-down detail is its own table, so
+   both are exempt. */
+.forestly-ae tbody td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.forestly-ae tbody td:hover {
+  white-space: normal;
+  overflow: visible;
+}
+
+.forestly-ae tbody td:has(svg),
+.forestly-ae tbody .lti-detail td {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}

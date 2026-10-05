@@ -116,14 +116,14 @@ format_lt_forestly <- function(outdata,
     x <- lt::lt_spanner(x, I(outdata$diff_col_header), diff_name)
   }
 
-  # Inline proportion dot plot: one staggered dot per arm on a shared scale,
-  # footer legend keyed by arm color.
+  # Inline proportion dot plot: one dot per arm on a shared scale, footer legend
+  # keyed by arm color. Dots sit on a single track (no vertical stagger), matching
+  # the convention in the forest-plot vignettes.
   x <- lt::lt_dotplot(
     x, stats::as.formula(paste("~", paste(pf, collapse = " + "))),
     color = outdata$fig_prop_color,
     labels = group[seq_len(ng)],
     limits = outdata$fig_prop_range,
-    stagger = TRUE,
     width = w$fig,
     axis = TRUE
   )
