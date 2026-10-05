@@ -213,10 +213,13 @@ prepare_ae_forestly <- function(
     }
   })
   ae_listing <- do.call(rbind, ae_listing_parts)
-  attr(ae_listing$Adverse_Event, "label") <- "Adverse Event"
-  attr(ae_listing$SOC_Name, "label") <- "SOC Name"
-  attr(ae_listing$Treatment_Group, "label") <- "Treatment Group"
-  if (is.null(ae_listing)) ae_listing <- data.frame()
+  if (is.null(ae_listing)) {
+    ae_listing <- data.frame()
+  } else {
+    attr(ae_listing$Adverse_Event, "label") <- "Adverse Event"
+    attr(ae_listing$SOC_Name, "label") <- "SOC Name"
+    attr(ae_listing$Treatment_Group, "label") <- "Treatment Group"
+  }
 
   ae_row <- lapply(res, function(x) {
     !is.na(x$soc_name) |
