@@ -224,7 +224,7 @@ prepare_ae_forestly <- function(
   ae_row <- lapply(res, function(x) {
     !is.na(x$soc_name) |
       x$order >= 1000 |
-      x$name %in% x$ae_listing$Adverse_Event
+      toupper(x$name) %in% toupper(x$ae_listing$Adverse_Event)
   })
 
   # Arrange data frame

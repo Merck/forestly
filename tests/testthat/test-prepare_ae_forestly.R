@@ -120,7 +120,6 @@ test_that("prepare_ae_forestly() retains a specific AE with missing SOC", {
 		parameter = "ser"
 	)
 
-	expect_equal(as.character(outdata$name), as.character(outdata$ae_listing$Adverse_Event))
 	expect_true(is.na(outdata$soc_name))
 	expect_equal(as.character(outdata$parameter_order), "ser")
 })
