@@ -21,6 +21,8 @@
 #' @inheritParams metalite.ae::prepare_ae_specific
 #' @param ae_listing_display A vector of name of variables used to display
 #'   on AE listing table.
+#' @param ae_listing_labels A vector with label of variable used to display
+#'   on AE listing. This should have the same length as ae_listing_display.
 #' @param ae_listing_unique A logical value to display only unique records
 #'   on AE listing table.
 #' @param bisection A numeric value. A control parameter for the bisection

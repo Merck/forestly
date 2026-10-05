@@ -197,6 +197,7 @@ titlecase <- function(x, lower = TRUE) {
 #' Format AE listing analysis
 #'
 #' @param outdata An `outdata` object created by [prepare_ae_specific()].
+#' @param ae_listing_labels  A vector with label of variable used to display on AE listing.
 #' @param display_unique_records A logical value to display only unique records
 #'   on AE listing table.
 #'
