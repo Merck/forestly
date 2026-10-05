@@ -565,7 +565,7 @@ plot_errorbar <- function(
           limits = x_limit,
           name = favor_bar, # Add favor bar
           # Second x-axis for adding panel title
-          sec.axis = ggplot2::sec_axis(trans = ~., name = "", breaks = midpoint, labels = title)
+          sec.axis = ggplot2::sec_axis(transform = ~., name = "", breaks = midpoint, labels = title)
         )
     } else {
       x_breaks <- unique(c(pretty(c(ana$x1, ana$x2, ana$x3)), vline))
@@ -984,7 +984,7 @@ theme_panel <- function(show_text = TRUE, show_ticks = TRUE) {
       panel.grid.minor = element_blank(), # Remove minor grid lines
       panel.background = element_blank(), # Remove panel background
       plot.background = element_blank(), # Remove plot background
-      panel.border = element_rect(fill = NA, color = "black", size = 1), # Full frame
+      panel.border = element_rect(fill = NA, color = "black", linewidth = 1), # Full frame
       axis.ticks = element_line(color = "black"), # Ensure axis ticks are visible
       axis.text.y = text_control,
       axis.ticks.y = tick_control,
