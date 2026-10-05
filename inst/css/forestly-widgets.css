@@ -1,94 +1,10 @@
-/* forestly main AE forest table: layout for the forestly-owned controls
-   (parameter dropdown, incidence dual-thumb slider, CSV button). The table
-   itself is styled by lt. */
+/* Layout for forestly's own controls (just the CSV download now; the AE-criteria
+   dropdown and incidence slider are lt typed filters). The table is styled by lt. */
 
 .forestly-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 1.5em;
   margin-bottom: 0.75em;
   font-family: system-ui, sans-serif;
   font-size: 0.9em;
-}
-
-.forestly-param {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25em;
-}
-
-.forestly-param select {
-  padding: 0.2em 0.4em;
-}
-
-/* Dual-thumb range slider: two <input type=range> stacked on one track. Both
-   are transparent except for their thumbs; a shared track line sits behind. */
-.forestly-slider {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25em;
-  min-width: 250px;
-}
-
-.forestly-slider-track {
-  position: relative;
-  height: 1.4em;
-}
-
-.forestly-slider-track::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 3px;
-  transform: translateY(-50%);
-  background: #c8c8c8;
-  border-radius: 3px;
-}
-
-.forestly-slider-track input[type="range"] {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  margin: 0;
-  background: none;
-  pointer-events: none;
-  -webkit-appearance: none;
-  appearance: none;
-}
-
-.forestly-slider-track input[type="range"]::-webkit-slider-thumb {
-  pointer-events: auto;
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #00857c;
-  border: 2px solid #fff;
-  box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
-  cursor: pointer;
-}
-
-.forestly-slider-track input[type="range"]::-moz-range-thumb {
-  pointer-events: auto;
-  width: 14px;
-  height: 14px;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  background: #00857c;
-  cursor: pointer;
-}
-
-.forestly-slider-track input[type="range"]::-moz-range-track {
-  background: none;
-}
-
-.forestly-slider-out {
-  font-variant-numeric: tabular-nums;
-  color: #333;
 }
 
 .forestly-download {
@@ -96,25 +12,13 @@
   cursor: pointer;
 }
 
-/* Keep each body cell on a single line, truncating overflow with an ellipsis
-   instead of wrapping (which would make the rows ragged). On hover the cell
-   wraps and grows so the reader can see the full text. Figure cells hold an
-   SVG that must not be clipped, and the drill-down detail is its own table, so
-   both are exempt. */
+/* Keep cells on one line; clip overflow with an ellipsis, but on hover let the
+   full text spill (not wrap) so a cell that already fits looks unchanged. */
 .forestly-ae tbody td {
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 
-.forestly-ae tbody td:hover {
-  white-space: normal;
-  overflow: visible;
-}
-
-.forestly-ae tbody td:has(svg),
-.forestly-ae tbody .lti-detail td {
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
+  &:not(:hover):not(:has(svg)) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }

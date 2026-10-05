@@ -2,14 +2,9 @@
 
 ## Improvements
 
-- Migrate the main interactive AE forest table from `reactable` + vendored Plotly to the `lt` package (yihui/lt). The table, the per-arm proportion dot plot (`lt_dotplot`), and the risk-difference error bar (`lt_errorbar`) are now one `lt` table made interactive with `lt_interactive()`; the drill-down listings continue to render lazily on expand (following #168). This drops the `reactable`, `reactR`, `crosstalk`, and vendored `plotly` JavaScript from the critical path and substantially shrinks the widget. The parameter dropdown, incidence range slider, and CSV download are now dependency-free HTML controls that drive the table through `lt`'s `el._lt.filter()` contract (see `inst/js/forestly-widgets.js`).
-- Drop the `crosstalk`, `reactable`, and `reactR` package dependencies; require `lt (>= 0.4.22)`.
-- Draw the per-arm proportion dots on a single track (no vertical stagger), matching the convention used throughout the forest-plot vignettes.
-- Keep each table cell on one line, truncating overflow with an ellipsis instead of wrapping; hovering a cell reveals its full text. Figure cells and the drill-down detail are exempt.
-
-## Bug fixes
-
-- Fix the proportion dot plot and risk-difference error-bar axes being shifted one column to the right when the SOC column is offered as a hide/show toggle (`display_soc_toggle = TRUE`); this needs the column-footer fix in `lt (>= 0.4.22)`.
+- Migrate the entire `ae_forestly()` widget from `reactable` + vendored Plotly to the `lt` package (yihui/lt): both the main interactive AE forest table and the per-row drill-down AE listings are now `lt` tables. The main table, the per-arm proportion dot plot (`lt_dotplot`), and the risk-difference error bar (`lt_errorbar`) are one `lt` table made interactive with `lt_interactive()`, and each drill-down listing is its own `lt` table rendered lazily on expand (following #168). This drops the `reactable`, `reactR`, `crosstalk`, and vendored `plotly` JavaScript from the critical path and substantially shrinks the widget. The AE-criteria dropdown and incidence range slider are now `lt` typed filters (`filter = list(parameter = "select", ... = "range")`) bound to the table's hidden helper columns and shown as chips in its control bar; the CSV download remains a small dependency-free control that reads the table's current view through `lt`'s `el._lt` contract (see `inst/js/forestly-widgets.js`).
+- Drop the `crosstalk`, `reactable`, and `reactR` package dependencies; require `lt (>= 0.4.23)`.
+- Reveal a truncated table cell's full text on hover. Figure cells and the drill-down detail are exempt.
 
 ## Note
 

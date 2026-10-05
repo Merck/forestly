@@ -25,24 +25,28 @@ test_that("ae_forestly(): test filter and width option", {
   ))
 })
 
-test_that("ae_forestly(): forestly controls (dropdown + slider) are emitted", {
+test_that("ae_forestly(): AE-criteria dropdown and incidence slider are lt typed filters", {
   outdata <- test_ae_forestly()
   html_text <- as.character(ae_forestly(outdata))
 
-  # The parameter dropdown and the incidence range slider are forestly-owned
-  # widgets that drive the lt table through its el._lt.filter() contract.
-  expect_true(grepl("forestly-controls", html_text, fixed = TRUE))
-  expect_true(grepl("forestly-param", html_text, fixed = TRUE))
-  expect_true(grepl("forestly-slider", html_text, fixed = TRUE))
-  # The slider targets the hidden incidence helper column.
-  expect_true(grepl("data-col=\"hide_prop\"", html_text, fixed = TRUE))
+  # The parameter dropdown and incidence range slider are lt typed filters bound
+  # to the hidden parameter / incidence columns, serialized into the lt spec --
+  # not separate forestly DOM widgets.
+  expect_true(grepl('"type": "select"', html_text, fixed = TRUE))
+  expect_true(grepl('"type": "range"', html_text, fixed = TRUE))
+  expect_true(grepl("AE Criteria", html_text, fixed = TRUE))
+  # the old external control widgets are gone
+  expect_false(grepl("forestly-param", html_text, fixed = TRUE))
+  expect_false(grepl("forestly-slider", html_text, fixed = TRUE))
 })
 
-test_that("ae_forestly(): no slider when filter is NULL", {
+test_that("ae_forestly(): no incidence filter when filter is NULL", {
   outdata <- test_ae_forestly()
   html_text <- as.character(ae_forestly(outdata, filter = NULL))
 
-  expect_false(grepl("forestly-slider", html_text, fixed = TRUE))
+  # the incidence range filter is dropped; the parameter dropdown stays
+  expect_false(grepl('"type": "range"', html_text, fixed = TRUE))
+  expect_true(grepl('"type": "select"', html_text, fixed = TRUE))
 })
 
 test_that("ae_forestly(): download button is opt-in", {

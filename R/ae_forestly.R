@@ -366,70 +366,55 @@ ae_forestly <- function(outdata,
     display_soc_toggle = display_soc_toggle,
     display_diff_toggle = display_diff_toggle
   )
+
+  # The AE-criteria dropdown and the incidence slider are lt typed filters. They
+  # bind to the hidden `parameter` and `hide_prop`/`hide_n` columns, so lt renders
+  # each as a chip in the table's control bar; the visible term column keeps a
+  # plain filter box. All read columns that travel with the table, so no external
+  # bridge is needed. See the `filter` argument of lt::lt_interactive().
+  param_levels <- levels(outdata$tbl$parameter)
+  filter_cfg <- list(
+    name = TRUE,
+    parameter = list(
+      type = "select", choices = param_levels, selected = param_levels[1],
+      label = ae_label
+    )
+  )
+  if (display_filter) {
+    slider_col <- if (filter == "prop") "hide_prop" else "hide_n"
+    filter_cfg[[slider_col]] <- list(
+      type = "range", min = filter_range[1], max = filter_range[2], step = 1,
+      label = filter_label
+    )
+  }
+
   x <- lt::lt_interactive(
     built$x,
     sort = TRUE,
     search = FALSE,
-    filter = TRUE,
+    filter = filter_cfg,
     pager = max_page,
     resize = TRUE,
     hide = built$hide_menu,
     detail = detail_cb
   )
 
-  # ---- forestly-owned controls (drive the table via el._lt.filter) ----
-  param_levels <- levels(outdata$tbl$parameter)
-  param_select <- htmltools::tags$label(
-    class = "forestly-param", ae_label,
-    htmltools::tags$select(
-      lapply(param_levels, function(p) htmltools::tags$option(p))
-    )
-  )
-
-  if (display_filter) {
-    slider_col <- if (filter == "prop") "hide_prop" else "hide_n"
-    lo <- filter_range[1]
-    hi <- filter_range[2]
-    slider <- htmltools::div(
-      class = "forestly-slider", `data-col` = slider_col,
-      htmltools::tags$label(filter_label),
-      htmltools::div(
-        class = "forestly-slider-track",
-        htmltools::tags$input(
-          type = "range", class = "lo",
-          min = lo, max = hi, value = lo, step = 1
-        ),
-        htmltools::tags$input(
-          type = "range", class = "hi",
-          min = lo, max = hi, value = hi, step = 1
-        )
-      ),
-      htmltools::div(
-        class = "forestly-slider-out",
-        htmltools::tags$span(class = "lo-out", lo),
-        htmltools::HTML("&ndash;"),
-        htmltools::tags$span(class = "hi-out", hi)
-      )
-    )
-  } else {
-    slider <- NULL
-  }
-
+  # ---- forestly-owned controls ----
+  # Only the CSV download stays a forestly widget (an action, not a filter, so it
+  # binds to no column); it reads the table's current view through el._lt.
   download_btn <- if (dowload_button) {
-    htmltools::tags$button(class = "forestly-download", "Download as CSV")
+    htmltools::div(
+      class = "forestly-controls",
+      htmltools::tags$button(class = "forestly-download", "Download as CSV")
+    )
   } else {
     NULL
   }
 
-  controls <- htmltools::div(
-    class = "forestly-controls",
-    param_select, slider, download_btn
-  )
-
   container <- htmltools::div(
     class = "forestly-ae",
     style = htmltools::css(width = paste0(width, "px"), `max-width` = "100%"),
-    controls,
+    download_btn,
     htmltools::div(
       class = "forestly-table",
       style = "overflow-x: auto;",
