@@ -108,6 +108,13 @@ collect_ae_listing <- function(
   # Keep variable used to display only
   outdata$ae_listing <- obs[, c(par_var, par_var_soc, obs_group, display)]
 
+  # Rename the fixed columns
+  names(outdata$ae_listing)[1:3] <- c(
+    "Adverse_Event",
+    "SOC_Name",
+    "Treatment_Group"
+  )
+
   # Get all labels from the un-subset data
   listing_label <- get_label(obs)
   # Assign labels
@@ -264,196 +271,28 @@ titlecase <- function(x, lower = TRUE) {
 #'   format_ae_listing()
 #'
 #' lapply(outdata, head, 20)
-format_ae_listing <- function(outdata, display_unique_records = FALSE) {
+format_ae_listing <- function(outdata, ae_listing_labels = NULL, display_unique_records = FALSE) {
   res <- outdata[["ae_listing"]]
   obs_group <- metalite::collect_adam_mapping(outdata$meta, outdata$observation)$group
   par_var <- metalite::collect_adam_mapping(outdata$meta, outdata$parameter)$var
   par_var_soc <- metalite::collect_adam_mapping(outdata$meta, outdata$parameter)$soc
 
-  new_name <- c(
-    "SITEID", "SITENUM", "USUBJID", "SUBJID", "SEX", "RACE", "AGE", obs_group, "EPOCH",
-    "ASTDY", par_var, par_var_soc, "ADURN", "AESEV", "AESER", "AEREL", "AREL", "AEACN",
-    "AEOUT", "AEDOSDUR", "ATOXGRN"
-  )
-  name_mapping <- c(
-    "Site_Number", "Site_Number", "Unique_Participant_ID", "Participant_ID", "Gender", "Race", "Age", "Treatment_Group", "Onset_Epoch",
-    "Relative_Day_of_Onset", "Adverse_Event", "SOC_Name", "Duration", "Intensity", "Serious", "Related", "Related", "Action_Taken",
-    "Outcome", "Total_Dose_on_Day_of_AE_Onset", "Maximum_Toxicity_Grade"
-  )
-  names(name_mapping) <- new_name
-
-  # Map each column name to its display name, falling back to the original
-  # name when it is not in the lookup table.
-  mapped <- name_mapping[toupper(names(res))]
-  res_columns <- unname(ifelse(is.na(mapped), names(res), mapped))
-
-  # Site ID
-  if ("SITEID" %in% toupper(names(res))) {
-    res[["Site_Number"]] <- propercase(res[["SITEID"]])
-  }
-
-  if ("SITENUM" %in% toupper(names(res))) {
-    res[["Site_Number"]] <- res[["SITENUM"]]
-  }
-
-  # Participant ID
-  if ("USUBJID" %in% toupper(names(res))) {
-    res[["Unique_Participant_ID"]] <- res[["USUBJID"]]
-  }
-  if ("SUBJID" %in% toupper(names(res))) {
-    res[["Participant_ID"]] <- res[["SUBJID"]]
-  }
-  attr(res[["Participant_ID"]], "label") <- NULL
-
-  if ("SEX" %in% toupper(names(res))) {
-    res[["Gender"]] <- titlecase(res[["SEX"]], lower = FALSE)
-  }
-
-  if ("RACE" %in% toupper(names(res))) {
-    res[["Race"]] <- titlecase(res[["RACE"]], lower = TRUE)
-  }
-
-  if ("AGE" %in% toupper(names(res))) {
-    res[["Age"]] <- res[["AGE"]]
-  }
-
-  res[["Treatment_Group"]] <- res[[obs_group]]
-
-  attr(res[["Treatment_Group"]], "label") <- NULL
-
-  # Onset epoch
-  if ("EPOCH" %in% toupper(names(res))) {
-    res[["Onset_Epoch"]] <- titlecase(res[["EPOCH"]], lower = TRUE) # propcase the EPOCH
-  }
-
-  # Relative day of onset (ASTDY)
-  if ("ASTDY" %in% toupper(names(res))) {
-    res[["Relative_Day_of_Onset"]] <- res[["ASTDY"]]
-  }
-
-  # SOC
-  res[["SOC_Name"]] <- res[[par_var_soc]]
-
-  # Adverse event
-  res[["Adverse_Event"]] <- propercase(res[[par_var]])
-  res <- res[, !(names(res) == par_var)]
-
-  # Duration
-  if ("ADURN" %in% toupper(names(res)) & "ADURU" %in% toupper(names(res))) {
-    res[["Duration"]] <- paste(ifelse(is.na(res[["ADURN"]]), "", as.character(res[["ADURN"]])),
-      titlecase(res[["ADURU"]], lower = TRUE),
-      sep = " "
-    ) # AE duration with unit
-
-    na_dur <- is.na(res[["ADURN"]])
-    if (any(na_dur)) {
-      aeout_na <- toupper(res[["AEOUT"]][na_dur])
-      res[["Duration"]][na_dur] <- ifelse(
-        aeout_na %in% c("RECOVERING/RESOLVING", "NOT RECOVERED/NOT RESOLVED"),
-        "Continuing", "Unknown"
-      )
-    }
-    res <- res[, !(names(res) %in% "ADURU")]
-    res_columns <- res_columns[!(res_columns %in% "ADURU")]
-  }
-
-  # Intensity
-  if ("AESEV" %in% toupper(names(res))) {
-    res[["Intensity"]] <- propercase(res[["AESEV"]])
-  }
-
-  # Maximum toxicity grade
-  if ("ATOXGRN" %in% toupper(names(res))) {
-    res[["Maximum_Toxicity_Grade"]] <- res[["ATOXGRN"]]
-  }
-
-  # Serious
-  if ("AESER" %in% toupper(names(res))) {
-    res[["Serious"]] <- propercase(res[["AESER"]])
-  }
-
-  # AE related
-  if ("AEREL" %in% toupper(names(res))) {
-    res[["Related"]] <- ifelse(res[["AEREL"]] == "RELATED", "Y", ifelse(
-      toupper(res[["AEREL"]]) == "NOT RELATED", "N", titlecase(res[["AEREL"]], lower = TRUE)
-    ))
-  }
-
-  # Action taken
-  if ("AEACN" %in% toupper(names(res))) {
-    acn <- res[["AEACN"]]
-    acn_map <- c(
-      "DOSE NOT CHANGED" = "None",
-      "DOSE REDUCED" = "Reduced",
-      "DRUG INTERRUPTED" = "Interrupted",
-      "DOSE INCREASED" = "Increased",
-      "NOT APPLICABLE" = "N/A",
-      "UNKNOWN" = "Unknown"
-    )
-    mapped <- acn_map[acn]
-    # Values not in the lookup fall back to title case of the original value.
-    res[["Action_Taken"]] <- ifelse(is.na(mapped), titlecase(acn, lower = TRUE), unname(mapped))
-  }
-
-  # Outcome
-  if ("AEOUT" %in% toupper(names(res))) {
-    out <- res[["AEOUT"]]
-    out_map <- c(
-      "RECOVERED/RESOLVED" = "Resolved",
-      "RECOVERING/RESOLVING" = "Resolving",
-      "RECOVERED/RESOLVED WITH SEQUELAE" = "Sequelae",
-      "NOT RECOVERED/NOT RESOLVED" = "Not Resolved"
-    )
-    mapped <- out_map[out]
-    # Values not in the lookup fall back to title case of the original value.
-    res[["Outcome"]] <- ifelse(is.na(mapped), titlecase(out, lower = TRUE), unname(mapped))
-  }
-  # Total dose on day of AE onset
-  if ("AEDOSDUR" %in% toupper(names(res))) {
-    # Parse the ISO-8601-style duration (e.g. ".../P1Y2M3D") into a human
-    # readable string such as "1 year 2 months 3 days". This is vectorized: for
-    # each Y/M/D designator we pull the digits immediately preceding it (or NA
-    # when the designator is absent) and format that one component. See #160 for
-    # the previous per-row loop, which errored when a designator repeated.
-    ymd <- sub(".*?/P", "", res[["AEDOSDUR"]])
-
-    # Digits directly before `letter`, or NA when there is no such number (the
-    # designator is absent, or present without a preceding number as in a
-    # malformed "ABCY2M3D").
-    extract_unit <- function(s, letter) {
-      val <- rep(NA_character_, length(s))
-      has <- grepl(paste0("[0-9]+", letter), s)
-      val[has] <- sub(paste0("^.*?([0-9]+)", letter, ".*$"), "\\1", s[has])
-      val
-    }
-
-    # One formatted component, each with a leading space ("", " 1 year",
-    # " 2 years", ...); the leading space is trimmed off the assembled string.
-    format_unit <- function(val, singular) {
-      n <- suppressWarnings(as.numeric(val))
-      content <- ifelse(n == 1, paste0("1 ", singular), paste0(val, " ", singular, "s"))
-      ifelse(is.na(val), "", paste0(" ", content))
-    }
-
-    res[["Total_Dose_on_Day_of_AE_Onset"]] <- trimws(paste0(
-      format_unit(extract_unit(ymd, "Y"), "year"),
-      format_unit(extract_unit(ymd, "M"), "month"),
-      format_unit(extract_unit(ymd, "D"), "day")
-    ))
-  }
-
-
   # Customized variable will use label as column header in
   # drill down listing on interactive forest plot
+  res_columns <- names(res)
   if (!display_unique_records) {
     outdata[["ae_listing"]] <- res[, res_columns]
   } else {
     outdata[["ae_listing"]] <- unique(res[, res_columns])
   }
 
-  # Get all labels from the un-subset data
-  listing_label <- get_label(res)
-  listing_label <- gsub("_", " ", listing_label)
+  if (!is.null(ae_listing_labels)) {
+    listing_label <- c("Adverse Event", "SOC Name", "Treatment Group", ae_listing_labels)
+    names(listing_label) <- names(res)
+  } else {
+    # Get all labels from the un-subset data
+    listing_label <- get_label(res)
+  }
   # Assign labels
   outdata[["ae_listing"]] <- assign_label(
     data = outdata[["ae_listing"]],
