@@ -17,7 +17,7 @@ This is the forestly R package, which creates interactive forest plots for clini
 - Functions should handle both character vectors and factors robustly
 
 ### Key Functions
-- `ae_forestly()`: Main function to create interactive forest plots (layers `lt::lt_interactive()`, the detail drill-down, and the forestly controls on top of the structural table)
+- `ae_forestly()`: Main function to create interactive forest plots (layers `lt::lt_interactive()` with the detail drill-down, typed filters, and CSV download on top of the structural table)
 - `format_ae_forestly()`: Formats AE data and computes figure metadata (ranges, colors, headers, widths) for the inline dot plot / error bar
 - `format_lt_forestly()`: Builds the structural `lt` table (interaction-free; in `R/lt_table.R`)
 - `format_ae_listing()`: Formats AE listing data
@@ -69,6 +69,6 @@ The package includes test data in `data/`:
 - The `ae_listing.R` file contains functions that handle factor inputs, which was a recent fix
 - Test files should use `devtools::load_all()` or source the R files directly for testing
 - The package uses testthat for unit testing framework
-- The main interactive table is a single `lt` table: `format_lt_forestly()` builds the structure (per-arm columns, spanners, `lt_dotplot` proportion figure, `lt_errorbar` risk-difference figure, hidden helper columns), and `ae_forestly()` makes it interactive and adds the drill-down + forestly controls
-- the AE-criteria dropdown and incidence slider are lt typed filters, declared via `lt_interactive(filter = ...)` in `ae_forestly()` (e.g. `filter = list(parameter = list(type = "select", ...), hide_prop = list(type = "range", ...))`) and bound to the hidden helper columns (`parameter`, `hide_prop`/`hide_n`); lt renders them automatically (funnel under a visible column's header, chip in the control bar for a hidden column). The only forestly-owned widget left is the CSV download in `inst/js/forestly-widgets.js`, which reads the table's current view via lt's `el._lt.view()`
+- The main interactive table is a single `lt` table: `format_lt_forestly()` builds the structure (per-arm columns, spanners, `lt_dotplot` proportion figure, `lt_errorbar` risk-difference figure, hidden helper columns), and `ae_forestly()` makes it interactive and adds the drill-down (all controls are lt's own)
+- the AE-criteria dropdown and incidence slider are lt typed filters, declared via `lt_interactive(filter = ...)` in `ae_forestly()` (e.g. `filter = list(parameter = list(type = "select", ...), hide_prop = list(type = "range", ...))`) and bound to the hidden helper columns (`parameter`, `hide_prop`/`hide_n`); lt renders them automatically (funnel under a visible column's header, chip in the control bar for a hidden column). The CSV download is lt's own `lt_interactive(download = ...)` control. forestly ships no widget JavaScript of its own anymore; `inst/css/forestly-widgets.css` carries only the table's cell-truncation styles
 - When debugging interactive plot issues, check both the R code (`R/lt_table.R`, `R/ae_forestly.R`) and the `lt` package JS runtime (`../lt/inst/www/lt-interactive.js`, `lt-plot.js`)

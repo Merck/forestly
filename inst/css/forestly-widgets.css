@@ -1,17 +1,3 @@
-/* Layout for forestly's own controls (just the CSV download now; the AE-criteria
-   dropdown and incidence slider are lt typed filters). The table is styled by lt. */
-
-.forestly-controls {
-  margin-bottom: 0.75em;
-  font-family: system-ui, sans-serif;
-  font-size: 0.9em;
-}
-
-.forestly-download {
-  padding: 0.3em 0.8em;
-  cursor: pointer;
-}
-
 /* Keep cells on one line; clip overflow with an ellipsis, but on hover let the
    full text spill (not wrap) so a cell that already fits looks unchanged. */
 .forestly-ae tbody td {

@@ -16,16 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Script + styles for the one forestly-owned control left around the main AE
-# forest table: the CSV download button, which reads the table's current view
-# through lt's `el._lt.view()` (see inst/js/forestly-widgets.js). The AE-criteria
-# dropdown and incidence slider are now lt typed filters, styled by lt itself.
+# Styles for the main AE forest table (one-line cells with hover-to-reveal). All
+# controls -- the AE-criteria dropdown, incidence slider, and CSV download -- are
+# now lt's own, styled by lt itself; forestly ships no widget JavaScript.
 html_dependency_forestly_widgets <- function() {
   htmltools::htmlDependency(
     name = "forestly-widgets",
     version = "0.1.0",
     src = system.file(package = "forestly"),
-    script = c("js/forestly-widgets.js"),
     stylesheet = c("css/forestly-widgets.css"),
     all_files = FALSE
   )

@@ -396,25 +396,15 @@ ae_forestly <- function(outdata,
     pager = max_page,
     resize = TRUE,
     hide = built$hide_menu,
-    detail = detail_cb
+    detail = detail_cb,
+    # lt's own CSV download (current view, displayed text) in its control bar;
+    # forestly no longer carries a bespoke download button.
+    download = if (dowload_button) "ae-forest.csv" else FALSE
   )
-
-  # ---- forestly-owned controls ----
-  # Only the CSV download stays a forestly widget (an action, not a filter, so it
-  # binds to no column); it reads the table's current view through el._lt.
-  download_btn <- if (dowload_button) {
-    htmltools::div(
-      class = "forestly-controls",
-      htmltools::tags$button(class = "forestly-download", "Download as CSV")
-    )
-  } else {
-    NULL
-  }
 
   container <- htmltools::div(
     class = "forestly-ae",
     style = htmltools::css(width = paste0(width, "px"), `max-width` = "100%"),
-    download_btn,
     htmltools::div(
       class = "forestly-table",
       style = "overflow-x: auto;",
@@ -422,7 +412,7 @@ ae_forestly <- function(outdata,
     )
   )
 
-  # ---- Assemble: lt runtime (interactive + plot) + forestly widgets ----
+  # ---- Assemble: lt runtime (interactive + plot) + forestly styles ----
   htmltools::browsable(
     htmltools::tagList(
       lt::lt_dependency(interactive = TRUE, plot = TRUE),

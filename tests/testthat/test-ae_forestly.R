@@ -49,11 +49,13 @@ test_that("ae_forestly(): no incidence filter when filter is NULL", {
   expect_true(grepl('"type": "select"', html_text, fixed = TRUE))
 })
 
-test_that("ae_forestly(): download button is opt-in", {
+test_that("ae_forestly(): download button is opt-in via lt's download control", {
   outdata <- test_ae_forestly()
-  expect_false(grepl("forestly-download", as.character(ae_forestly(outdata)), fixed = TRUE))
+  # No bespoke forestly download control; the button is lt's own, requested
+  # through the lt_interactive(download =) spec field.
+  expect_false(grepl('"download"', as.character(ae_forestly(outdata)), fixed = TRUE))
   expect_true(grepl(
-    "forestly-download",
+    '"download": "ae-forest.csv"',
     as.character(ae_forestly(outdata, dowload_button = TRUE)), fixed = TRUE
   ))
 })
@@ -83,14 +85,15 @@ test_that("ae_forestly(): drill-down listings render lazily via lt", {
   expect_true("lt-plot.js" %in% unlist(lt_dep$script))
 })
 
-test_that("ae_forestly(): forestly-widgets dependency ships the controller script", {
-  js_path <- system.file("js", "forestly-widgets.js", package = "forestly")
-  expect_true(file.exists(js_path))
-  js <- paste(readLines(js_path, warn = FALSE), collapse = "\n")
+test_that("ae_forestly(): forestly-widgets dependency ships styles only, no JS", {
+  html <- test_ae_forestly() |> ae_forestly()
+  deps <- htmltools::findDependencies(html)
+  dep <- Filter(function(d) identical(d$name, "forestly-widgets"), deps)[[1]]
 
-  # The widgets drive the table through lt's el._lt.filter() contract.
-  expect_true(grepl("_lt", js, fixed = TRUE))
-  expect_true(grepl("filter", js, fixed = TRUE))
+  # All controls are lt's own now; forestly ships only the table's CSS.
+  expect_true("css/forestly-widgets.css" %in% unlist(dep$stylesheet))
+  expect_null(dep$script)
+  expect_false(file.exists(system.file("js", "forestly-widgets.js", package = "forestly")))
 })
 
 test_that("ae_forestly(): both diff-toggle settings render without error", {
