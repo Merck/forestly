@@ -1,6 +1,7 @@
-/* Keep cells on one line; clip overflow with an ellipsis, but on hover let the
-   full text spill (not wrap) so a cell that already fits looks unchanged. */
-.forestly-ae tbody td {
+/* One line per cell, clipped with an ellipsis, full text on hover; skip figure
+   (svg) cells. Covers body cells and header labels alike -- long group labels
+   over narrow n/(%) columns would otherwise wrap into very tall header rows. */
+.forestly-ae :is(thead, tbody) :is(th, td) {
   white-space: nowrap;
 
   &:not(:hover):not(:has(svg)) {

@@ -75,10 +75,11 @@ format_lt_forestly <- function(outdata,
     tbl[[uf[k]]] <- tbl[[up_name[k]]]
   }
 
-  # Column order: visible columns first (name, SOC, per-arm n/(%), proportion
-  # figure anchor, numeric diffs, difference figure anchor), hidden helpers last.
+  # Column order: name, SOC, the two figure anchors (proportion dot plot then
+  # risk-difference error bar), per-arm n/(%), numeric diffs, hidden helpers last.
+  # The figures lead the numeric columns, matching the forest-plot convention.
   arm_cols <- as.vector(rbind(name_n, name_prop)) # n_1, prop_1, n_2, prop_2, ...
-  visible <- c("name", "soc_name", arm_cols, pf[1], diff_name, df[1])
+  visible <- c("name", "soc_name", pf[1], df[1], arm_cols, diff_name)
   hidden_tail <- c(
     "parameter", "hide_prop", "hide_n",
     pf[-1], df[-1], lf, uf, lo_name, up_name
@@ -117,29 +118,34 @@ format_lt_forestly <- function(outdata,
   }
 
   # Inline proportion dot plot: one dot per arm on a shared scale, footer legend
-  # keyed by arm color. Dots sit on a single track (no vertical stagger), matching
-  # the convention in the forest-plot vignettes.
+  # keyed by arm color. Dots are staggered onto separate tracks so near-equal
+  # per-arm proportions stay distinguishable (as in the original forest plot).
   x <- lt::lt_dotplot(
     x, stats::as.formula(paste("~", paste(pf, collapse = " + "))),
     color = outdata$fig_prop_color,
     labels = group[seq_len(ng)],
     limits = outdata$fig_prop_range,
     width = w$fig,
+    stagger = TRUE,
     axis = TRUE
   )
   x <- lt::lt_label(x, stats::setNames(list("AE Proportion (%)"), pf[1]))
 
   # Inline risk-difference error-bar: one point + 95% CI per comparison, stacked,
-  # shared scale with a zero reference line and the favor-direction axis label.
+  # shared scale, zero reference line, favor-direction axis label. Color + legend
+  # only when 2+ arms stack (keys color -> arm); a single comparison draws
+  # monochrome (no legend), since the "vs. <ref>" spanner already names it.
   eb_series <- lapply(seq_len(nd), function(k) {
     stats::as.formula(paste0(df[k], " ~ ", lf[k], " + ", uf[k]))
   })
+  eb_color <- if (nd > 1) outdata$fig_diff_color else FALSE
+  eb_labels <- if (nd > 1) group[outdata$index_diff] else NULL
   x <- do.call(lt::lt_errorbar, c(
     list(x), eb_series,
     list(
       ref = 0,
-      color = outdata$fig_diff_color,
-      labels = group[outdata$index_diff],
+      color = eb_color,
+      labels = eb_labels,
       limits = outdata$fig_diff_range,
       width = w$fig,
       axis = outdata$diff_label
