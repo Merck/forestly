@@ -207,12 +207,19 @@ format_ae_forestly <- function(
   # Computed once across every row so the proportion dot plot and the risk
   # difference error-bar cells are comparable from row to row. `ae_forestly()`
   # feeds these to `lt_dotplot(limits=)` / `lt_errorbar(limits=)`.
+  # range() over an all-NA / empty slice warns ("no non-missing arguments to
+  # min/max") and returns c(Inf, -Inf); fall back to a flat 0 range instead.
+  safe_range <- function(x) {
+    x <- unlist(x, use.names = FALSE) # x may be a matrix or data.frame
+    x <- x[is.finite(x)]
+    if (length(x)) range(x) else c(0, 0)
+  }
   tbl_prop <- outdata$prop[, 1:n_group]
   if (is.null(prop_range)) {
-    fig_prop_range <- round(range(tbl_prop, na.rm = TRUE) + c(-2, 2))
+    fig_prop_range <- round(safe_range(tbl_prop) + c(-2, 2))
   } else {
-    if (prop_range[1] > range(tbl_prop, na.rm = TRUE)[1] |
-      prop_range[2] < range(tbl_prop, na.rm = TRUE)[2]) {
+    if (prop_range[1] > safe_range(tbl_prop)[1] |
+      prop_range[2] < safe_range(tbl_prop)[2]) {
       warning("There are data points outside the specified range for proportion.")
     }
     fig_prop_range <- prop_range
@@ -221,10 +228,10 @@ format_ae_forestly <- function(
 
   tbl_diff <- data.frame(outdata$diff, outdata$ci_lower, outdata$ci_upper)
   if (is.null(diff_range)) {
-    fig_diff_range <- round(range(tbl_diff, na.rm = TRUE) + c(-2, 2))
+    fig_diff_range <- round(safe_range(tbl_diff) + c(-2, 2))
   } else {
-    if (diff_range[1] > range(tbl_diff, na.rm = TRUE)[1] |
-      diff_range[2] < range(tbl_diff, na.rm = TRUE)[2]) {
+    if (diff_range[1] > safe_range(tbl_diff)[1] |
+      diff_range[2] < safe_range(tbl_diff)[2]) {
       warning("There are data points outside the specified range for difference.")
     }
     fig_diff_range <- diff_range
