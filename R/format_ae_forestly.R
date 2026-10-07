@@ -185,6 +185,12 @@ format_ae_forestly <- function(
     stop("Please define more color to display groups")
   }
 
+  # max() over an all-NA row warns and returns -Inf; treat such a row as 0.
+  safe_max <- function(x) {
+    x <- x[is.finite(x)]
+    if (length(x)) max(x) else 0
+  }
+
   # Define table data
   tbl <- data.frame(
     parameter = outdata$parameter_order,
@@ -197,8 +203,8 @@ format_ae_forestly <- function(
     round(outdata$diff, digits = digits),
     round(outdata$ci_lower, digits = digits),
     round(outdata$ci_upper, digits = digits),
-    hide_prop = round(apply(outdata$prop[, 1:n_group], 1, max, na.rm = TRUE), digits + 2),
-    hide_n = apply(outdata$n[, 1:n_group], 1, max, na.rm = TRUE)
+    hide_prop = round(apply(outdata$prop[, 1:n_group], 1, safe_max), digits + 2),
+    hide_n = apply(outdata$n[, 1:n_group], 1, safe_max)
   )
 
   rownames(tbl) <- NULL
