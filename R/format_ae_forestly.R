@@ -185,11 +185,19 @@ format_ae_forestly <- function(
     stop("Please define more color to display groups")
   }
 
-  # max() over an all-NA row warns and returns -Inf; treat such a row as 0.
-  safe_max <- function(x) {
+  # Aggregate the finite values of x (vector/matrix/data.frame) with f; when
+  # none are finite, return `empty` rather than f()'s warning + -Inf/Inf on an
+  # all-NA input (e.g. a term with no events, or an uncomputable risk diff).
+  agg_finite <- function(x, f, empty) {
+    x <- unlist(x, use.names = FALSE)
     x <- x[is.finite(x)]
-    if (length(x)) max(x) else 0
+    if (length(x)) f(x) else empty
   }
+
+  # Per-arm proportions and counts carried into the figures (n_group arms, i.e.
+  # excluding any Total column that m_group would add).
+  prop_grp <- outdata$prop[, 1:n_group]
+  n_grp <- outdata$n[, 1:n_group]
 
   # Define table data
   tbl <- data.frame(
@@ -203,8 +211,8 @@ format_ae_forestly <- function(
     round(outdata$diff, digits = digits),
     round(outdata$ci_lower, digits = digits),
     round(outdata$ci_upper, digits = digits),
-    hide_prop = round(apply(outdata$prop[, 1:n_group], 1, safe_max), digits + 2),
-    hide_n = apply(outdata$n[, 1:n_group], 1, safe_max)
+    hide_prop = round(apply(prop_grp, 1, agg_finite, max, 0), digits + 2),
+    hide_n = apply(n_grp, 1, agg_finite, max, 0)
   )
 
   rownames(tbl) <- NULL
@@ -213,19 +221,12 @@ format_ae_forestly <- function(
   # Computed once across every row so the proportion dot plot and the risk
   # difference error-bar cells are comparable from row to row. `ae_forestly()`
   # feeds these to `lt_dotplot(limits=)` / `lt_errorbar(limits=)`.
-  # range() over an all-NA / empty slice warns ("no non-missing arguments to
-  # min/max") and returns c(Inf, -Inf); fall back to a flat 0 range instead.
-  safe_range <- function(x) {
-    x <- unlist(x, use.names = FALSE) # x may be a matrix or data.frame
-    x <- x[is.finite(x)]
-    if (length(x)) range(x) else c(0, 0)
-  }
-  tbl_prop <- outdata$prop[, 1:n_group]
+  tbl_prop <- prop_grp
   if (is.null(prop_range)) {
-    fig_prop_range <- round(safe_range(tbl_prop) + c(-2, 2))
+    fig_prop_range <- round(agg_finite(tbl_prop, range, c(0, 0)) + c(-2, 2))
   } else {
-    if (prop_range[1] > safe_range(tbl_prop)[1] |
-      prop_range[2] < safe_range(tbl_prop)[2]) {
+    rng <- agg_finite(tbl_prop, range, c(0, 0))
+    if (prop_range[1] > rng[1] | prop_range[2] < rng[2]) {
       warning("There are data points outside the specified range for proportion.")
     }
     fig_prop_range <- prop_range
@@ -234,10 +235,10 @@ format_ae_forestly <- function(
 
   tbl_diff <- data.frame(outdata$diff, outdata$ci_lower, outdata$ci_upper)
   if (is.null(diff_range)) {
-    fig_diff_range <- round(safe_range(tbl_diff) + c(-2, 2))
+    fig_diff_range <- round(agg_finite(tbl_diff, range, c(0, 0)) + c(-2, 2))
   } else {
-    if (diff_range[1] > safe_range(tbl_diff)[1] |
-      diff_range[2] < safe_range(tbl_diff)[2]) {
+    rng <- agg_finite(tbl_diff, range, c(0, 0))
+    if (diff_range[1] > rng[1] | diff_range[2] < rng[2]) {
       warning("There are data points outside the specified range for difference.")
     }
     fig_diff_range <- diff_range
