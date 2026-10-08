@@ -14,7 +14,7 @@ ae_forestly(
   ae_label = NULL,
   width = 1400,
   max_page = NULL,
-  dowload_button = FALSE
+  download_button = FALSE
 )
 }
 \arguments{
@@ -38,7 +38,7 @@ If only one value is provided, it will be used as the maximum and minimum will b
 
 \item{max_page}{A numeric value of max page number shown in the table.}
 
-\item{dowload_button}{A logical value to display download button.}
+\item{download_button}{A logical value to display download button.}
 }
 \value{
 An AE forest plot saved as a \code{shiny.tag.list} object.

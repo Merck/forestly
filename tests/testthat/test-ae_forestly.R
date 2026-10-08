@@ -56,7 +56,7 @@ test_that("ae_forestly(): download button is opt-in via lt's download control", 
   expect_false(grepl('"download"', as.character(ae_forestly(outdata)), fixed = TRUE))
   expect_true(grepl(
     '"download": "ae-forest.csv"',
-    as.character(ae_forestly(outdata, dowload_button = TRUE)), fixed = TRUE
+    as.character(ae_forestly(outdata, download_button = TRUE)), fixed = TRUE
   ))
 })
 

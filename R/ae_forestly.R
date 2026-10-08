@@ -29,7 +29,7 @@
 #'   If only one value is provided, it will be used as the maximum and minimum will be 0.
 #' @param width A numeric value of width of the table in pixels.
 #' @param max_page A numeric value of max page number shown in the table.
-#' @param dowload_button A logical value to display download button.
+#' @param download_button A logical value to display download button.
 #'
 #' @section Searching and filtering:
 #' The interactive table has a search box for each column (and, in the
@@ -153,7 +153,7 @@ ae_forestly <- function(outdata,
                         ae_label = NULL,
                         width = 1400,
                         max_page = NULL,
-                        dowload_button = FALSE) {
+                        download_button = FALSE) {
   # Set filter parameter
   if (!is.null(filter)) {
     display_filter = TRUE
@@ -399,7 +399,7 @@ ae_forestly <- function(outdata,
     detail = detail_cb,
     # lt's own CSV download (current view, displayed text) in its control bar;
     # forestly no longer carries a bespoke download button.
-    download = if (dowload_button) "ae-forest.csv" else FALSE
+    download = if (download_button) "ae-forest.csv" else FALSE
   )
 
   container <- htmltools::div(

@@ -6,6 +6,7 @@
 - Drop the `crosstalk`, `reactable`, and `reactR` package dependencies; require `lt (>= 0.5)`.
 - Reveal a truncated table cell's full text on hover; figure cells and the drill-down detail are exempt.
 - Speed up `format_ae_listing()` by vectorizing the per-row loops that map `AEACN`, `AEOUT`, and missing `ADURN` durations to display labels, avoiding quadratic-time column copies on large AE listings.
+- Rename the misspelled `ae_forestly()` argument `dowload_button` to `download_button` (#173).
 
 # forestly 0.1.6
 
