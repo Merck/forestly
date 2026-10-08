@@ -246,6 +246,13 @@ ae_forestly <- function(outdata,
     ae_label <- "AE Criteria"
   }
 
+  # Shrink every embedded JSON payload (the listing store below and the main
+  # table serialized by lt's `format()`): all go through xfun::tojson(), which
+  # reads these options -- dictionary-encode repetitive columns, drop whitespace.
+  # Scoped so the user's session options are left untouched.
+  old_opt <- options(xfun.tojson.dict = 0.5, xfun.tojson.pretty = FALSE)
+  on.exit(options(old_opt), add = TRUE)
+
   # ---- Drill-down detail (native lt row detail) ----
   # The listing is embedded once; each table row carries only the 0-based record
   # indices it needs (contiguous runs or delta-encoded), and lt's detail callback
@@ -323,13 +330,11 @@ ae_forestly <- function(outdata,
   })
   names(detail_records) <- detail_cols
 
-  # dict < 1 gates near-unique columns out at the cheap unique() check instead of
-  # serializing them twice (codes + plain) only to discard the encoding.
   specs_json <- xfun::tojson(list(
     tpl = detail_tpl,
     records = detail_records,
     index = detail_index
-  ), dict = 0.5, pretty = FALSE)
+  ))
 
   # Treatment groups the control-bar picker (below) offers, in display order:
   # the arms that actually appear in the listing, so aggregate forest columns
