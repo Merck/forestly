@@ -13,6 +13,7 @@ prepare_ae_forestly(
   reference_group = NULL,
   ae_listing_display = c("USUBJID", "SITEID", "SEX", "RACE", "AGE", "ASTDY", "AESER",
     "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"),
+  ae_listing_labels = NULL,
   ae_listing_unique = FALSE,
   bisection = 100,
   ...
@@ -37,6 +38,10 @@ Default is 2 if there are 2 groups, otherwise, the default is 1.}
 
 \item{ae_listing_display}{A vector of name of variables used to display
 on AE listing table.}
+
+\item{ae_listing_labels}{A vector with label of variable used to display
+on AE listing. This should have the same length as ae_listing_display.
+Also, the labels must be provided for the corresponding variables.}
 
 \item{ae_listing_unique}{A logical value to display only unique records
 on AE listing table.}

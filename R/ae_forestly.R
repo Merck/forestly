@@ -241,6 +241,7 @@ ae_forestly <- function(outdata,
 
   # Group each drill-down's records together (param, then SOC, then term) so its
   # index is a contiguous block the run-length encoding below can collapse.
+  listing_label <- get_label(ae_listing)
   ord <- order(ae_listing_param, ae_listing_soc_upper, ae_listing_event_upper)
   ae_listing <- ae_listing[ord, , drop = FALSE]
   ae_listing_event_upper <- ae_listing_event_upper[ord]
@@ -248,7 +249,6 @@ ae_forestly <- function(outdata,
   ae_listing_param <- ae_listing_param[ord]
 
   detail_cols <- names(ae_listing)[!(names(ae_listing) %in% c("param", "SOC_Name"))]
-  listing_label <- get_label(ae_listing)
   detail_labels <- unname(listing_label[match(detail_cols, names(listing_label))])
   detail_label_map <- stats::setNames(
     ifelse(is.na(detail_labels), detail_cols, detail_labels), detail_cols

@@ -34,7 +34,7 @@ Imports:
     lt (>= 0.4.37),
     metalite,
     metalite.ae,
-    ggplot2,
+    ggplot2 (>= 3.5.0),
     xfun (>= 0.61.4)
 Suggests:
     covr,
