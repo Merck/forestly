@@ -14,6 +14,7 @@ prepare_ae_forestly(
   reference_group = NULL,
   ae_listing_display = c("USUBJID", "SITEID", "SEX", "RACE", "AGE", "ASTDY", "AESER",
     "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"),
+  ae_listing_labels = NULL,
   ae_listing_unique = FALSE,
   bisection = 100,
   ...
@@ -53,6 +54,12 @@ prepare_ae_forestly(
 - ae_listing_display:
 
   A vector of name of variables used to display on AE listing table.
+
+- ae_listing_labels:
+
+  A vector with label of variable used to display on AE listing. This
+  should have the same length as ae_listing_display. Also, the labels
+  must be provided for the corresponding variables.
 
 - ae_listing_unique:
 
@@ -149,5 +156,5 @@ prepare_ae_forestly(meta, parameter = "any")
 #>  $ ci_lower       :'data.frame': 190 obs. of  1 variable:
 #>  $ ci_upper       :'data.frame': 190 obs. of  1 variable:
 #>  $ p              :'data.frame': 190 obs. of  1 variable:
-#>  $ ae_listing     :'data.frame': 736 obs. of  15 variables:
+#>  $ ae_listing     :'data.frame': 736 obs. of  16 variables:
 ```

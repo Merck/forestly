@@ -157,8 +157,4 @@ outdata <- meta |>
 outdata_any <- outdata$tbl[1:20, ] |> dplyr::filter(parameter == "any")
 outdata_any |>
   plot_dot("name", prop_cols = c("prop_1", "prop_2"), label = c("Treatment", "Placebo"))
-#> Warning: The `size` argument of `element_rect()` is deprecated as of ggplot2 3.4.0.
-#> ℹ Please use the `linewidth` argument instead.
-#> ℹ The deprecated feature was likely used in the forestly package.
-#>   Please report the issue at <https://github.com/Merck/forestly/issues>.
 ```

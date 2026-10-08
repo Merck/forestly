@@ -194,7 +194,7 @@ meta |>
 #>  $ ci_lower               :'data.frame': 190 obs. of  1 variable:
 #>  $ ci_upper               :'data.frame': 190 obs. of  1 variable:
 #>  $ p                      :'data.frame': 190 obs. of  1 variable:
-#>  $ ae_listing             :'data.frame': 736 obs. of  15 variables:
+#>  $ ae_listing             :'data.frame': 736 obs. of  16 variables:
 #>  $ tbl                    :'data.frame': 190 obs. of  14 variables:
 #>  $ reactable_columns      :List of 14
 #>  $ reactable_columns_group:List of 3

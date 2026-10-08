@@ -1,0 +1,58 @@
+/* lt-plot.css — styles for inline graphics cells (see lt-plot.js). */
+.lt-table {
+  .lt-eb-cell {
+    position: relative;
+    padding: 0;  /* so the gridline background fills the whole cell */
+    text-align: left;  /* keep the plot flush left, aligned with the gridlines */
+  }
+  .lt-eb-grid-bg {
+    position: absolute;
+    left: 0;
+    top: 0;
+    line { stroke: #eee; }
+  }
+  .lt-eb {
+    position: relative;
+    vertical-align: middle;
+    /* default only series without a per-series stroke=/fill= attribute, so that
+       attribute still shows; override either via that attr or a `.lt-eb` rule */
+    line:not([stroke]):not(.lt-eb-ref) { stroke: #888; }
+    circle:not([fill]) { fill: #333; }
+    .lt-eb-ref { stroke: #ccc; }
+  }
+  .lt-eb-axis {
+    display: block;
+    margin-top: 3px;  /* small gap below the body, since the cell has no padding */
+    line { stroke: #888; }
+    text { fill: #666; font-size: 11px; }
+    .lt-eb-axis-label { fill: #333; font-size: 12px; }
+  }
+  .lt-spark {
+    vertical-align: middle;
+    color: #4682b4;  /* line/bars inherit this via currentColor; override inline */
+    .lt-spark-line { fill: none; stroke: currentColor; stroke-width: 1; }
+    .lt-spark-bar { fill: currentColor; }
+  }
+  .lt-dot {
+    position: relative;  /* paint above the absolutely-positioned gridlines */
+    vertical-align: middle;
+    color: #333;
+    /* default only the dots without a per-column fill= attribute, so that
+       attribute still shows; override either via `color` or `.lt-dot circle` */
+    circle:not([fill]) { fill: currentColor; }
+  }
+  .lt-plot-legend {
+    margin-top: 3px;  /* small gap below the axis, since the cell has no padding */
+    font-size: 11px;
+    color: #666;
+    i {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-right: 2px;
+      border-radius: 50%;
+      vertical-align: middle;
+    }
+    span { margin-right: 6px; white-space: nowrap; }
+  }
+}
