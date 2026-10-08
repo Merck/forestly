@@ -32,8 +32,8 @@ test_that("ae_forestly(): AE-criteria dropdown and incidence slider are lt typed
   # The parameter dropdown and incidence range slider are lt typed filters bound
   # to the hidden parameter / incidence columns, serialized into the lt spec --
   # not separate forestly DOM widgets.
-  expect_true(grepl('"type": "select"', html_text, fixed = TRUE))
-  expect_true(grepl('"type": "range"', html_text, fixed = TRUE))
+  expect_true(grepl('"type":"select"', html_text, fixed = TRUE))
+  expect_true(grepl('"type":"range"', html_text, fixed = TRUE))
   expect_true(grepl("AE Criteria", html_text, fixed = TRUE))
   # the old external control widgets are gone
   expect_false(grepl("forestly-param", html_text, fixed = TRUE))
@@ -56,7 +56,7 @@ test_that("ae_forestly(): drill-down carries a treatment-group picker", {
   expect_true(grepl('label = "Treatment group"', html_text, fixed = TRUE))
   expect_true(grepl("LT.ui.chip(doc, label, pop)", html_text, fixed = TRUE))
   # the picker offers the listing's arms, not aggregate forest columns ("Total")
-  expect_true(grepl('groups = ["Placebo", "Low Dose", "High Dose"]', html_text, fixed = TRUE))
+  expect_true(grepl('groups = ["Placebo","Low Dose","High Dose"]', html_text, fixed = TRUE))
   expect_false(grepl('"Total"', regmatches(
     html_text, regexpr("groups = \\[[^]]*\\]", html_text)
   ), fixed = TRUE))
@@ -67,8 +67,8 @@ test_that("ae_forestly(): no incidence filter when filter is NULL", {
   html_text <- as.character(ae_forestly(outdata, filter = NULL))
 
   # the incidence range filter is dropped; the parameter dropdown stays
-  expect_false(grepl('"type": "range"', html_text, fixed = TRUE))
-  expect_true(grepl('"type": "select"', html_text, fixed = TRUE))
+  expect_false(grepl('"type":"range"', html_text, fixed = TRUE))
+  expect_true(grepl('"type":"select"', html_text, fixed = TRUE))
 })
 
 test_that("ae_forestly(): download button is opt-in via lt's download control", {
@@ -77,7 +77,7 @@ test_that("ae_forestly(): download button is opt-in via lt's download control", 
   # through the lt_interactive(download =) spec field.
   expect_false(grepl('"download"', as.character(ae_forestly(outdata)), fixed = TRUE))
   expect_true(grepl(
-    '"download": "ae-forest.csv"',
+    '"download":"ae-forest.csv"',
     as.character(ae_forestly(outdata, download_button = TRUE)), fixed = TRUE
   ))
 })
