@@ -7,6 +7,7 @@
 - Reveal a truncated table cell's full text on hover; figure cells and the drill-down detail are exempt.
 - Speed up `format_ae_listing()` by vectorizing the per-row loops that map `AEACN`, `AEOUT`, and missing `ADURN` durations to display labels, avoiding quadratic-time column copies on large AE listings.
 - Rename the misspelled `ae_forestly()` argument `dowload_button` to `download_button` (#173).
+- Add a treatment-group picker to the drill-down: a checklist in the table's control bar chooses which arm(s) appear in each expanded AE listing, filtering the detail client-side (built on `lt`'s `LT.ui` popover/checklist widgets and `el._lt.resetDetail`).
 
 # forestly 0.1.6
 

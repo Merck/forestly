@@ -331,16 +331,30 @@ ae_forestly <- function(outdata,
     index = detail_index
   ), dict = 0.5, pretty = FALSE)
 
+  # Treatment groups the control-bar picker (below) offers, in display order:
+  # the arms that actually appear in the listing, so aggregate forest columns
+  # (e.g. "Total") that are never a per-subject `Treatment_Group` are left out.
+  listing_groups <- intersect(outdata$group, ae_listing$Treatment_Group)
+  group_json <- xfun::tojson(listing_groups)
+  group_label_json <- '"Treatment group"'
+
   # lt calls the detail callback as (rawRow, index1Based, displayRow) and renders
   # the returned spec via LT.render (so the listing can itself be interactive).
   # The IIFE captures the store in a closure (one copy, no global). A 2-element
   # index entry with a negative second value is a contiguous run [start, -count];
   # otherwise it is delta-encoded ([first, gap, ...]) and recovered with a running
   # sum. Returning null leaves a row with no listing un-expandable.
+  #
+  # On mount it also drops a treatment-group picker into the table's control bar
+  # (lt's reusable LT.ui popover + checklist, attached via el._lt.bar): checking
+  # groups drives the `selected` set the callback filters each listing by, and
+  # el._lt.resetDetail re-renders any open details through it. The onMount guard
+  # keys off the callback's identity, so it wires only this table — not a detail
+  # sub-table (no `detail`), nor another forestly table on the same page.
   detail_cb <- xfun::js(sprintf(
     "(() => {
-  const store = %s;
-  return (row, index) => {
+  const store = %s, groups = %s, selected = new Set(groups);
+  const build = (row, index) => {
     const enc = store.index[index - 1];
     if (!enc || !enc.length) return null;
     let abs;
@@ -351,6 +365,8 @@ ae_forestly <- function(outdata,
       let acc = 0;
       abs = enc.map((d) => (acc += d));
     }
+    const grp = store.records.Treatment_Group;
+    if (grp) abs = abs.filter((i) => selected.has(grp[i]));
     return {
       ...store.tpl,
       data: Object.fromEntries(
@@ -358,7 +374,23 @@ ae_forestly <- function(outdata,
       )
     };
   };
-})()", specs_json))
+  LT.onMount.push((tbl, spec) => {
+    if (spec.interactive?.detail !== build || !tbl._lt || !tbl._lt.chips) return;
+    const doc = tbl.ownerDocument, label = %s;
+    const pop = LT.ui.popover(doc, label, (panel) => {
+      const cl = LT.ui.checklist(doc, groups.map((g) => ({ value: g, label: g })),
+        (vals) => {
+          selected.clear();
+          vals.forEach((v) => selected.add(v));
+          tbl._lt.resetDetail();
+        });
+      panel.append(...cl.el);
+    });
+    // a labelled chip around the funnel, in the bar's chip group beside lt's own
+    tbl._lt.chips.append(LT.ui.chip(doc, label, pop).el);
+  });
+  return build;
+})()", specs_json, group_json, group_label_json))
 
   # ---- Build the interactive lt table ----
   built <- format_lt_forestly(

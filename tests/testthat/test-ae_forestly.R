@@ -40,6 +40,28 @@ test_that("ae_forestly(): AE-criteria dropdown and incidence slider are lt typed
   expect_false(grepl("forestly-slider", html_text, fixed = TRUE))
 })
 
+test_that("ae_forestly(): drill-down carries a treatment-group picker", {
+  outdata <- test_ae_forestly()
+  html_text <- as.character(ae_forestly(outdata))
+
+  # The detail callback filters the listing by a `selected` set of arms, driven
+  # by an lt control-bar picker (LT.ui popover + checklist on el._lt.bar) that
+  # busts open details via el._lt.resetDetail. The onMount guard keys off the
+  # callback's identity so it wires only this table.
+  expect_true(grepl("LT.ui.popover(", html_text, fixed = TRUE))
+  expect_true(grepl("LT.ui.checklist(", html_text, fixed = TRUE))
+  expect_true(grepl("tbl._lt.resetDetail()", html_text, fixed = TRUE))
+  expect_true(grepl("spec.interactive?.detail !== build", html_text, fixed = TRUE))
+  # the funnel is wrapped in a labelled chip via lt's reusable LT.ui.chip
+  expect_true(grepl('label = "Treatment group"', html_text, fixed = TRUE))
+  expect_true(grepl("LT.ui.chip(doc, label, pop)", html_text, fixed = TRUE))
+  # the picker offers the listing's arms, not aggregate forest columns ("Total")
+  expect_true(grepl('groups = ["Placebo", "Low Dose", "High Dose"]', html_text, fixed = TRUE))
+  expect_false(grepl('"Total"', regmatches(
+    html_text, regexpr("groups = \\[[^]]*\\]", html_text)
+  ), fixed = TRUE))
+})
+
 test_that("ae_forestly(): no incidence filter when filter is NULL", {
   outdata <- test_ae_forestly()
   html_text <- as.character(ae_forestly(outdata, filter = NULL))

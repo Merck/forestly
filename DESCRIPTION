@@ -31,7 +31,7 @@ Depends:
     R (>= 4.1)
 Imports:
     htmltools,
-    lt (>= 0.4.28),
+    lt (>= 0.4.37),
     metalite,
     metalite.ae,
     ggplot2,
