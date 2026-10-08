@@ -162,39 +162,15 @@ ae_forestly <- function(outdata,
     display_filter = FALSE
   }
 
-  # Handle filter_range parameter
-  if (display_filter) {
-    if (!is.null(filter_range)) {
-      # User provided filter_range
-      if (length(filter_range) == 1) {
-        # If only one value provided, use it as max with min=0
-        filter_range <- c(0, filter_range[1])
-      } else if (length(filter_range) == 2) {
-        # Use as provided
-        filter_range <- filter_range
-      } else {
-        stop("filter_range must be NULL, a single numeric value, or a numeric vector of length 2")
-      }
-    } else {
-      # Auto-detect range from data
-      if (filter == "prop") {
-        # For proportion, get max from hide_prop column
-        max_val <- max(outdata$tbl$hide_prop, na.rm = TRUE)
-        # Round up to nearest 10 for better UX
-        max_val <- ceiling(max_val / 10) * 10
-        # Ensure at least 100 for proportion
-        filter_range <- c(0, max(100, max_val))
-      } else if (filter == "n") {
-        # For count, get max from hide_n column
-        max_val <- max(outdata$tbl$hide_n, na.rm = TRUE)
-        # Round up to nearest 10 (or 5 if max is small)
-        if (max_val <= 20) {
-          max_val <- ceiling(max_val / 5) * 5
-        } else {
-          max_val <- ceiling(max_val / 10) * 10
-        }
-        filter_range <- c(0, max_val)
-      }
+  # Handle filter_range parameter. The slider's bounds and step are left to lt,
+  # which derives nice, data-bracketing values from the bound column itself (see
+  # the `filter` argument below). A user-supplied filter_range overrides min/max.
+  if (display_filter && !is.null(filter_range)) {
+    if (length(filter_range) == 1) {
+      # a single value is the max, with min = 0
+      filter_range <- c(0, filter_range[1])
+    } else if (length(filter_range) != 2) {
+      stop("filter_range must be NULL, a single numeric value, or a numeric vector of length 2")
     }
   }
 
@@ -407,10 +383,12 @@ ae_forestly <- function(outdata,
   )
   if (display_filter) {
     slider_col <- if (filter == "prop") "hide_prop" else "hide_n"
-    filter_cfg[[slider_col]] <- list(
-      type = "range", min = filter_range[1], max = filter_range[2], step = 1,
-      label = filter_label
-    )
+    range_cfg <- list(type = "range", label = filter_label)
+    if (!is.null(filter_range)) {
+      range_cfg$min <- filter_range[1]
+      range_cfg$max <- filter_range[2]
+    }
+    filter_cfg[[slider_col]] <- range_cfg
   }
 
   x <- lt::lt_interactive(
