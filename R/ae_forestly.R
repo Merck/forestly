@@ -367,6 +367,12 @@ ae_forestly <- function(outdata,
     display_soc_toggle = display_soc_toggle,
     display_diff_toggle = display_diff_toggle
   )
+  # Size the table itself (lt's own table width) rather than wrapping it in a
+  # fixed-width div; the per-column widths set in format_lt_forestly() are kept.
+  # The `forestly-ae` class goes on lt's own container (lt_class), so forestly's
+  # cell styles are scoped without an extra wrapper div.
+  built$x <- lt::lt_width(built$x, paste0(width, "px"))
+  built$x <- lt::lt_class(built$x, "forestly-ae")
 
   # The AE-criteria dropdown and the incidence slider are lt typed filters. They
   # bind to the hidden `parameter` and `hide_prop`/`hide_n` columns, so lt renders
@@ -405,23 +411,16 @@ ae_forestly <- function(outdata,
     download = if (download_button) "ae-forest.csv" else FALSE
   )
 
-  container <- htmltools::div(
-    class = "forestly-ae",
-    style = htmltools::css(width = paste0(width, "px"), `max-width` = "100%"),
-    htmltools::div(
-      class = "forestly-table",
-      style = "overflow-x: auto;",
-      htmltools::HTML(format(x, assets = FALSE))
-    )
-  )
-
   # ---- Assemble: lt runtime (interactive + plot) + forestly styles ----
+  # No wrapper div: width is on the lt table (lt_width), horizontal scroll is
+  # lt's own `.lt-wrap`, and the `forestly-ae` class (lt_class) that scopes
+  # forestly's cell styles is on that same container.
   htmltools::browsable(
     htmltools::tagList(
       lt::lt_dependency(interactive = TRUE, plot = TRUE),
       html_dependency_forestly_widgets(),
       html_dependency_ae_drilldown(),
-      container
+      htmltools::HTML(format(x, assets = FALSE))
     )
   )
 }

@@ -1,24 +1,20 @@
 test_that("ae_forestly(): default setting can be executed without error", {
   outdata <- test_ae_forestly()
   html <- outdata |> ae_forestly()
-  container <- html[[length(html)]]
-
-  # The output is a browsable tagList whose last element is the forestly
-  # container div holding the controls and the lt table.
-  expect_equal(container$name, "div")
-  expect_equal(container$attribs$class, "forestly-ae")
-  expect_true(grepl("width:1400px", container$attribs$style, fixed = TRUE))
 
   html_text <- as.character(html)
+  # No wrapper div: width and the forestly-ae class (scoping cell styles) are set
+  # on lt's own table/container via lt_width()/lt_class(), serialized in the spec.
+  expect_true(grepl('"type":"width","table":"1400px"', html_text, fixed = TRUE))
+  expect_true(grepl('"class":"forestly-ae"', html_text, fixed = TRUE))
   expect_true(grepl("Incidence (%) in One or More Treatment Groups", html_text, fixed = TRUE))
 })
 
 test_that("ae_forestly(): test filter and width option", {
   outdata <- test_ae_forestly()
   html <- outdata |> ae_forestly(filter = c("n"), width = 1500)
-  container <- html[[length(html)]]
 
-  expect_true(grepl("width:1500px", container$attribs$style, fixed = TRUE))
+  expect_true(grepl('"type":"width","table":"1500px"', as.character(html), fixed = TRUE))
   expect_true(grepl(
     "Number of AE in One or More Treatment Groups",
     as.character(html), fixed = TRUE
