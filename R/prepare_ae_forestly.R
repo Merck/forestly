@@ -23,6 +23,7 @@
 #'   on AE listing table.
 #' @param ae_listing_labels A vector with label of variable used to display
 #'   on AE listing. This should have the same length as ae_listing_display.
+#'   Also, the labels must be provided for the corresponding variables.
 #' @param ae_listing_unique A logical value to display only unique records
 #'   on AE listing table.
 #' @param bisection A numeric value. A control parameter for the bisection
@@ -147,13 +148,16 @@ prepare_ae_forestly <- function(
       attr(data_observation[[nm]], "label") <- labels[[nm]]
     }
   }
+  meta$data_observation <- data_observation
 
   if (any(!ae_listing_display %in% names(meta$data_observation))) {
     warning(paste0(
       "The variables specified in ae_listing_display should be included in the input dataset. ",
       "Only the variables included in the input dataset will be displayed on AE listing table."
       ))
-    ae_listing_display <- ae_listing_display[ae_listing_display %in% names(meta$data_observation)]
+    keep <- ae_listing_display %in% names(meta$data_observation)
+    if (!is.null(ae_listing_labels)) ae_listing_labels <- ae_listing_labels[keep]
+    ae_listing_display <- ae_listing_display[keep]
   }
 
   if (is.null(parameter)) {

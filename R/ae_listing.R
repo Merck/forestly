@@ -106,7 +106,8 @@ collect_ae_listing <- function(
   )
 
   # Keep variable used to display only
-  outdata$ae_listing <- obs[, c(par_var, par_var_soc, obs_group, display)]
+  keep <- c(par_var, par_var_soc, obs_group)
+  outdata$ae_listing <- obs[, c(keep, setdiff(display, keep))]
 
   # Rename the fixed columns
   names(outdata$ae_listing)[1:3] <- c(

@@ -40,7 +40,8 @@ Default is 2 if there are 2 groups, otherwise, the default is 1.}
 on AE listing table.}
 
 \item{ae_listing_labels}{A vector with label of variable used to display
-on AE listing. This should have the same length as ae_listing_display.}
+on AE listing. This should have the same length as ae_listing_display.
+Also, the labels must be provided for the corresponding variables.}
 
 \item{ae_listing_unique}{A logical value to display only unique records
 on AE listing table.}
