@@ -124,3 +124,112 @@ test_that("prepare_ae_forestly() retains a specific AE with missing SOC", {
 	expect_true(is.na(outdata$soc_name))
 	expect_equal(as.character(outdata$parameter_order), "ser")
 })
+
+test_that("ae_listing_placebo must be a single non-missing logical value", {
+  invalid <- list(NULL, logical(), NA, c(TRUE, FALSE), 0, 1, "FALSE", list(FALSE))
+  for (value in invalid) {
+    expect_error(
+      prepare_ae_forestly(NULL, ae_listing_placebo = value),
+      "ae_listing_placebo must be a single non-missing logical value.",
+      fixed = TRUE
+    )
+  }
+})
+
+test_that("ae_listing_placebo filters listings without changing analysis results", {
+  meta <- meta_ae_test()
+  for (unique_records in c(FALSE, TRUE)) {
+    args <- list(
+      meta = meta, parameter = "any;rel;ser", components = c("soc", "par"),
+      ae_listing_unique = unique_records
+    )
+    all_groups <- do.call(prepare_ae_forestly, args)
+    explicit_true <- do.call(prepare_ae_forestly, c(args, list(ae_listing_placebo = TRUE)))
+    active_only <- do.call(prepare_ae_forestly, c(args, list(ae_listing_placebo = FALSE)))
+
+    expect_equal(explicit_true, all_groups)
+    expect_setequal(as.character(unique(all_groups$ae_listing$Treatment_Group)),
+      c("Placebo", "Low Dose", "High Dose"))
+    expected <- all_groups$ae_listing[
+      all_groups$ae_listing$Treatment_Group != "Placebo", , drop = FALSE
+    ]
+    expect_equal(active_only$ae_listing, expected)
+    expect_setequal(unique(active_only$ae_listing$param), c("any", "rel", "ser"))
+    expect_setequal(as.character(unique(active_only$ae_listing$Treatment_Group)),
+      c("Low Dose", "High Dose"))
+
+    fields <- setdiff(names(all_groups), "ae_listing")
+    expect_equal(active_only[fields], all_groups[fields])
+    expect_equal(format_ae_forestly(active_only)$tbl, format_ae_forestly(all_groups)$tbl)
+  }
+})
+
+test_that("ae_listing_placebo uses the reference group with customized labels", {
+  meta <- meta_ae_test()
+  for (dataset in c("data_population", "data_observation")) {
+    meta[[dataset]]$TRTA <- factor(meta[[dataset]]$TRTA,
+      levels = c("Low Dose", "Placebo", "High Dose"),
+      labels = c("Treatment A", "Control Arm", "Treatment B")
+    )
+  }
+  outdata <- prepare_ae_forestly(meta, parameter = "any",
+    reference_group = 2, ae_listing_placebo = FALSE)
+  expect_equal(outdata$group[outdata$reference_group], "Control Arm")
+  expect_setequal(as.character(unique(outdata$ae_listing$Treatment_Group)),
+    c("Treatment A", "Treatment B"))
+
+  # An active reference group is excluded instead of guessing from its label.
+  outdata <- prepare_ae_forestly(meta, parameter = "any",
+    reference_group = 1, ae_listing_placebo = FALSE)
+  expect_setequal(as.character(unique(outdata$ae_listing$Treatment_Group)),
+    c("Control Arm", "Treatment B"))
+})
+
+test_that("ae_listing_placebo uses the default second reference group for two arms", {
+  meta <- meta_ae_test()
+  for (dataset in c("data_population", "data_observation")) {
+    meta[[dataset]] <- meta[[dataset]][meta[[dataset]]$TRTA != "High Dose", ]
+    meta[[dataset]]$TRTA <- factor(meta[[dataset]]$TRTA,
+      levels = c("Low Dose", "Placebo"))
+  }
+  implicit <- prepare_ae_forestly(meta, parameter = "any", ae_listing_placebo = FALSE)
+  explicit <- prepare_ae_forestly(meta, parameter = "any",
+    reference_group = 2, ae_listing_placebo = FALSE)
+  expect_equal(implicit, explicit)
+  expect_equal(implicit$reference_group, 2)
+  expect_equal(unique(as.character(implicit$ae_listing$Treatment_Group)), "Low Dose")
+})
+
+test_that("ae_listing_placebo supports character treatment variables", {
+  meta <- meta_ae_test()
+  meta$data_population$TRTA <- as.character(meta$data_population$TRTA)
+  meta$data_observation$TRTA <- as.character(meta$data_observation$TRTA)
+  # metalite.ae converts character treatment variables to alphabetically ordered factors.
+  expect_warning(
+    expect_warning(
+      outdata <- prepare_ae_forestly(meta, parameter = "any",
+        reference_group = 3, ae_listing_placebo = FALSE),
+      "In population level data, force group variable"
+    ),
+    "In observation level data, force group variable"
+  )
+  expect_equal(outdata$group[outdata$reference_group], "Placebo")
+  expect_setequal(unique(outdata$ae_listing$Treatment_Group), c("Low Dose", "High Dose"))
+})
+
+test_that("ae_listing_placebo retains placebo-only terms even with missing SOC", {
+  meta <- meta_ae_test()
+  meta$data_observation$AESER <- "N"
+  i <- which(meta$data_observation$TRTA == "Placebo")[1]
+  meta$data_observation$AESER[i] <- "Y"
+  meta$data_observation$AEBODSYS[i] <- NA_character_
+
+  all_groups <- prepare_ae_forestly(meta, parameter = "ser")
+  active_only <- prepare_ae_forestly(meta, parameter = "ser", ae_listing_placebo = FALSE)
+  expect_equal(nrow(all_groups$ae_listing), 1)
+  expect_equal(nrow(active_only$ae_listing), 0)
+  expect_equal(names(active_only$ae_listing), names(all_groups$ae_listing))
+  expect_equal(length(active_only$name), 1)
+  fields <- setdiff(names(all_groups), "ae_listing")
+  expect_equal(active_only[fields], all_groups[fields])
+})

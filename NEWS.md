@@ -1,3 +1,9 @@
+# forestly 0.1.7
+
+## New features
+
+- Add `ae_listing_placebo` to `prepare_ae_forestly()` (default `TRUE`). Set it to `FALSE` to exclude the `reference_group` from subject-level AE drill-down listing data while leaving forest plots and statistical results unchanged (#174).
+
 # forestly 0.1.6
 
 ## Improvements

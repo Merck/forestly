@@ -408,7 +408,7 @@ ae_forestly <- function(outdata,
   const store = %s;
   return (rowInfo) => {
     const enc = store.index[rowInfo.index];
-    if (!enc) return null;
+    if (!enc || !enc.length) return null;
     let abs;
     if (enc.length === 2 && enc[1] < 0) {
       const start = enc[0], count = -enc[1];

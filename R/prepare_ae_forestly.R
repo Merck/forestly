@@ -26,6 +26,12 @@
 #' @param bisection A numeric value. A control parameter for the bisection
 #'   method used to calculate confidence the lower and upper confidence
 #'   interval bounds for the risk. The default value is `1e2`.
+#' @param ae_listing_placebo A single non-missing logical value. If `TRUE`
+#'   (default), include all treatment groups in subject-level AE drill-down
+#'   listings. If `FALSE`, exclude records from the group selected by
+#'   `reference_group`.  This affects listing data
+#'   only, not population denominators, AE counts, estimates, comparisons,
+#'   confidence intervals, or forest-plot rows.
 #' @param ... Additional arguments passed to [metalite.ae::rate_compare_sum()].
 #' @return An `outdata` object.
 #'
@@ -86,6 +92,10 @@
 #'   metalite::meta_build()
 #'
 #' prepare_ae_forestly(meta, parameter = "any")
+#'
+#' # Exclude placebo from listings only (the second treatment group here).
+#' prepare_ae_forestly(meta, parameter = "any", reference_group = 2,
+#'   ae_listing_placebo = FALSE)
 prepare_ae_forestly <- function(
     meta,
     population = NULL,
@@ -99,8 +109,14 @@ prepare_ae_forestly <- function(
     ),
     ae_listing_unique = FALSE,
     bisection = 1e2,
+    ae_listing_placebo = TRUE,
     ...
     ) {
+  if (!is.logical(ae_listing_placebo) || length(ae_listing_placebo) != 1L ||
+    is.na(ae_listing_placebo)) {
+    stop("ae_listing_placebo must be a single non-missing logical value.", call. = FALSE)
+  }
+
   if (is.null(population)) {
     if (length(meta$population) == 1) {
       population <- meta$population[[1]]$name
@@ -198,6 +214,15 @@ prepare_ae_forestly <- function(
       x$order >= 1000 |
       x$name %in% x$ae_listing$Adverse_Event
   })
+
+  # Determine forest-plot rows from the full listings above before excluding
+  # the reference group, so even placebo-only terms with missing SOC survive.
+  if (!ae_listing_placebo && nrow(ae_listing) > 0L) {
+    placebo_group <- res[[1]]$group[res[[1]]$reference_group]
+    ae_listing <- ae_listing[
+      !(ae_listing$Treatment_Group %in% placebo_group), , drop = FALSE
+    ]
+  }
 
   # Arrange data frame
   foo <- function(name) {

@@ -90,3 +90,34 @@ meta |>
   format_ae_forestly() |>
   ae_forestly()
 ```
+
+# Step 3: exclude placebo subjects from AE listings
+
+By default, `ae_listing_placebo = TRUE` includes records from all treatment groups
+in the drill-down listings. Set it to `FALSE` to remove the reference group's
+records from the listing data only. Population denominators, AE counts,
+incidence estimates, treatment comparisons, confidence intervals, and forest
+plots still include all treatment groups. AE terms with no remaining listing
+records have no drill-down listing.
+
+The excluded group is identified by `reference_group`, not by a literal
+`"Placebo"` label, so customized treatment labels are supported. In this example,
+the treatment levels are `"Low Dose"` followed by `"Placebo"`, so the placebo
+reference group is group 2:
+
+```{r}
+meta |>
+  prepare_ae_forestly(
+    reference_group = 2,
+    ae_listing_display = c("USUBJID", "SITEID", "SEX", "RACE", "AGE"),
+    ae_listing_placebo = FALSE
+  ) |>
+  format_ae_forestly() |>
+  ae_forestly()
+```
+
+If `reference_group = NULL`, the usual reference-group default is used (group 2
+for two treatment groups, otherwise group 1). If the reference group is an
+active treatment rather than placebo, `ae_listing_placebo = FALSE` excludes
+that active treatment instead; select the placebo group's index explicitly
+when needed. Use `ae_listing_placebo = TRUE` to retain listings for every group.

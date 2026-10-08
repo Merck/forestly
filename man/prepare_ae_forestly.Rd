@@ -15,6 +15,7 @@ prepare_ae_forestly(
     "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"),
   ae_listing_unique = FALSE,
   bisection = 100,
+  ae_listing_placebo = TRUE,
   ...
 )
 }
@@ -44,6 +45,16 @@ on AE listing table.}
 \item{bisection}{A numeric value. A control parameter for the bisection
 method used to calculate confidence the lower and upper confidence
 interval bounds for the risk. The default value is \code{1e2}.}
+
+\item{ae_listing_placebo}{A single non-missing logical value. If \code{TRUE}
+(default), include all treatment groups in subject-level AE drill-down
+listings. If \code{FALSE}, exclude records from the group selected by
+\code{reference_group} (including its default when \code{NULL}). This group is treated
+as placebo regardless of its label; if the reference group is an active
+treatment, that treatment is excluded instead. Set \code{reference_group} to the
+placebo group's index to exclude placebo records. This affects listing data
+only, not population denominators, AE counts, estimates, comparisons,
+confidence intervals, or forest-plot rows.}
 
 \item{...}{Additional arguments passed to \code{\link[metalite.ae:rate_compare_sum]{metalite.ae::rate_compare_sum()}}.}
 }
@@ -108,4 +119,8 @@ meta <- metalite::meta_adam(population = adsl, observation = adae) |>
   metalite::meta_build()
 
 prepare_ae_forestly(meta, parameter = "any")
+
+# Exclude placebo from listings only (the second treatment group here).
+prepare_ae_forestly(meta, parameter = "any", reference_group = 2,
+  ae_listing_placebo = FALSE)
 }

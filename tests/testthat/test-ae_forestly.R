@@ -51,6 +51,45 @@ test_that("ae_forestly(): drill-down listings render lazily via lt", {
   expect_true("lt-interactive.js" %in% lt_dep[[1]]$script)
 })
 
+test_that("ae_forestly(): excluded placebo records are not embedded in the widget", {
+  meta <- meta_ae_test()
+  meta$data_observation$Listing_Record <- ifelse(
+    meta$data_observation$TRTA == "Placebo", "PLACEBO-LISTING-RECORD", "ACTIVE-LISTING-RECORD"
+  )
+  outdata <- prepare_ae_forestly(meta, parameter = "any", ae_listing_placebo = FALSE,
+    ae_listing_display = c("USUBJID", "Listing_Record")) |>
+    format_ae_forestly()
+  html_text <- as.character(ae_forestly(outdata))
+
+  expect_false(grepl("PLACEBO-LISTING-RECORD", html_text, fixed = TRUE))
+  expect_true(grepl("ACTIVE-LISTING-RECORD", html_text, fixed = TRUE))
+  expect_true(grepl("window.LT.render", html_text, fixed = TRUE))
+})
+
+test_that("ae_forestly(): terms with no eligible records have no drill-down", {
+  meta <- meta_ae_test()
+  meta$data_observation$AESER <- "N"
+  i <- which(meta$data_observation$TRTA == "Placebo")[1]
+  meta$data_observation$AESER[i] <- "Y"
+  meta$data_observation$Listing_Record <- "OTHER-LISTING-RECORD"
+  meta$data_observation$Listing_Record[i] <- "PLACEBO-ONLY-SERIOUS-RECORD"
+  outdata <- prepare_ae_forestly(meta, parameter = "any;ser",
+    ae_listing_placebo = FALSE, ae_listing_display = c("USUBJID", "Listing_Record")) |>
+    format_ae_forestly()
+  expect_true(any(outdata$tbl$parameter == "ser"))
+  html_text <- as.character(ae_forestly(outdata))
+  expect_false(grepl("PLACEBO-ONLY-SERIOUS-RECORD", html_text, fixed = TRUE))
+  expect_true(grepl("if (!enc || !enc.length) return null;", html_text, fixed = TRUE))
+
+  # Also allow an entirely empty shared record store, keeping its column schema.
+  empty <- prepare_ae_forestly(meta, parameter = "ser", ae_listing_placebo = FALSE,
+    ae_listing_display = c("USUBJID", "Listing_Record")) |>
+    format_ae_forestly()
+  expect_equal(nrow(empty$ae_listing), 0)
+  expect_true(nrow(empty$tbl) > 0)
+  expect_no_error(ae_forestly(empty))
+})
+
 test_that("search-filter.js defines the shared globals and search logic", {
   js_path <- system.file("js", "search-filter.js", package = "forestly")
   expect_true(file.exists(js_path))
