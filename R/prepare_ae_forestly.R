@@ -21,6 +21,9 @@
 #' @inheritParams metalite.ae::prepare_ae_specific
 #' @param ae_listing_display A vector of name of variables used to display
 #'   on AE listing table.
+#' @param ae_listing_labels A vector with label of variable used to display
+#'   on AE listing. This should have the same length as ae_listing_display.
+#'   Also, the labels must be provided for the corresponding variables.
 #' @param ae_listing_unique A logical value to display only unique records
 #'   on AE listing table.
 #' @param bisection A numeric value. A control parameter for the bisection
@@ -97,6 +100,7 @@ prepare_ae_forestly <- function(
       "USUBJID", "SITEID", "SEX", "RACE", "AGE", "ASTDY", "AESER",
       "AEREL", "AEACN", "AEOUT", "ADURN", "ADURU"
     ),
+    ae_listing_labels = NULL,
     ae_listing_unique = FALSE,
     bisection = 1e2,
     ...
@@ -117,22 +121,43 @@ prepare_ae_forestly <- function(
     }
   }
 
+  if (!is.null(ae_listing_labels)) {
+    if (!length(ae_listing_labels) == length(ae_listing_display)) {
+      stop("`ae_listing_labels` should have the same length as `ae_listing_display`.")
+    }
+  }
+
   # Temporary Processing
-  data_observation <- meta$data_observation |>
-    merge(
-      meta$data_population,
-      by = "USUBJID",
-      all.x = TRUE,
-      suffixes = c("", ".pop")
-    )
-  meta$data_observation <- data_observation[, !grepl("\\.pop$", names(data_observation))]
+  obs <- meta$data_observation
+  labels <- lapply(obs, attr, "label")
+  data_observation <- merge(
+    obs,
+    meta$data_population,
+    by = "USUBJID",
+    all.x = TRUE,
+    suffixes = c("", ".pop")
+  )
+
+  data_observation <- data_observation[
+    ,
+    !grepl("\\.pop$", names(data_observation))
+  ]
+
+  for (nm in intersect(names(labels), names(data_observation))) {
+    if (!is.null(labels[[nm]])) {
+      attr(data_observation[[nm]], "label") <- labels[[nm]]
+    }
+  }
+  meta$data_observation <- data_observation
 
   if (any(!ae_listing_display %in% names(meta$data_observation))) {
     warning(paste0(
       "The variables specified in ae_listing_display should be included in the input dataset. ",
       "Only the variables included in the input dataset will be displayed on AE listing table."
       ))
-    ae_listing_display <- ae_listing_display[ae_listing_display %in% names(meta$data_observation)]
+    keep <- ae_listing_display %in% names(meta$data_observation)
+    if (!is.null(ae_listing_labels)) ae_listing_labels <- ae_listing_labels[keep]
+    ae_listing_display <- ae_listing_display[keep]
   }
 
   if (is.null(parameter)) {
@@ -179,7 +204,10 @@ prepare_ae_forestly <- function(
         ...
       ) |>
       collect_ae_listing(display = ae_listing_display) |>
-      format_ae_listing(display_unique_records = ae_listing_unique)
+      format_ae_listing(
+        ae_listing_labels = ae_listing_labels,
+        display_unique_records = ae_listing_unique
+      )
   })
 
   # Tag each non-empty listing with its parameter and bind them in one pass
@@ -191,12 +219,18 @@ prepare_ae_forestly <- function(
     }
   })
   ae_listing <- do.call(rbind, ae_listing_parts)
-  if (is.null(ae_listing)) ae_listing <- data.frame()
+  if (is.null(ae_listing)) {
+    ae_listing <- data.frame()
+  } else {
+    attr(ae_listing$Adverse_Event, "label") <- "Adverse Event"
+    attr(ae_listing$SOC_Name, "label") <- "SOC Name"
+    attr(ae_listing$Treatment_Group, "label") <- "Treatment Group"
+  }
 
   ae_row <- lapply(res, function(x) {
     !is.na(x$soc_name) |
       x$order >= 1000 |
-      x$name %in% x$ae_listing$Adverse_Event
+      toupper(x$name) %in% toupper(x$ae_listing$Adverse_Event)
   })
 
   # Arrange data frame
