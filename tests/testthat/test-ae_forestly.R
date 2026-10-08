@@ -52,9 +52,11 @@ test_that("ae_forestly(): drill-down carries a treatment-group picker", {
   expect_true(grepl("LT.ui.checklist(", html_text, fixed = TRUE))
   expect_true(grepl("tbl._lt.resetDetail()", html_text, fixed = TRUE))
   expect_true(grepl("spec.interactive?.detail !== build", html_text, fixed = TRUE))
-  # the funnel is wrapped in a labelled chip via lt's reusable LT.ui.chip
+  # the funnel is wrapped in a labelled chip via lt's reusable LT.ui.chip, which
+  # also hosts the popover's click so the whole chip (not just the funnel) opens it
   expect_true(grepl('label = "Treatment group"', html_text, fixed = TRUE))
-  expect_true(grepl("LT.ui.chip(doc, label, pop)", html_text, fixed = TRUE))
+  expect_true(grepl("LT.ui.chip(doc, label)", html_text, fixed = TRUE))
+  expect_true(grepl("null, chip.el)", html_text, fixed = TRUE))
   # the picker offers the listing's arms, not aggregate forest columns ("Total")
   expect_true(grepl('groups = ["Placebo","Low Dose","High Dose"]', html_text, fixed = TRUE))
   expect_false(grepl('"Total"', regmatches(
@@ -89,11 +91,12 @@ test_that("ae_forestly(): drill-down listings render lazily via lt", {
 
   # Detail listings are lightweight `lt` interactive tables rendered on expand
   # (see #158/#168), not eager per-row nested tables. The listing is embedded
-  # once as a shared record store captured in the detail callback's closure;
-  # each row carries only the record indices it needs (see #147).
+  # once as a shared record store captured in the detail callback's closure; a
+  # row carries no record pointers -- the client builds a param+term/SOC lookup
+  # on first expand and resolves each row by its own parameter/name (see #147).
   expect_true(grepl("const store =", html_text, fixed = TRUE))
   expect_true(grepl("store.records", html_text, fixed = TRUE))
-  expect_true(grepl("store.index", html_text, fixed = TRUE))
+  expect_true(grepl("store.param", html_text, fixed = TRUE))
 
   # The lt runtime, interactivity extension, and inline-plot extension are
   # bundled as HTML dependencies.

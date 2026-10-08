@@ -280,9 +280,6 @@ ae_forestly <- function(outdata,
   # Numeric columns ship rounded (see `detail_records`), so lt needs no lt_format().
   detail_decimals <- 1L
 
-  tbl_name <- outdata$tbl$name
-  tbl_parameter <- outdata$tbl$parameter
-
   # Spec skeleton, built once from a zero-row slice: columns, labels and
   # interactive options shared by every row. Only `spec$data` differs per row.
   skeleton_df <- ae_listing[0, detail_cols, drop = FALSE]
@@ -293,38 +290,17 @@ ae_forestly <- function(outdata,
     skeleton, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
   ))
 
-  # Per row, embed only the 0-based record indices it needs (not a data slice,
-  # which would ship each record once per matching row); the client gathers them
-  # from the shared store. Precomputed param+term/param+SOC -> row-index maps make
-  # each lookup O(matches) instead of a full scan.
-  row_idx <- seq_len(nrow(ae_listing))
-  key_event <- paste(ae_listing_param, ae_listing_event_upper, sep = "\r")
-  key_soc <- paste(ae_listing_param, ae_listing_soc_upper, sep = "\r")
-  map_event <- split(row_idx, key_event)
-  map_soc <- split(row_idx, key_soc)
-
-  tbl_keys <- paste(tbl_parameter, toupper(tbl_name), sep = "\r")
-  # `index` dominates the payload, so encode it tightly (one compact `js()` blob):
-  #   * contiguous run (common after the sort) -> `[start, -count]`; the negative
-  #     second element is the run marker, since deltas are always positive.
-  #   * otherwise -> delta-encode the sorted 0-based array (`[first, gap, ...]`).
-  # Dict-encoding can't help (indices are distinct per row). Client reverses both.
-  index_arrays <- vapply(tbl_keys, function(key) {
-    idx <- c(map_event[[key]], map_soc[[key]])
-    if (!length(idx)) return("[]")
-    idx <- sort.int(unique(idx)) - 1L
-    n <- length(idx)
-    if (n >= 2L && idx[n] - idx[1] + 1L == n) {
-      paste0("[", idx[1], ",", -n, "]")
-    } else {
-      paste0("[", paste0(c(idx[1], diff(idx)), collapse = ","), "]")
-    }
-  }, character(1))
-  detail_index <- xfun::js(paste0("[", paste0(index_arrays, collapse = ","), "]"))
-
-  # The listing serialized once, shared by every row. Columns repeat values across
-  # rows, so xfun::tojson(dict=) dictionary-encodes them (uniques once + a code per
-  # row) when shorter. Rounding numerics trims unseen digits and boosts repeats.
+  # The listing is serialized once and shared by every row; a row embeds no record
+  # pointers at all (a precomputed per-row index dwarfed the payload). Instead the
+  # client builds a `parameter + upper(term-or-SOC) -> record indices` map once on
+  # first expand and looks each row up by its own `parameter`/`name`. This drops
+  # the whole index and no longer relies on records being contiguous in the store.
+  #
+  # Columns repeat values across rows, so xfun::tojson(dict=) dictionary-encodes
+  # them (uniques once + a code per row) when shorter. Rounding numerics trims
+  # unseen digits and boosts repeats. `records` are the displayed listing columns;
+  # `param`/`soc` are the per-record match keys (not shown), paired with the
+  # `Adverse_Event` column already in `records` to key both term and SOC rows.
   detail_records <- lapply(ae_listing[detail_cols], function(x) {
     if (is.numeric(x)) round(x, detail_decimals) else as.factor(x)
   })
@@ -333,7 +309,8 @@ ae_forestly <- function(outdata,
   specs_json <- xfun::tojson(list(
     tpl = detail_tpl,
     records = detail_records,
-    index = detail_index
+    param = ae_listing_param,
+    soc = ae_listing$SOC_Name
   ))
 
   # Treatment groups the control-bar picker (below) offers, in display order:
@@ -345,10 +322,11 @@ ae_forestly <- function(outdata,
 
   # lt calls the detail callback as (rawRow, index1Based, displayRow) and renders
   # the returned spec via LT.render (so the listing can itself be interactive).
-  # The IIFE captures the store in a closure (one copy, no global). A 2-element
-  # index entry with a negative second value is a contiguous run [start, -count];
-  # otherwise it is delta-encoded ([first, gap, ...]) and recovered with a running
-  # sum. Returning null leaves a row with no listing un-expandable.
+  # The IIFE captures the store in a closure (one copy, no global). On first expand
+  # it lazily builds a `parameter + "\r" + upper(term or SOC) -> record indices`
+  # map (memoized), keying each record by both its event and its SOC so a term row
+  # and a SOC row both resolve. Each expand then looks the row up by its own
+  # `parameter`/`name`. Returning null leaves a row with no listing un-expandable.
   #
   # On mount it also drops a treatment-group picker into the table's control bar
   # (lt's reusable LT.ui popover + checklist, attached via el._lt.bar): checking
@@ -359,17 +337,23 @@ ae_forestly <- function(outdata,
   detail_cb <- xfun::js(sprintf(
     "(() => {
   const store = %s, groups = %s, selected = new Set(groups);
-  const build = (row, index) => {
-    const enc = store.index[index - 1];
-    if (!enc || !enc.length) return null;
-    let abs;
-    if (enc.length === 2 && enc[1] < 0) {
-      const start = enc[0], count = -enc[1];
-      abs = Array.from({ length: count }, (_, k) => start + k);
-    } else {
-      let acc = 0;
-      abs = enc.map((d) => (acc += d));
+  let map = null;                       // (param + '\\r' + UPPER term/soc) -> [i]
+  const lookup = () => {
+    if (map) return map;
+    map = new Map();
+    const ev = store.records.Adverse_Event, pr = store.param, so = store.soc, n = pr.length;
+    const add = (k, i) => { const a = map.get(k); a ? a.push(i) : map.set(k, [i]); };
+    for (let i = 0; i < n; i++) {
+      add(pr[i] + '\\r' + ev[i].toUpperCase(), i);
+      add(pr[i] + '\\r' + so[i].toUpperCase(), i);
     }
+    return map;
+  };
+  const build = (row) => {
+    const key = row.parameter + '\\r' + String(row.name == null ? '' : row.name).toUpperCase();
+    let abs = lookup().get(key);
+    if (!abs || !abs.length) return null;
+    abs = [...new Set(abs)].sort((a, b) => a - b);   // dedupe: a term may equal its SOC
     const grp = store.records.Treatment_Group;
     if (grp) abs = abs.filter((i) => selected.has(grp[i]));
     return {
