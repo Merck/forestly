@@ -382,6 +382,10 @@ ae_forestly <- function(outdata,
   LT.onMount.push((tbl, spec) => {
     if (spec.interactive?.detail !== build || !tbl._lt || !tbl._lt.chips) return;
     const doc = tbl.ownerDocument, label = %s;
+    // Build the chip first so the popover can host its click on the whole chip
+    // (clicking the label text opens it, like lt's own typed-filter chips), then
+    // drop the returned funnel wrap into the chip and add it to the bar's chips.
+    const chip = LT.ui.chip(doc, label);
     const pop = LT.ui.popover(doc, label, (panel) => {
       const cl = LT.ui.checklist(doc, groups.map((g) => ({ value: g, label: g })),
         (vals) => {
@@ -390,9 +394,9 @@ ae_forestly <- function(outdata,
           tbl._lt.resetDetail();
         });
       panel.append(...cl.el);
-    });
-    // a labelled chip around the funnel, in the bar's chip group beside lt's own
-    tbl._lt.chips.append(LT.ui.chip(doc, label, pop).el);
+    }, null, chip.el);
+    chip.el.append(pop);
+    tbl._lt.chips.append(chip.el);
   });
   return build;
 })()", specs_json, group_json, group_label_json))
