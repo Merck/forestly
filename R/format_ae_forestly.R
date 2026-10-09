@@ -218,8 +218,6 @@ format_ae_forestly <- function(
     parameter = outdata$parameter_order,
     name = outdata$name,
     soc_name = outdata$soc_name,
-    prop_fig = NA,
-    diff_fig = NA,
     outdata$n[, 1:m_group],
     round(outdata$prop[, 1:m_group], digits = digits),
     round(outdata$diff, digits = digits),

@@ -60,25 +60,21 @@ format_lt_forestly <- function(outdata,
   nd <- length(diff_name)
   diff_shown <- "diff" %in% outdata$display
 
-  # A plot draws its SVG into the first value column's cell (clobbering its
-  # number) but reads the rest by reference, hidden or not. So each figure needs
-  # just one private anchor copy to draw into; the other proportions/diffs read
-  # from the visible numeric columns (`hide = FALSE` below) and the CI bounds from
-  # the hidden `lo_name`/`up_name`. Ships each value once, not twice.
+  # Each figure draws into its own dedicated column via `lt_*(into=)`: lt ships
+  # only the column name (an `add_col` op) and the runtime materializes the
+  # column, so no duplicated value array travels in the JSON payload. Every
+  # proportion / diff stays visible as text (`hide = FALSE` below) and is read by
+  # reference, and the CI bounds come from the hidden `lo_name`/`up_name`.
   prop_cols <- paste0("prop_", seq_len(ng))
-  pf1 <- "prop_fig_1"
-  tbl[[pf1]] <- tbl[[prop_cols[1]]]
-  dot_cols <- c(pf1, prop_cols[-1]) # anchor + arms 2..ng, read by reference
+  pfig <- "prop_fig"                               # proportion dot-plot target
+  dfig <- if (nd > 0) "diff_fig" else NULL         # risk-difference error-bar target
 
-  diff_fig1 <- if (nd > 0) "diff_fig_1" else character(0)
-  if (nd > 0) tbl[[diff_fig1]] <- tbl[[diff_name[1]]]
-  eb_vals <- c(diff_fig1, diff_name[-1]) # anchor + comparisons 2..nd, by reference
-
-  # Column order: name, SOC, the two figure anchors (proportion dot plot then
-  # risk-difference error bar), per-arm n/(%), numeric diffs, hidden helpers last.
-  # The figures lead the numeric columns, matching the forest-plot convention.
+  # Column order of the real data: name, SOC, per-arm n/(%), numeric diffs,
+  # hidden helpers last. The two figure columns are synthesized by the plots and
+  # positioned after SOC by lt_move() below, so the figures lead the numeric
+  # columns as in the forest-plot convention.
   arm_cols <- as.vector(rbind(name_n, name_prop)) # n_1, prop_1, n_2, prop_2, ...
-  visible <- c("name", "soc_name", pf1, diff_fig1, arm_cols, diff_name)
+  visible <- c("name", "soc_name", arm_cols, diff_name)
   hidden_tail <- c("parameter", "hide_prop", "hide_n", lo_name, up_name)
   tbl <- tbl[, c(visible, hidden_tail), drop = FALSE]
 
@@ -117,51 +113,59 @@ format_lt_forestly <- function(outdata,
   # keyed by arm color. Dots are staggered onto separate tracks so near-equal
   # per-arm proportions stay distinguishable (as in the original forest plot).
   x <- lt::lt_dotplot(
-    x, dot_cols,
+    x, prop_cols,
+    into = pfig,
     color = outdata$fig_prop_color,
     labels = group[seq_len(ng)],
     limits = outdata$fig_prop_range,
     width = w$fig,
     stagger = TRUE,
     axis = TRUE,
-    hide = FALSE # arms 2..ng are the visible numeric columns; keep them
+    hide = FALSE # the per-arm proportions stay visible as numeric columns
   )
-  x <- lt::lt_label(x, stats::setNames(list("AE Proportion (%)"), pf1))
+  x <- lt::lt_label(x, stats::setNames(list("AE Proportion (%)"), pfig))
 
   # Inline risk-difference error-bar: one point + 95% CI per comparison, stacked,
   # shared scale, zero reference line, favor-direction axis label. Color + legend
   # only when 2+ arms stack (keys color -> arm); a single comparison draws
   # monochrome (no legend), since the "vs. <ref>" spanner already names it.
   eb_series <- lapply(seq_len(nd), function(k) {
-    c(eb_vals[k], lo_name[k], up_name[k]) # value, lower, upper
+    c(diff_name[k], lo_name[k], up_name[k]) # value, lower, upper
   })
   eb_color <- if (nd > 1) outdata$fig_diff_color else FALSE
   eb_labels <- if (nd > 1) group[outdata$index_diff] else NULL
-  x <- do.call(lt::lt_errorbar, c(
-    list(x), eb_series,
-    list(
-      ref = 0,
-      color = eb_color,
-      labels = eb_labels,
-      limits = outdata$fig_diff_range,
-      width = w$fig,
-      axis = outdata$diff_label,
-      hide = FALSE # CI bounds stay hidden via fully_hidden; keep diffs 2..nd
-    )
-  ))
-  x <- lt::lt_label(x, stats::setNames(list(I(outdata$diff_fig_header)), diff_fig1))
+  if (nd > 0) {
+    x <- do.call(lt::lt_errorbar, c(
+      list(x), eb_series,
+      list(
+        into = dfig,
+        ref = 0,
+        color = eb_color,
+        labels = eb_labels,
+        limits = outdata$fig_diff_range,
+        width = w$fig,
+        axis = outdata$diff_label,
+        hide = FALSE # CI bounds stay hidden via fully_hidden; keep the diffs
+      )
+    ))
+    x <- lt::lt_label(x, stats::setNames(list(I(outdata$diff_fig_header)), dfig))
+  }
 
-  # Column widths (px). The figure anchors carry the figure width.
+  # Place the synthesized figure columns right after SOC (before the numeric
+  # columns); the plots appended them last via `into=`.
+  x <- lt::lt_move(x, c(pfig, dfig), after = "soc_name")
+
+  # Column widths (px). The synthesized figure columns carry the figure width.
   widths <- stats::setNames(
     as.list(c(
       paste0(w$term, "px"), paste0(w$term, "px"),
       rep(c(paste0(w$n, "px"), paste0(w$prop, "px")), m),
       paste0(w$fig, "px")
     )),
-    c("name", "soc_name", arm_cols, pf1)
+    c("name", "soc_name", arm_cols, pfig)
   )
   for (nm in diff_name) widths[[nm]] <- paste0(w$diff, "px")
-  if (nd > 0) widths[[diff_fig1]] <- paste0(w$fig, "px")
+  if (nd > 0) widths[[dfig]] <- paste0(w$fig, "px")
   x <- do.call(lt::lt_width, c(list(x), widths))
 
   # Decide show/hide handling for SOC and numeric diff columns.
