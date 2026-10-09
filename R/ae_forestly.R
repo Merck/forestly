@@ -254,41 +254,30 @@ ae_forestly <- function(outdata,
     skeleton, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
   ))
 
-  # The listing is serialized once and shared by every row; a row embeds no record
-  # pointers at all (a precomputed per-row index dwarfed the payload). Instead the
-  # client builds a `parameter + upper(term-or-SOC) -> record indices` map once on
-  # first expand and looks each row up by its own `parameter`/`name`. This drops
-  # the whole index and no longer relies on records being contiguous in the store.
-  #
-  # Columns repeat values across rows, so xfun::tojson(dict=) dictionary-encodes
-  # them (uniques once + a code per row) when shorter. Rounding numerics trims
-  # unseen digits and boosts repeats.
-  #
-  # The per-parameter listings overlap heavily: an AE meeting several criteria
-  # (e.g. "any", "serious" and "drug-related") is one physical record that the
-  # stacked listing repeats once per matching parameter -- ~3x its distinct rows
-  # on a typical plan. So each distinct record is stored once (`records`, plus its
-  # match-key `soc`), and `members` lists, per parameter, the indices of the
-  # records in it. The client keys each record by its event and SOC (`Adverse_Event`
-  # is in `records`), so a term row and a SOC row both resolve. Deduping shrinks
-  # the store ~55% -- both the dictionaries and the per-row code arrays scale with
-  # the (now 3x smaller) row count.
+  # The stacked per-parameter listings overlap heavily: an AE meeting several
+  # criteria (e.g. "any", "serious", "drug-related") is one physical record the
+  # listing repeats once per matching parameter (~3x its distinct rows). So store
+  # each distinct record once (`records`, plus its match-key `soc`) and let
+  # `members` list, per parameter, the record indices in it; the client keys each
+  # by its event and SOC to resolve both term and SOC rows. Columns repeat values,
+  # so xfun::tojson(dict=) dictionary-encodes them (uniques once + a code per row);
+  # rounding numerics boosts repeats. Deduping shrinks the store ~55%.
   rec_key <- do.call(paste, c(ae_listing[c(detail_cols, "SOC_Name")], sep = "\r"))
   u_first <- !duplicated(rec_key)
   u_row <- which(u_first)
   # 0-based index of each listing row's distinct record (first-appearance order).
-  ref <- as.integer(factor(rec_key, levels = rec_key[u_first])) - 1L
+  ref <- match(rec_key, rec_key[u_first]) - 1L
 
   detail_records <- lapply(ae_listing[detail_cols], function(x) {
     x <- x[u_row]
-    if (is.numeric(x)) round(x, detail_decimals) else as.factor(x)
+    if (is.numeric(x)) round(x, detail_decimals) else x
   })
   names(detail_records) <- detail_cols
 
   specs_json <- xfun::tojson(list(
     tpl = detail_tpl,
     records = detail_records,
-    soc = as.factor(ae_listing$SOC_Name[u_row]),
+    soc = ae_listing$SOC_Name[u_row],
     members = lapply(split(ref, ae_listing_param), as.integer)
   ))
 
