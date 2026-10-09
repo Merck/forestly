@@ -228,23 +228,13 @@ ae_forestly <- function(outdata,
   on.exit(options(old_opt), add = TRUE)
 
   # ---- Drill-down detail (native lt row detail) ----
-  # The listing is embedded once; each table row carries only the 0-based record
-  # indices it needs (contiguous runs or delta-encoded), and lt's detail callback
-  # assembles that row's listing on expand. This keeps the widget small -- the
-  # listing is never duplicated per row (see #147/#158).
+  # The listing is embedded once and shared by every row; lt's detail callback
+  # assembles a row's listing on expand by looking it up in a client-side map
+  # (see below), so records need no particular order and carry no per-row index
+  # (see #147/#158). The listing is therefore used as-is -- no sort.
   ae_listing <- outdata$ae_listing
-  ae_listing_event_upper <- toupper(ae_listing$Adverse_Event)
-  ae_listing_soc_upper <- toupper(ae_listing$SOC_Name)
   ae_listing_param <- ae_listing$param
-
-  # Group each drill-down's records together (param, then SOC, then term) so its
-  # index is a contiguous block the run-length encoding below can collapse.
   listing_label <- get_label(ae_listing)
-  ord <- order(ae_listing_param, ae_listing_soc_upper, ae_listing_event_upper)
-  ae_listing <- ae_listing[ord, , drop = FALSE]
-  ae_listing_event_upper <- ae_listing_event_upper[ord]
-  ae_listing_soc_upper <- ae_listing_soc_upper[ord]
-  ae_listing_param <- ae_listing_param[ord]
 
   detail_cols <- names(ae_listing)[!(names(ae_listing) %in% c("param", "SOC_Name"))]
   detail_labels <- unname(listing_label[match(detail_cols, names(listing_label))])
@@ -310,12 +300,20 @@ ae_forestly <- function(outdata,
   # sub-table (no `detail`), nor another forestly table on the same page.
   detail_cb <- xfun::js(sprintf(
     "(() => {
-  const store = %s, groups = %s, selected = new Set(groups);
+  // The listing payload is dict-encoded JS (`[codes].map(i => [dict][i])`), not
+  // plain JSON, so it can't ride as a deferred <script type=application/json>.
+  // Instead build it lazily on first expand: V8 only pre-parses this closure
+  // body at load, so the tens-of-MB of array literals compile and allocate off
+  // the initial-paint path rather than when the spec's IIFE runs (#190).
+  let store = null;
+  const getStore = () => store || (store = %s);
+  const groups = %s, selected = new Set(groups);
   let map = null;                       // (param + '\\r' + UPPER term/soc) -> [i]
   const lookup = () => {
     if (map) return map;
+    const s = getStore();
     map = new Map();
-    const ev = store.records.Adverse_Event, pr = store.param, so = store.soc, n = pr.length;
+    const ev = s.records.Adverse_Event, pr = s.param, so = s.soc, n = pr.length;
     const add = (k, i) => { const a = map.get(k); a ? a.push(i) : map.set(k, [i]); };
     for (let i = 0; i < n; i++) {
       add(pr[i] + '\\r' + ev[i].toUpperCase(), i);
@@ -327,13 +325,14 @@ ae_forestly <- function(outdata,
     const key = row.parameter + '\\r' + String(row.name == null ? '' : row.name).toUpperCase();
     let abs = lookup().get(key);
     if (!abs || !abs.length) return null;
+    const s = getStore();
     abs = [...new Set(abs)].sort((a, b) => a - b);   // dedupe: a term may equal its SOC
-    const grp = store.records.Treatment_Group;
+    const grp = s.records.Treatment_Group;
     if (grp) abs = abs.filter((i) => selected.has(grp[i]));
     return {
-      ...store.tpl,
+      ...s.tpl,
       data: Object.fromEntries(
-        Object.entries(store.records).map(([k, col]) => [k, abs.map((i) => col[i])])
+        Object.entries(s.records).map(([k, col]) => [k, abs.map((i) => col[i])])
       )
     };
   };

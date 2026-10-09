@@ -85,12 +85,13 @@ test_that("ae_forestly(): drill-down listings render lazily via lt", {
 
   # Detail listings are lightweight `lt` interactive tables rendered on expand
   # (see #158/#168), not eager per-row nested tables. The listing is embedded
-  # once as a shared record store captured in the detail callback's closure; a
-  # row carries no record pointers -- the client builds a param+term/SOC lookup
-  # on first expand and resolves each row by its own parameter/name (see #147).
-  expect_true(grepl("const store =", html_text, fixed = TRUE))
-  expect_true(grepl("store.records", html_text, fixed = TRUE))
-  expect_true(grepl("store.param", html_text, fixed = TRUE))
+  # once as a shared record store captured in the detail callback's closure and
+  # built lazily on first expand (see #190); a row carries no record pointers --
+  # the client builds a param+term/SOC lookup on first expand and resolves each
+  # row by its own parameter/name (see #147).
+  expect_true(grepl("getStore = () =>", html_text, fixed = TRUE))
+  expect_true(grepl("s.records", html_text, fixed = TRUE))
+  expect_true(grepl("s.param", html_text, fixed = TRUE))
 
   # The lt runtime, interactivity extension, and inline-plot extension are
   # bundled as HTML dependencies.
