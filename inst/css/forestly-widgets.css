@@ -11,8 +11,10 @@
 
 /* One line per cell, clipped with an ellipsis, full text on hover; skip figure
    (svg) cells. Covers body cells and header labels alike -- long group labels
-   over narrow n/(%) columns would otherwise wrap into very tall header rows. */
-.forestly-ae :is(thead, tbody) :is(th, td) {
+   over narrow n/(%) columns would otherwise wrap into very tall header rows.
+   The control-bar row is exempt: clipping it would hide the filter chips (and
+   their popovers) except while hovered. */
+.forestly-ae :is(thead, tbody) tr:not(.lti-head) :is(th, td) {
   white-space: nowrap;
 
   &:not(:hover):not(:has(svg)) {
