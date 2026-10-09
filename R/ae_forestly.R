@@ -27,7 +27,6 @@
 #' @param ae_label A character value of the label for criteria.
 #'   If NULL (default), the range is automatically calculated from the data.
 #'   If only one value is provided, it will be used as the maximum and minimum will be 0.
-#' @param width A numeric value of width of the table in pixels.
 #' @param max_page A numeric value of max page number shown in the table.
 #' @param download_button A logical value to display download button.
 #'
@@ -151,7 +150,6 @@ ae_forestly <- function(outdata,
                         filter_label = NULL,
                         filter_range = NULL,
                         ae_label = NULL,
-                        width = 1400,
                         max_page = NULL,
                         download_button = FALSE) {
   # Set filter parameter
@@ -367,11 +365,8 @@ ae_forestly <- function(outdata,
     display_soc_toggle = display_soc_toggle,
     display_diff_toggle = display_diff_toggle
   )
-  # Size the table itself (lt's own table width) rather than wrapping it in a
-  # fixed-width div; the per-column widths set in format_lt_forestly() are kept.
-  # The `forestly-ae` class goes on lt's own container (lt_class), so forestly's
-  # cell styles are scoped without an extra wrapper div.
-  built$x <- lt::lt_width(built$x, paste0(width, "px"))
+  # forestly-ae on lt's container scopes cell styles and sizes the table (see
+  # inst/css/forestly-widgets.css); per-column widths from format_lt_forestly() kept.
   built$x <- lt::lt_class(built$x, "forestly-ae")
 
   # The AE-criteria dropdown and the incidence slider are lt typed filters. They
@@ -412,9 +407,6 @@ ae_forestly <- function(outdata,
   )
 
   # ---- Assemble: lt runtime (interactive + plot) + forestly styles ----
-  # No wrapper div: width is on the lt table (lt_width), horizontal scroll is
-  # lt's own `.lt-wrap`, and the `forestly-ae` class (lt_class) that scopes
-  # forestly's cell styles is on that same container.
   htmltools::browsable(
     htmltools::tagList(
       lt::lt_dependency(interactive = TRUE, plot = TRUE),

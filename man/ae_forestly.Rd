@@ -12,7 +12,6 @@ ae_forestly(
   filter_label = NULL,
   filter_range = NULL,
   ae_label = NULL,
-  width = 1400,
   max_page = NULL,
   download_button = FALSE
 )
@@ -33,8 +32,6 @@ ae_forestly(
 \item{ae_label}{A character value of the label for criteria.
 If NULL (default), the range is automatically calculated from the data.
 If only one value is provided, it will be used as the maximum and minimum will be 0.}
-
-\item{width}{A numeric value of width of the table in pixels.}
 
 \item{max_page}{A numeric value of max page number shown in the table.}
 
