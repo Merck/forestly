@@ -262,10 +262,25 @@ ae_forestly <- function(outdata,
   #
   # Columns repeat values across rows, so xfun::tojson(dict=) dictionary-encodes
   # them (uniques once + a code per row) when shorter. Rounding numerics trims
-  # unseen digits and boosts repeats. `records` are the displayed listing columns;
-  # `param`/`soc` are the per-record match keys (not shown), paired with the
-  # `Adverse_Event` column already in `records` to key both term and SOC rows.
+  # unseen digits and boosts repeats.
+  #
+  # The per-parameter listings overlap heavily: an AE meeting several criteria
+  # (e.g. "any", "serious" and "drug-related") is one physical record that the
+  # stacked listing repeats once per matching parameter -- ~3x its distinct rows
+  # on a typical plan. So each distinct record is stored once (`records`, plus its
+  # match-key `soc`), and `members` lists, per parameter, the indices of the
+  # records in it. The client keys each record by its event and SOC (`Adverse_Event`
+  # is in `records`), so a term row and a SOC row both resolve. Deduping shrinks
+  # the store ~55% -- both the dictionaries and the per-row code arrays scale with
+  # the (now 3x smaller) row count.
+  rec_key <- do.call(paste, c(ae_listing[c(detail_cols, "SOC_Name")], sep = "\r"))
+  u_first <- !duplicated(rec_key)
+  u_row <- which(u_first)
+  # 0-based index of each listing row's distinct record (first-appearance order).
+  ref <- as.integer(factor(rec_key, levels = rec_key[u_first])) - 1L
+
   detail_records <- lapply(ae_listing[detail_cols], function(x) {
+    x <- x[u_row]
     if (is.numeric(x)) round(x, detail_decimals) else as.factor(x)
   })
   names(detail_records) <- detail_cols
@@ -273,8 +288,8 @@ ae_forestly <- function(outdata,
   specs_json <- xfun::tojson(list(
     tpl = detail_tpl,
     records = detail_records,
-    param = ae_listing_param,
-    soc = ae_listing$SOC_Name
+    soc = as.factor(ae_listing$SOC_Name[u_row]),
+    members = lapply(split(ref, ae_listing_param), as.integer)
   ))
 
   # Treatment groups the control-bar picker (below) offers, in display order:
@@ -308,16 +323,23 @@ ae_forestly <- function(outdata,
   let store = null;
   const getStore = () => store || (store = %s);
   const groups = %s, selected = new Set(groups);
-  let map = null;                       // (param + '\\r' + UPPER term/soc) -> [i]
+  let map = null;                       // (param + '\\r' + UPPER term/soc) -> [record idx]
   const lookup = () => {
     if (map) return map;
     const s = getStore();
     map = new Map();
-    const ev = s.records.Adverse_Event, pr = s.param, so = s.soc, n = pr.length;
-    const add = (k, i) => { const a = map.get(k); a ? a.push(i) : map.set(k, [i]); };
-    for (let i = 0; i < n; i++) {
-      add(pr[i] + '\\r' + ev[i].toUpperCase(), i);
-      add(pr[i] + '\\r' + so[i].toUpperCase(), i);
+    // `records`/`soc` hold one entry per distinct record; `members[param]` lists
+    // the record indices in that parameter. Key each by its event and SOC so a
+    // term row and a SOC row both resolve.
+    const ev = s.records.Adverse_Event, so = s.soc, mem = s.members;
+    const add = (k, r) => { const a = map.get(k); a ? a.push(r) : map.set(k, [r]); };
+    for (const p of Object.keys(mem)) {
+      const refs = mem[p];
+      for (let j = 0; j < refs.length; j++) {
+        const r = refs[j];
+        add(p + '\\r' + ev[r].toUpperCase(), r);
+        add(p + '\\r' + so[r].toUpperCase(), r);
+      }
     }
     return map;
   };
