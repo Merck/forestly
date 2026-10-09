@@ -194,6 +194,20 @@ format_ae_forestly <- function(
     if (length(x)) f(x) else empty
   }
 
+  # Row-wise max over finite values, vectorized across columns with pmax():
+  # a per-row apply() was a hotspot on large tables (one agg_finite() call per
+  # AE term). Non-finite cells become -Inf so pmax() skips them; a row with no
+  # finite value stays -Inf and is reset to `empty` (as agg_finite does).
+  row_max_finite <- function(m, empty) {
+    cols <- lapply(as.data.frame(m), function(x) {
+      x[!is.finite(x)] <- -Inf
+      x
+    })
+    r <- do.call(pmax, cols)
+    r[!is.finite(r)] <- empty
+    r
+  }
+
   # Per-arm proportions and counts carried into the figures (n_group arms, i.e.
   # excluding any Total column that m_group would add).
   prop_grp <- outdata$prop[, 1:n_group]
@@ -211,8 +225,8 @@ format_ae_forestly <- function(
     round(outdata$diff, digits = digits),
     round(outdata$ci_lower, digits = digits),
     round(outdata$ci_upper, digits = digits),
-    hide_prop = round(apply(prop_grp, 1, agg_finite, max, 0), digits + 2),
-    hide_n = apply(n_grp, 1, agg_finite, max, 0)
+    hide_prop = round(row_max_finite(prop_grp, 0), digits + 2),
+    hide_n = row_max_finite(n_grp, 0)
   )
 
   rownames(tbl) <- NULL
