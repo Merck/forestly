@@ -257,11 +257,16 @@ ae_forestly <- function(outdata,
   # The stacked per-parameter listings overlap heavily: an AE meeting several
   # criteria (e.g. "any", "serious", "drug-related") is one physical record the
   # listing repeats once per matching parameter (~3x its distinct rows). So store
-  # each distinct record once (`records`, plus its match-key `soc`) and let
-  # `members` list, per parameter, the record indices in it; the client keys each
-  # by its event and SOC to resolve both term and SOC rows. Columns repeat values,
-  # so xfun::tojson(dict=) dictionary-encodes them (uniques once + a code per row);
-  # rounding numerics boosts repeats. Deduping shrinks the store ~55%.
+  # each distinct record once (`records`) and let `members` list, per parameter,
+  # the record indices in it; the client keys each by its event (the AE term) to
+  # resolve the expanded term row. Columns repeat values, so xfun::tojson(dict=)
+  # dictionary-encodes them (uniques once + a code per row); rounding numerics
+  # boosts repeats. Deduping shrinks the store ~55%.
+  # Row `name` is an AE term, or a SOC in SOC-display mode (components="soc").
+  # Only then can a SOC row expand, so only then ship the per-record SOC and key
+  # by it; the term-only table omits it to keep the payload small.
+  has_soc <- "soc" %in% outdata$components
+
   rec_key <- do.call(paste, c(ae_listing[c(detail_cols, "SOC_Name")], sep = "\r"))
   u_first <- !duplicated(rec_key)
   u_row <- which(u_first)
@@ -274,12 +279,14 @@ ae_forestly <- function(outdata,
   })
   names(detail_records) <- detail_cols
 
-  specs_json <- xfun::tojson(list(
+  store_list <- list(
     tpl = detail_tpl,
     records = detail_records,
-    soc = ae_listing$SOC_Name[u_row],
     members = lapply(split(ref, ae_listing_param), as.integer)
-  ))
+  )
+  # Per-record SOC, only in SOC-display mode (see `has_soc`).
+  if (has_soc) store_list$soc <- ae_listing$SOC_Name[u_row]
+  specs_json <- xfun::tojson(store_list)
 
   # Treatment groups the control-bar picker (below) offers, in display order:
   # the arms that actually appear in the listing, so aggregate forest columns
@@ -291,10 +298,9 @@ ae_forestly <- function(outdata,
   # lt calls the detail callback as (rawRow, index1Based, displayRow) and renders
   # the returned spec via LT.render (so the listing can itself be interactive).
   # The IIFE captures the store in a closure (one copy, no global). On first expand
-  # it lazily builds a `parameter + "\r" + upper(term or SOC) -> record indices`
-  # map (memoized), keying each record by both its event and its SOC so a term row
-  # and a SOC row both resolve. Each expand then looks the row up by its own
-  # `parameter`/`name`. Returning null leaves a row with no listing un-expandable.
+  # it lazily builds a memoized `parameter + "\r" + upper(term[/SOC]) -> record
+  # indices` map, then looks each row up by its own `parameter`/`name`. Returning
+  # null leaves a row with no listing un-expandable.
   #
   # On mount it also drops a treatment-group picker into the table's control bar
   # (lt's reusable LT.ui popover + checklist, attached via el._lt.bar): checking
@@ -308,7 +314,7 @@ ae_forestly <- function(outdata,
   // plain JSON, so it can't ride as a deferred <script type=application/json>.
   // Instead build it lazily on first expand: V8 only pre-parses this closure
   // body at load, so the tens-of-MB of array literals compile and allocate off
-  // the initial-paint path rather than when the spec's IIFE runs (#190).
+  // the initial-paint path rather than when the spec's IIFE runs.
   let store = null;
   const getStore = () => store || (store = %s);
   const groups = %s, selected = new Set(groups);
@@ -318,8 +324,7 @@ ae_forestly <- function(outdata,
     const s = getStore();
     map = new Map();
     // `records`/`soc` hold one entry per distinct record; `members[param]` lists
-    // the record indices in that parameter. Key each by its event and SOC so a
-    // term row and a SOC row both resolve.
+    // its record indices. Key each by its AE term, and by SOC when `soc` ships.
     const ev = s.records.Adverse_Event, so = s.soc, mem = s.members;
     const add = (k, r) => { const a = map.get(k); a ? a.push(r) : map.set(k, [r]); };
     for (const p of Object.keys(mem)) {
@@ -327,7 +332,7 @@ ae_forestly <- function(outdata,
       for (let j = 0; j < refs.length; j++) {
         const r = refs[j];
         add(p + '\\r' + ev[r].toUpperCase(), r);
-        add(p + '\\r' + so[r].toUpperCase(), r);
+        if (so) add(p + '\\r' + so[r].toUpperCase(), r);
       }
     }
     return map;
