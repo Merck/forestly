@@ -93,7 +93,7 @@ test_that("ae_forestly(): drill-down listings render lazily via lt", {
   # Detail listings are lightweight `lt` interactive tables rendered on expand
   # (see #158/#168), not eager per-row nested tables. The listing is embedded
   # once as a shared record store captured in the detail callback's closure and
-  # built lazily on first expand (see #190); a row carries no record pointers --
+  # built lazily on first expand; a row carries no record pointers --
   # the client builds a param+term/SOC lookup on first expand and resolves each
   # row by its own parameter/name (see #147). Each distinct record is stored once
   # and `members` maps each parameter to its record indices (dedupes the ~3x
