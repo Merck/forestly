@@ -29,6 +29,10 @@
 #'   If only one value is provided, it will be used as the maximum and minimum will be 0.
 #' @param max_page A numeric value of max page number shown in the table.
 #' @param download_button A logical value to display download button.
+#' @param width Table container width, a number (interpreted as pixels) or any
+#'   CSS width value. If `NULL` (default), the table takes its natural width; a
+#'   value fixes the container width. Either way the width is capped at the
+#'   viewport, and a wider table scrolls inside rather than widening the page.
 #'
 #' @section Searching and filtering:
 #' The interactive table has a search box for each column (and, in the
@@ -151,7 +155,8 @@ ae_forestly <- function(outdata,
                         filter_range = NULL,
                         ae_label = NULL,
                         max_page = NULL,
-                        download_button = FALSE) {
+                        download_button = FALSE,
+                        width = NULL) {
   # Set filter parameter
   if (!is.null(filter)) {
     display_filter = TRUE
@@ -383,6 +388,13 @@ ae_forestly <- function(outdata,
   # forestly-ae on lt's container scopes cell styles and sizes the table (see
   # inst/css/forestly-widgets.css); per-column widths from format_lt_forestly() kept.
   built$x <- lt::lt_wrap(built$x, class = "forestly-ae")
+  # A user-specified width fixes the container (still capped at the viewport by
+  # the `.forestly-ae` CSS, so a wide table scrolls inside rather than widening
+  # the page). A number is pixels.
+  if (!is.null(width)) {
+    width <- if (is.numeric(width)) paste0(width, "px") else width
+    built$x <- lt::lt_wrap(built$x, style = paste0("width:", width))
+  }
 
   # The AE-criteria dropdown and the incidence slider are lt typed filters. They
   # bind to the hidden `parameter` and `hide_prop`/`hide_n` columns, so lt renders

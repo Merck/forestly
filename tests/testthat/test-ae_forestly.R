@@ -9,6 +9,13 @@ test_that("ae_forestly(): default setting can be executed without error", {
   expect_true(grepl("Incidence (%) in One or More Treatment Groups", html_text, fixed = TRUE))
 })
 
+test_that("ae_forestly(): numeric width fixes the container width", {
+  outdata <- test_ae_forestly()
+  html_text <- as.character(outdata |> ae_forestly(width = 800))
+  # numeric width becomes a px container width (still capped at the viewport)
+  expect_true(grepl('"style":"width:800px"', html_text, fixed = TRUE))
+})
+
 test_that("ae_forestly(): test filter option", {
   outdata <- test_ae_forestly()
   html <- outdata |> ae_forestly(filter = c("n"))

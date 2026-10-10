@@ -13,7 +13,8 @@ ae_forestly(
   filter_range = NULL,
   ae_label = NULL,
   max_page = NULL,
-  download_button = FALSE
+  download_button = FALSE,
+  width = NULL
 )
 }
 \arguments{
@@ -36,6 +37,11 @@ If only one value is provided, it will be used as the maximum and minimum will b
 \item{max_page}{A numeric value of max page number shown in the table.}
 
 \item{download_button}{A logical value to display download button.}
+
+\item{width}{Table container width, a number (interpreted as pixels) or any
+CSS width value. If \code{NULL} (default), the table takes its natural width; a
+value fixes the container width. Either way the width is capped at the
+viewport, and a wider table scrolls inside rather than widening the page.}
 }
 \value{
 An AE forest plot saved as a \code{shiny.tag.list} object.
