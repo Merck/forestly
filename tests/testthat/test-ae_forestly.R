@@ -4,8 +4,8 @@ test_that("ae_forestly(): default setting can be executed without error", {
 
   html_text <- as.character(html)
   # The forestly-ae class (scoping cell styles and sizing the container) is set
-  # on lt's own `.lt-wrap` via lt_class(), serialized in the spec.
-  expect_true(grepl('"class":"forestly-ae"', html_text, fixed = TRUE))
+  # on lt's own `.lt-wrap` via lt_wrap(), serialized in the spec.
+  expect_true(grepl('"wrap":{"class":"forestly-ae"}', html_text, fixed = TRUE))
   expect_true(grepl("Incidence (%) in One or More Treatment Groups", html_text, fixed = TRUE))
 })
 

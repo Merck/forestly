@@ -382,7 +382,7 @@ ae_forestly <- function(outdata,
   )
   # forestly-ae on lt's container scopes cell styles and sizes the table (see
   # inst/css/forestly-widgets.css); per-column widths from format_lt_forestly() kept.
-  built$x <- lt::lt_class(built$x, "forestly-ae")
+  built$x <- lt::lt_wrap(built$x, class = "forestly-ae")
 
   # The AE-criteria dropdown and the incidence slider are lt typed filters. They
   # bind to the hidden `parameter` and `hide_prop`/`hide_n` columns, so lt renders
