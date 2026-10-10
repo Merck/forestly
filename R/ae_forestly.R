@@ -27,9 +27,12 @@
 #' @param ae_label A character value of the label for criteria.
 #'   If NULL (default), the range is automatically calculated from the data.
 #'   If only one value is provided, it will be used as the maximum and minimum will be 0.
-#' @param width A numeric value of width of the table in pixels.
 #' @param max_page A numeric value of max page number shown in the table.
-#' @param dowload_button A logical value to display download button.
+#' @param download_button A logical value to display download button.
+#' @param width Table container width, a number (interpreted as pixels) or any
+#'   CSS width value. If `NULL` (default), the table takes its natural width; a
+#'   value fixes the container width. Either way the width is capped at the
+#'   viewport, and a wider table scrolls inside rather than widening the page.
 #'
 #' @section Searching and filtering:
 #' The interactive table has a search box for each column (and, in the
@@ -151,9 +154,9 @@ ae_forestly <- function(outdata,
                         filter_label = NULL,
                         filter_range = NULL,
                         ae_label = NULL,
-                        width = 1400,
                         max_page = NULL,
-                        dowload_button = FALSE) {
+                        download_button = FALSE,
+                        width = NULL) {
   # Set filter parameter
   if (!is.null(filter)) {
     display_filter = TRUE
@@ -162,39 +165,15 @@ ae_forestly <- function(outdata,
     display_filter = FALSE
   }
 
-  # Handle filter_range parameter
-  if (display_filter) {
-    if (!is.null(filter_range)) {
-      # User provided filter_range
-      if (length(filter_range) == 1) {
-        # If only one value provided, use it as max with min=0
-        filter_range <- c(0, filter_range[1])
-      } else if (length(filter_range) == 2) {
-        # Use as provided
-        filter_range <- filter_range
-      } else {
-        stop("filter_range must be NULL, a single numeric value, or a numeric vector of length 2")
-      }
-    } else {
-      # Auto-detect range from data
-      if (filter == "prop") {
-        # For proportion, get max from hide_prop column
-        max_val <- max(outdata$tbl$hide_prop, na.rm = TRUE)
-        # Round up to nearest 10 for better UX
-        max_val <- ceiling(max_val / 10) * 10
-        # Ensure at least 100 for proportion
-        filter_range <- c(0, max(100, max_val))
-      } else if (filter == "n") {
-        # For count, get max from hide_n column
-        max_val <- max(outdata$tbl$hide_n, na.rm = TRUE)
-        # Round up to nearest 10 (or 5 if max is small)
-        if (max_val <= 20) {
-          max_val <- ceiling(max_val / 5) * 5
-        } else {
-          max_val <- ceiling(max_val / 10) * 10
-        }
-        filter_range <- c(0, max_val)
-      }
+  # Handle filter_range parameter. The slider's bounds and step are left to lt,
+  # which derives nice, data-bracketing values from the bound column itself (see
+  # the `filter` argument below). A user-supplied filter_range overrides min/max.
+  if (display_filter && !is.null(filter_range)) {
+    if (length(filter_range) == 1) {
+      # a single value is the max, with min = 0
+      filter_range <- c(0, filter_range[1])
+    } else if (length(filter_range) != 2) {
+      stop("filter_range must be NULL, a single numeric value, or a numeric vector of length 2")
     }
   }
 
@@ -242,93 +221,25 @@ ae_forestly <- function(outdata,
     labels = par_label
   )
 
-  tbl <- crosstalk::SharedData$new(outdata$tbl)
-  # Set default to be the first item
-  default_param <- as.character(unique(outdata$tbl$parameter)[1])
-
-  random_id <- paste0("filter_ae_", basename(tempfile("")), "|", default_param)
-
   if (is.null(ae_label)) {
     ae_label <- "AE Criteria"
   }
 
-  filter_ae <- crosstalk::filter_select(
-    id = random_id,
-    label = ae_label,
-    sharedData = tbl,
-    group = ~parameter,
-    multiple = FALSE
-  )
+  # Shrink every embedded JSON payload (the listing store below and the main
+  # table serialized by lt's `format()`): all go through xfun::tojson(), which
+  # reads these options -- dictionary-encode repetitive columns, drop whitespace.
+  # Scoped so the user's session options are left untouched.
+  old_opt <- options(xfun.tojson.dict = 0.5, xfun.tojson.pretty = FALSE)
+  on.exit(options(old_opt), add = TRUE)
 
-  # Make a select list
-  # Make a slider bar of the incidence percentage
-  if (display_filter) {
-    if (filter == "prop") {
-      filter_subject <- crosstalk::filter_slider(
-        id = "filter_subject",
-        label = filter_label,
-        sharedData = tbl,
-        column = ~hide_prop, # whose values will be used for this slider
-        step = 1, # specifies interval between each select-able value on the slider
-        width = 250, # width of the slider control
-        min = filter_range[1], # the leftmost value of the slider
-        max = filter_range[2] # the rightmost value of the slider
-      )
-    }
-
-    if (filter == "n") {
-      filter_subject <- crosstalk::filter_slider(
-        id = "filter_subject",
-        label = filter_label,
-        sharedData = tbl,
-        column = ~hide_n,
-        step = 1,
-        width = 250,
-        min = filter_range[1], # the leftmost value of the slider
-        max = filter_range[2] # the rightmost value of the slider
-      )
-    }
-
-    # Set the slider attributes to match our filter_range
-    filter_subject$children[[2]]$attribs$`data-from` <- filter_range[1]
-    filter_subject$children[[2]]$attribs$`data-to` <- filter_range[2]
-    filter_subject$children[[2]]$attribs$`data-max` <- filter_range[2]
-  } else {
-    filter_subject <- NULL
-  }
-
-  diff_cols <- c(
-    names(outdata$diff)
-  )
-
-  all_diff_cols <- c(diff_cols, "diff_fig")
-  displayed_diff_cols <- intersect(all_diff_cols, c(
-    if ("diff" %in% outdata$display) diff_cols else NULL,
-    if ("fig_diff" %in% outdata$display) "diff_fig" else NULL
-  ))
-
-  hidden_cols <- outdata$hidden_column
-  if (display_diff_toggle) {
-    hidden_cols <- setdiff(hidden_cols, displayed_diff_cols)
-  }
-
-  # Lazy client-side drill-down listings. A nested reactable per row inflated the
-  # widget past a gigabyte (see #147/#158). Instead we build one shared `lt` spec
-  # skeleton (same columns/labels/formatting for every row), embed the listing
-  # once, and render a lightweight `lt` table on expand via LT.render().
+  # ---- Drill-down detail (native lt row detail) ----
+  # The listing is embedded once and shared by every row; lt's detail callback
+  # assembles a row's listing on expand by looking it up in a client-side map
+  # (see below), so records need no particular order and carry no per-row index
+  # (see #147/#158). The listing is therefore used as-is -- no sort.
   ae_listing <- outdata$ae_listing
-  ae_listing_event_upper <- toupper(ae_listing$Adverse_Event)
-  ae_listing_soc_upper <- toupper(ae_listing$SOC_Name)
   ae_listing_param <- ae_listing$param
-
-  # Group each drill-down's records together (param, then SOC, then term) so its
-  # index is a contiguous block the run-length encoding below can collapse.
   listing_label <- get_label(ae_listing)
-  ord <- order(ae_listing_param, ae_listing_soc_upper, ae_listing_event_upper)
-  ae_listing <- ae_listing[ord, , drop = FALSE]
-  ae_listing_event_upper <- ae_listing_event_upper[ord]
-  ae_listing_soc_upper <- ae_listing_soc_upper[ord]
-  ae_listing_param <- ae_listing_param[ord]
 
   detail_cols <- names(ae_listing)[!(names(ae_listing) %in% c("param", "SOC_Name"))]
   detail_labels <- unname(listing_label[match(detail_cols, names(listing_label))])
@@ -338,145 +249,197 @@ ae_forestly <- function(outdata,
   # Numeric columns ship rounded (see `detail_records`), so lt needs no lt_format().
   detail_decimals <- 1L
 
-  tbl_name <- outdata$tbl$name
-  tbl_parameter <- outdata$tbl$parameter
-
   # Spec skeleton, built once from a zero-row slice: columns, labels and
   # interactive options shared by every row. Only `spec$data` differs per row.
   skeleton_df <- ae_listing[0, detail_cols, drop = FALSE]
   row.names(skeleton_df) <- NULL
-  x <- lt::lt(skeleton_df)
-  x <- lt::lt_label(x, detail_label_map)
+  skeleton <- lt::lt(skeleton_df, auto_format = FALSE, auto_label = FALSE)
+  skeleton <- lt::lt_label(skeleton, detail_label_map)
   detail_tpl <- lt::lt_spec(lt::lt_interactive(
-    x, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
+    skeleton, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
   ))
 
-  # Per row, embed only the 0-based record indices it needs (not a data slice,
-  # which would ship each record once per matching row); the client gathers them
-  # from the shared store. Precomputed param+term/param+SOC -> row-index maps make
-  # each lookup O(matches) instead of a full scan.
-  row_idx <- seq_len(nrow(ae_listing))
-  key_event <- paste(ae_listing_param, ae_listing_event_upper, sep = "\r")
-  key_soc <- paste(ae_listing_param, ae_listing_soc_upper, sep = "\r")
-  map_event <- split(row_idx, key_event)
-  map_soc <- split(row_idx, key_soc)
+  # The stacked per-parameter listings overlap heavily: an AE meeting several
+  # criteria (e.g. "any", "serious", "drug-related") is one physical record the
+  # listing repeats once per matching parameter (~3x its distinct rows). So store
+  # each distinct record once (`records`) and let `members` list, per parameter,
+  # the record indices in it; the client keys each by its event (the AE term) to
+  # resolve the expanded term row. Columns repeat values, so xfun::tojson(dict=)
+  # dictionary-encodes them (uniques once + a code per row); rounding numerics
+  # boosts repeats. Deduping shrinks the store ~55%.
+  # Row `name` is an AE term, or a SOC in SOC-display mode (components="soc").
+  # Only then can a SOC row expand, so only then ship the per-record SOC and key
+  # by it; the term-only table omits it to keep the payload small.
+  has_soc <- "soc" %in% outdata$components
 
-  tbl_keys <- paste(tbl_parameter, toupper(tbl_name), sep = "\r")
-  # `index` dominates the payload, so encode it tightly (one compact `js()` blob):
-  #   * contiguous run (common after the sort) -> `[start, -count]`; the negative
-  #     second element is the run marker, since deltas are always positive.
-  #   * otherwise -> delta-encode the sorted 0-based array (`[first, gap, ...]`).
-  # Dict-encoding can't help (indices are distinct per row). Client reverses both.
-  index_arrays <- vapply(tbl_keys, function(key) {
-    idx <- c(map_event[[key]], map_soc[[key]])
-    if (!length(idx)) return("[]")
-    idx <- sort.int(unique(idx)) - 1L
-    n <- length(idx)
-    if (n >= 2L && idx[n] - idx[1] + 1L == n) {
-      paste0("[", idx[1], ",", -n, "]")
-    } else {
-      paste0("[", paste0(c(idx[1], diff(idx)), collapse = ","), "]")
-    }
-  }, character(1))
-  detail_index <- xfun::js(paste0("[", paste0(index_arrays, collapse = ","), "]"))
+  rec_key <- do.call(paste, c(ae_listing[c(detail_cols, "SOC_Name")], sep = "\r"))
+  u_first <- !duplicated(rec_key)
+  u_row <- which(u_first)
+  # 0-based index of each listing row's distinct record (first-appearance order).
+  ref <- match(rec_key, rec_key[u_first]) - 1L
 
-  # The listing serialized once, shared by every row. Columns repeat values across
-  # rows, so xfun::tojson(dict=) dictionary-encodes them (uniques once + a code per
-  # row) when shorter. Rounding numerics trims unseen digits and boosts repeats.
   detail_records <- lapply(ae_listing[detail_cols], function(x) {
-    if (is.numeric(x)) round(x, detail_decimals) else as.factor(x)
+    x <- x[u_row]
+    if (is.numeric(x)) round(x, detail_decimals) else x
   })
   names(detail_records) <- detail_cols
 
-  # dict < 1 gates near-unique columns out at the cheap unique() check instead of
-  # serializing them twice (codes + plain) only to discard the encoding.
-  specs_json <- xfun::tojson(list(
+  store_list <- list(
     tpl = detail_tpl,
     records = detail_records,
-    index = detail_index
-  ), dict = 0.5, pretty = FALSE)
+    members = lapply(split(ref, ae_listing_param), as.integer)
+  )
+  # Per-record SOC, only in SOC-display mode (see `has_soc`).
+  if (has_soc) store_list$soc <- ae_listing$SOC_Name[u_row]
+  specs_json <- xfun::tojson(store_list)
 
-  # Client-side detail renderer. reactR evals this once, so the IIFE captures the
-  # store in a closure (one copy, no global). reactable escapes a string
-  # `details`, so return a real element whose `ref` fires on mount: gather this
-  # row's records by `rowInfo.index` (0-based, stable across sort/filter) into the
-  # skeleton, and render with LT.render(). A 2-element index entry with a negative
-  # second value is a contiguous run [start, -count]; otherwise it is delta-
-  # encoded ([first, gap, ...]) and recovered with a running sum.
-  detail_js <- reactable::JS(sprintf(
+  # Treatment groups the control-bar picker (below) offers, in display order:
+  # the arms that actually appear in the listing, so aggregate forest columns
+  # (e.g. "Total") that are never a per-subject `Treatment_Group` are left out.
+  listing_groups <- intersect(outdata$group, ae_listing$Treatment_Group)
+  group_json <- xfun::tojson(listing_groups)
+  group_label_json <- '"Treatment group"'
+
+  # lt calls the detail callback as (rawRow, index1Based, displayRow) and renders
+  # the returned spec via LT.render (so the listing can itself be interactive).
+  # The IIFE captures the store in a closure (one copy, no global). On first expand
+  # it lazily builds a memoized `parameter + "\r" + upper(term[/SOC]) -> record
+  # indices` map, then looks each row up by its own `parameter`/`name`. Returning
+  # null leaves a row with no listing un-expandable.
+  #
+  # On mount it also drops a treatment-group picker into the table's control bar
+  # (lt's reusable LT.ui popover + checklist, attached via el._lt.bar): checking
+  # groups drives the `selected` set the callback filters each listing by, and
+  # el._lt.resetDetail re-renders any open details through it. The onMount guard
+  # keys off the callback's identity, so it wires only this table — not a detail
+  # sub-table (no `detail`), nor another forestly table on the same page.
+  detail_cb <- xfun::js(sprintf(
     "(() => {
-  const store = %s;
-  return (rowInfo) => {
-    const enc = store.index[rowInfo.index];
-    if (!enc) return null;
-    let abs;
-    if (enc.length === 2 && enc[1] < 0) {
-      const start = enc[0], count = -enc[1];
-      abs = Array.from({ length: count }, (_, k) => start + k);
-    } else {
-      let acc = 0;
-      abs = enc.map((d) => (acc += d));
+  // The listing payload is dict-encoded JS (`[codes].map(i => [dict][i])`), not
+  // plain JSON, so it can't ride as a deferred <script type=application/json>.
+  // Instead build it lazily on first expand: V8 only pre-parses this closure
+  // body at load, so the tens-of-MB of array literals compile and allocate off
+  // the initial-paint path rather than when the spec's IIFE runs.
+  let store = null;
+  const getStore = () => store || (store = %s);
+  const groups = %s, selected = new Set(groups);
+  let map = null;                       // (param + '\\r' + UPPER term/soc) -> [record idx]
+  const lookup = () => {
+    if (map) return map;
+    const s = getStore();
+    map = new Map();
+    // `records`/`soc` hold one entry per distinct record; `members[param]` lists
+    // its record indices. Key each by its AE term, and by SOC when `soc` ships.
+    const ev = s.records.Adverse_Event, so = s.soc, mem = s.members;
+    const add = (k, r) => { const a = map.get(k); a ? a.push(r) : map.set(k, [r]); };
+    for (const p of Object.keys(mem)) {
+      const refs = mem[p];
+      for (let j = 0; j < refs.length; j++) {
+        const r = refs[j];
+        add(p + '\\r' + ev[r].toUpperCase(), r);
+        if (so) add(p + '\\r' + so[r].toUpperCase(), r);
+      }
     }
-    const spec = {
-      ...store.tpl,
+    return map;
+  };
+  const build = (row) => {
+    const key = row.parameter + '\\r' + String(row.name == null ? '' : row.name).toUpperCase();
+    let abs = lookup().get(key);
+    if (!abs || !abs.length) return null;
+    const s = getStore();
+    abs = [...new Set(abs)].sort((a, b) => a - b);   // dedupe: a term may equal its SOC
+    const grp = s.records.Treatment_Group;
+    if (grp) abs = abs.filter((i) => selected.has(grp[i]));
+    return {
+      ...s.tpl,
       data: Object.fromEntries(
-        Object.entries(store.records).map(([k, col]) => [k, abs.map((i) => col[i])])
+        Object.entries(s.records).map(([k, col]) => [k, abs.map((i) => col[i])])
       )
     };
-    return window.React.createElement('div', {
-      className: 'forestly-ae-drilldown',
-      ref: (el) => {
-        if (el && !el.dataset.ltDone && window.LT) {
-          el.dataset.ltDone = '1';
-          window.LT.render(el, spec);
-        }
-      }
-    });
   };
-})()", specs_json))
+  LT.onMount.push((tbl, spec) => {
+    if (spec.interactive?.detail !== build || !tbl._lt || !tbl._lt.chips) return;
+    const doc = tbl.ownerDocument, label = %s;
+    // Build the chip first so the popover can host its click on the whole chip
+    // (clicking the label text opens it, like lt's own typed-filter chips), then
+    // drop the returned funnel wrap into the chip and add it to the bar's chips.
+    const chip = LT.ui.chip(doc, label);
+    const pop = LT.ui.popover(doc, label, (panel) => {
+      const cl = LT.ui.checklist(doc, groups.map((g) => ({ value: g, label: g })),
+        (vals) => {
+          selected.clear();
+          vals.forEach((v) => selected.add(v));
+          tbl._lt.resetDetail();
+        });
+      panel.append(...cl.el);
+    }, null, chip.el);
+    chip.el.append(pop);
+    tbl._lt.chips.append(chip.el);
+  });
+  return build;
+})()", specs_json, group_json, group_label_json))
 
-  p_reactable <- reactable2(
-    tbl,
-    columns = outdata$reactable_columns,
-    columnGroups = outdata$reactable_columns_group,
-    hidden_item = paste0("'", hidden_cols, "'", collapse = ", "),
-    soc_toggle = display_soc_toggle,
-    diff_toggle = display_diff_toggle,
-    diff_columns = displayed_diff_cols,
-    width = width,
-    download = dowload_button,
-    searchable = FALSE,
-    details = detail_js,
-    pageSizeOptions = max_page,
-
-    # Default sort variable
-    defaultSorted = c("parameter", names(outdata$diff)),
-    defaultSortOrder = "desc"
+  # ---- Build the interactive lt table ----
+  built <- format_lt_forestly(
+    outdata,
+    display_soc_toggle = display_soc_toggle,
+    display_diff_toggle = display_diff_toggle
   )
+  # forestly-ae on lt's container scopes cell styles and sizes the table (see
+  # inst/css/forestly-widgets.css); per-column widths from format_lt_forestly() kept.
+  built$x <- lt::lt_wrap(built$x, class = "forestly-ae")
+  # A user-specified width fixes the container (still capped at the viewport by
+  # the `.forestly-ae` CSS, so a wide table scrolls inside rather than widening
+  # the page). A number is pixels.
+  if (!is.null(width)) {
+    width <- if (is.numeric(width)) paste0(width, "px") else width
+    built$x <- lt::lt_wrap(built$x, style = paste0("width:", width))
+  }
 
-  p <- suppressWarnings(
-    crosstalk::bscols(
-      # Width of the select list and reactable
-      widths = c(3, 9, 12, 0),
-      filter_ae,
-      filter_subject,
-      p_reactable
+  # The AE-criteria dropdown and the incidence slider are lt typed filters. They
+  # bind to the hidden `parameter` and `hide_prop`/`hide_n` columns, so lt renders
+  # each as a chip in the table's control bar; the visible term column keeps a
+  # plain filter box. All read columns that travel with the table, so no external
+  # bridge is needed. See the `filter` argument of lt::lt_interactive().
+  param_levels <- levels(outdata$tbl$parameter)
+  filter_cfg <- list(
+    name = TRUE,
+    parameter = list(
+      type = "select", choices = param_levels, selected = param_levels[1],
+      label = ae_label
     )
   )
+  if (display_filter) {
+    slider_col <- if (filter == "prop") "hide_prop" else "hide_n"
+    range_cfg <- list(type = "range", label = filter_label)
+    if (!is.null(filter_range)) {
+      range_cfg$min <- filter_range[1]
+      range_cfg$max <- filter_range[2]
+    }
+    filter_cfg[[slider_col]] <- range_cfg
+  }
 
-  # Assemble html file
-  offline <- TRUE
+  x <- lt::lt_interactive(
+    built$x,
+    sort = TRUE,
+    search = FALSE,
+    filter = filter_cfg,
+    pager = max_page,
+    resize = TRUE,
+    hide = built$hide_menu,
+    detail = detail_cb,
+    # lt's own CSV download (current view, displayed text) in its control bar;
+    # forestly no longer carries a bespoke download button.
+    download = if (download_button) "ae-forest.csv" else FALSE
+  )
 
+  # ---- Assemble: lt runtime (interactive + plot) + forestly styles ----
   htmltools::browsable(
     htmltools::tagList(
-      html_dependency_filter_crosstalk(),
-      html_dependency_search_filter(),
-      reactR::html_dependency_react(offline),
-      html_dependency_plotly(offline),
-      html_dependency_react_plotly(offline),
-      lt::lt_dependency(interactive = TRUE),
+      lt::lt_dependency(interactive = TRUE, plot = TRUE),
+      html_dependency_forestly_widgets(),
       html_dependency_ae_drilldown(),
-      p
+      htmltools::HTML(format(x, assets = FALSE))
     )
   )
 }

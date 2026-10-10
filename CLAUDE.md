@@ -1,7 +1,7 @@
 # Claude Code Assistant Instructions
 
 ## Project Overview
-This is the forestly R package, which creates interactive forest plots for clinical trial data analysis. The package is built on top of metalite and metalite.ae packages and uses reactable for interactive tables with Plotly.js for interactive visualizations.
+This is the forestly R package, which creates interactive forest plots for clinical trial data analysis. The package is built on top of metalite and metalite.ae packages and uses the `lt` package (yihui/lt) for interactive tables with inline SVG figures (dot plots and error bars) drawn client-side.
 
 ## Development Guidelines
 
@@ -9,7 +9,7 @@ This is the forestly R package, which creates interactive forest plots for clini
 - load project using `devtools::load_all()`
 - Run tests using: `devtools::test()`
 - Run specific test files using: `devtools::test(filter = "filename")`
-- Before running tests, ensure required packages are installed (metalite, metalite.ae, reactable, reactR)
+- Before running tests, ensure required packages are installed (metalite, metalite.ae, lt (>= 0.4.21))
 
 ### Code Style
 - Follow tidyverse style guide
@@ -17,10 +17,10 @@ This is the forestly R package, which creates interactive forest plots for clini
 - Functions should handle both character vectors and factors robustly
 
 ### Key Functions
-- `ae_forestly()`: Main function to create interactive forest plots
-- `format_ae_forestly()`: Formats AE data and configures Plotly visualizations
+- `ae_forestly()`: Main function to create interactive forest plots (layers `lt::lt_interactive()` with the detail drill-down, typed filters, and CSV download on top of the structural table)
+- `format_ae_forestly()`: Formats AE data and computes figure metadata (ranges, colors, headers, widths) for the inline dot plot / error bar
+- `format_lt_forestly()`: Builds the structural `lt` table (interaction-free; in `R/lt_table.R`)
 - `format_ae_listing()`: Formats AE listing data
-- `sparkline_point_js()`: Generates JavaScript/Plotly code for interactive sparkline plots
 - `propercase()`: Converts strings to proper case (handles factors)
 - `titlecase()`: Converts strings to title case using tools::toTitleCase (handles factors)
 
@@ -52,10 +52,10 @@ devtools::document()
 ## Package Dependencies
 - metalite
 - metalite.ae
-- reactable
-- reactR
-- plotly (via JavaScript integration)
-- brew (for template processing)
+- lt (>= 0.4.21) — interactive tables + inline SVG figures
+- htmltools
+- ggplot2 (static forest/table panels)
+- xfun
 - tools (base R)
 
 ## Testing Data
@@ -69,6 +69,6 @@ The package includes test data in `data/`:
 - The `ae_listing.R` file contains functions that handle factor inputs, which was a recent fix
 - Test files should use `devtools::load_all()` or source the R files directly for testing
 - The package uses testthat for unit testing framework
-- Interactive plots use Plotly.js via JavaScript templates in `inst/js/`
-- The y-axis ordering in `format_ae_forestly.R` affects the visual display in interactive plots
-- When debugging interactive plot issues, check both R code and JavaScript template files
+- The main interactive table is a single `lt` table: `format_lt_forestly()` builds the structure (per-arm columns, spanners, `lt_dotplot` proportion figure, `lt_errorbar` risk-difference figure, hidden helper columns), and `ae_forestly()` makes it interactive and adds the drill-down (all controls are lt's own)
+- the AE-criteria dropdown and incidence slider are lt typed filters, declared via `lt_interactive(filter = ...)` in `ae_forestly()` (e.g. `filter = list(parameter = list(type = "select", ...), hide_prop = list(type = "range", ...))`) and bound to the hidden helper columns (`parameter`, `hide_prop`/`hide_n`); lt renders them automatically (funnel under a visible column's header, chip in the control bar for a hidden column). The CSV download is lt's own `lt_interactive(download = ...)` control. forestly ships no widget JavaScript of its own anymore; `inst/css/forestly-widgets.css` carries only the table's cell-truncation styles
+- When debugging interactive plot issues, check both the R code (`R/lt_table.R`, `R/ae_forestly.R`) and the `lt` package JS runtime (`../lt/inst/www/lt-interactive.js`, `lt-plot.js`)

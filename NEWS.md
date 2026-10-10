@@ -1,15 +1,19 @@
+# forestly 0.1.7
+
+## Improvements
+
+- Rebuild the entire `ae_forestly()` widget on the `lt` package (yihui/lt), replacing `reactable`, `reactR`, `crosstalk`, and the vendored Plotly. The forest table, its inline per-arm proportion dot plot (`lt_dotplot`) and risk-difference error bar (`lt_errorbar`), the AE-criteria dropdown and incidence slider (`lt` typed filters), the CSV download, and the per-row drill-down AE listings are all `lt` tables, made interactive with `lt_interactive()`; forestly ships no widget JavaScript of its own (#168).
+- Drop the `crosstalk`, `reactable`, and `reactR` package dependencies; require `lt (>= 0.5)`.
+- Reveal a truncated table cell's full text on hover; figure cells and the drill-down detail are exempt.
+- Speed up `format_ae_listing()` by vectorizing the per-row loops that map `AEACN`, `AEOUT`, and missing `ADURN` durations to display labels, avoiding quadratic-time column copies on large AE listings.
+- Rename the misspelled `ae_forestly()` argument `dowload_button` to `download_button` (#173).
+- Add a treatment-group picker to the drill-down: a checklist in the table's control bar chooses which arm(s) appear in each expanded AE listing, filtering the detail client-side (built on `lt`'s `LT.ui` popover/checklist widgets and `el._lt.resetDetail`).
+
 # forestly 0.1.6
 
 ## Improvements
 
-- Shrink the `ae_forestly()` widget by moving the drill-down listing search/filter JavaScript into a shared `inst/js/search-filter.js` dependency and referencing it by name, instead of inlining the ~1.8 KB function body into every column of every per-row nested table. On large outputs this removes hundreds of megabytes of duplicated JavaScript (each nested table drops from ~27 KB to ~3 KB), which also speeds up widget construction and HTML serialization.
-- Speed up `format_ae_listing()` by vectorizing the per-row loops that map `AEACN`, `AEOUT`, and missing `ADURN` durations to display labels, avoiding quadratic-time column copies on large AE listings.
-- Speed up `ae_forestly()` by hoisting row-invariant work out of the per-row `details` callback, which `reactable` evaluates eagerly for every row (#147).
 - Remove `meta_forestly()` and the dependency on `metalite.ae::meta_ae_example()`; examples now construct metadata directly with `metalite` (#140, thanks to @LittleBeannie).
-
-## Bug fixes
-
-- Stop `ae_forestly()` sparkline cells from drawing their own x-axis line, which could appear as stray horizontal lines across the AE proportion and risk difference columns; only the footer axis now renders the line and ticks (#156).
 
 # forestly 0.1.5
 

@@ -16,15 +16,49 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Minimal replacement for `brew::brew()`, supporting only the `<%=var%>` output
-# form used by this package's JS templates. Each `<%=var%>` in `file` is
-# replaced with the value of the variable `var` looked up in `envir` (the
-# caller's environment by default), so callers never have to enumerate template
-# variables. Returns the rendered text as a single string.
-brew <- function(file, envir = parent.frame()) {
-  template <- paste(readLines(file), collapse = "\n")
-  m <- gregexpr("<%=.*?%>", template)
-  names <- sub("^<%=\\s*(.*?)\\s*%>$", "\\1", regmatches(template, m)[[1]])
-  regmatches(template, m) <- list(unlist(mget(names, envir = envir)))
-  template
+`%||%` <- function(x, y) if (is.null(x)) y else x
+
+# Column labels from a data frame's `label` attributes, falling back to the
+# column name when a column has none.
+get_label <- function(data) {
+  label <- vapply(data, function(x) {
+    if (is.null(attr(x, "label"))) {
+      return(NA_character_)
+    } else {
+      attr(x, "label")
+    }
+  }, FUN.VALUE = character(1))
+
+  ifelse(is.na(label), names(data), label)
+}
+
+# Attach `label` attributes to columns of `data`, defaulting any unlisted
+# column's label to its own name.
+assign_label <- function(data, var = names(data), label = names(data)) {
+  # Input checking
+  stopifnot(length(var) == length(label))
+  stopifnot(!any(duplicated(var)))
+
+  # Check missing label
+  name <- names(data)
+  diff <- setdiff(name, var)
+
+  if (length(diff) > 0) {
+    message(
+      "missing variables set label as itself\n",
+      paste(diff, collapse = "\n")
+    )
+
+    var <- c(var, diff)
+    label <- c(label, diff)
+  }
+
+  # Assign label. Resolve each column's position in `var` once via match()
+  # instead of scanning `var` for every column.
+  idx <- match(name, var)
+  for (i in seq_along(name)) {
+    attr(data[[i]], "label") <- label[idx[i]]
+  }
+
+  data
 }

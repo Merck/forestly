@@ -12,9 +12,9 @@ ae_forestly(
   filter_label = NULL,
   filter_range = NULL,
   ae_label = NULL,
-  width = 1400,
   max_page = NULL,
-  dowload_button = FALSE
+  download_button = FALSE,
+  width = NULL
 )
 }
 \arguments{
@@ -34,11 +34,14 @@ ae_forestly(
 If NULL (default), the range is automatically calculated from the data.
 If only one value is provided, it will be used as the maximum and minimum will be 0.}
 
-\item{width}{A numeric value of width of the table in pixels.}
-
 \item{max_page}{A numeric value of max page number shown in the table.}
 
-\item{dowload_button}{A logical value to display download button.}
+\item{download_button}{A logical value to display download button.}
+
+\item{width}{Table container width, a number (interpreted as pixels) or any
+CSS width value. If \code{NULL} (default), the table takes its natural width; a
+value fixes the container width. Either way the width is capped at the
+viewport, and a wider table scrolls inside rather than widening the page.}
 }
 \value{
 An AE forest plot saved as a \code{shiny.tag.list} object.

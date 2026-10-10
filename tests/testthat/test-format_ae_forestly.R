@@ -83,16 +83,17 @@ test_that("1. Set `display` to ('n', 'prop', 'total', 'diff') and change column 
     diff_label = "MK-XXXX <- Favor -> Placebo"
   )
 
-  expect_equal(ae_frm$reactable_columns$diff_fig$width, 300)
-  expect_equal(ae_frm$reactable_columns$prop_fig$width, 300)
-  expect_equal(ae_frm$reactable_columns$n_1$minWidth, 40)
-  expect_equal(ae_frm$reactable_columns$n_3$minWidth, 40)
-  expect_equal(ae_frm$reactable_columns$prop_1$minWidth, 60)
-  expect_equal(ae_frm$reactable_columns$prop_2$minWidth, 60)
-  expect_equal(ae_frm$reactable_columns$prop_4$minWidth, 60)
+  # Column widths are carried as metadata (px) for ae_forestly() to feed into
+  # lt_width(); the reactable column specs are gone.
+  expect_equal(ae_frm$widths$fig, 300)
+  expect_equal(ae_frm$widths$term, 200)
+  expect_equal(ae_frm$widths$n, 40)
+  expect_equal(ae_frm$widths$prop, 60)
+  expect_equal(ae_frm$widths$diff, 80)
+  expect_equal(ae_frm$widths$footer, 90)
 })
 
-test_that("Parameter column is always hidden", {
+test_that("Parameter helper column is carried in tbl for the client to filter on", {
   out <- test_format_ae_forestly()
   ae_frm <- format_ae_forestly(
     out,
@@ -108,8 +109,9 @@ test_that("Parameter column is always hidden", {
     diff_label = "Treatment <- Favor -> Placebo"
   )
 
-  expect_equal(ae_frm$reactable_columns$parameter$header, "Type")
-  expect_equal(ae_frm$reactable_columns$parameter$show, FALSE)
+  # The parameter column stays in tbl (hidden by lt_hide() later) so the
+  # parameter dropdown can filter rows on it client-side.
+  expect_true("parameter" %in% names(ae_frm$tbl))
 })
 
 test_that("Add variable name not in n, prop, total, diff causes error", {
