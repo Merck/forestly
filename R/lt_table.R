@@ -190,8 +190,6 @@ format_lt_forestly <- function(outdata,
 
   hide_menu <- if (display_soc_toggle || display_diff_toggle) {
     if (length(menu_hidden)) menu_hidden else TRUE
-  } else {
-    NULL
   }
 
   list(x = x, hide_menu = hide_menu)
