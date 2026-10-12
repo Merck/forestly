@@ -4,7 +4,7 @@
 
 - Rebuild the entire `ae_forestly()` widget on the `lt` package (yihui/lt), replacing `reactable`, `reactR`, `crosstalk`, and the vendored Plotly. The forest table, its inline per-arm proportion dot plot (`lt_dotplot`) and risk-difference error bar (`lt_errorbar`), the AE-criteria dropdown and incidence slider (`lt` typed filters), the CSV download, and the per-row drill-down AE listings are all `lt` tables, made interactive with `lt_interactive()`; forestly ships no widget JavaScript of its own (#168).
 - Drop the `crosstalk`, `reactable`, and `reactR` package dependencies; require `lt (>= 0.5)`.
-- Reveal a truncated table cell's full text on hover; figure cells and the drill-down detail are exempt.
+- Reveal a truncated table cell's full text on hover; figure cells, the drill-down detail, and the control-bar and per-column filter rows (whose chips, funnels, and popovers must stay visible) are exempt.
 - Speed up `format_ae_listing()` by vectorizing the per-row loops that map `AEACN`, `AEOUT`, and missing `ADURN` durations to display labels, avoiding quadratic-time column copies on large AE listings.
 - Rename the misspelled `ae_forestly()` argument `dowload_button` to `download_button` (#173).
 - Add a treatment-group picker to the drill-down: a checklist in the table's control bar chooses which arm(s) appear in each expanded AE listing, filtering the detail client-side (built on `lt`'s `LT.ui` popover/checklist widgets and `el._lt.resetDetail`).
