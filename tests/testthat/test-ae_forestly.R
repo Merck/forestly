@@ -55,7 +55,7 @@ test_that("ae_forestly(): drill-down carries a treatment-group picker", {
   expect_true(grepl("spec.interactive?.detail !== build", html_text, fixed = TRUE))
   # the funnel is wrapped in a labelled chip via lt's reusable LT.ui.chip, which
   # also hosts the popover's click so the whole chip (not just the funnel) opens it
-  expect_true(grepl('label = "Treatment group"', html_text, fixed = TRUE))
+  expect_true(grepl('label = "Arms in drill-down tables"', html_text, fixed = TRUE))
   expect_true(grepl("LT.ui.chip(doc, label)", html_text, fixed = TRUE))
   expect_true(grepl("null, chip.el)", html_text, fixed = TRUE))
   # the picker offers the listing's arms, not aggregate forest columns ("Total")
@@ -69,8 +69,9 @@ test_that("ae_forestly(): no incidence filter when filter is NULL", {
   outdata <- test_ae_forestly()
   html_text <- as.character(ae_forestly(outdata, filter = NULL))
 
-  # the incidence range filter is dropped; the parameter dropdown stays
-  expect_false(grepl('"type":"range"', html_text, fixed = TRUE))
+  # the incidence slider (identified by its label) is dropped; the parameter
+  # dropdown stays. Per-column n/(%) range sliders are unaffected by `filter`.
+  expect_false(grepl("One or More Treatment Groups", html_text, fixed = TRUE))
   expect_true(grepl('"type":"select"', html_text, fixed = TRUE))
 })
 

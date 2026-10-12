@@ -192,5 +192,8 @@ format_lt_forestly <- function(outdata,
     if (length(menu_hidden)) menu_hidden else TRUE
   }
 
-  list(x = x, hide_menu = hide_menu)
+  # Numeric columns shown at start (n, (%), difference) for ae_forestly() sliders.
+  range_cols <- setdiff(c(name_n, name_prop, diff_name), unique(c(fully_hidden, menu_hidden)))
+
+  list(x = x, hide_menu = hide_menu, range_cols = range_cols)
 }

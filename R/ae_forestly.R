@@ -298,7 +298,7 @@ ae_forestly <- function(outdata,
   # (e.g. "Total") that are never a per-subject `Treatment_Group` are left out.
   listing_groups <- intersect(outdata$group, ae_listing$Treatment_Group)
   group_json <- xfun::tojson(listing_groups)
-  group_label_json <- '"Treatment group"'
+  group_label_json <- '"Arms in drill-down tables"'
 
   # lt calls the detail callback as (rawRow, index1Based, displayRow) and renders
   # the returned spec via LT.render (so the listing can itself be interactive).
@@ -402,13 +402,16 @@ ae_forestly <- function(outdata,
   # plain filter box. All read columns that travel with the table, so no external
   # bridge is needed. See the `filter` argument of lt::lt_interactive().
   param_levels <- levels(outdata$tbl$parameter)
+  # Unnamed TRUE = plain box on every column; the named entries specialize it.
   filter_cfg <- list(
-    name = TRUE,
+    TRUE,
     parameter = list(
       type = "select", choices = param_levels, selected = param_levels[1],
       label = ae_label
-    )
+    ),
+    soc_name = "select"
   )
+  for (nm in built$range_cols) filter_cfg[[nm]] <- "range"
   if (display_filter) {
     slider_col <- if (filter == "prop") "hide_prop" else "hide_n"
     range_cfg <- list(type = "range", label = filter_label)
