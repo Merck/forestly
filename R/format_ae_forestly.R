@@ -185,6 +185,11 @@ format_ae_forestly <- function(
     stop("Please define more color to display groups")
   }
 
+  # Normalize R color specs (e.g. "grey60", palette indices) to hex so the
+  # client-side SVG figures receive CSS-parseable colors; raw R-only names
+  # fall back to black in the browser.
+  color <- grDevices::rgb(t(grDevices::col2rgb(color)), maxColorValue = 255)
+
   # Aggregate the finite values of x (vector/matrix/data.frame) with f; when
   # none are finite, return `empty` rather than f()'s warning + -Inf/Inf on an
   # all-NA input (e.g. a term with no events, or an uncomputable risk diff).
