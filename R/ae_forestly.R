@@ -278,10 +278,16 @@ ae_forestly <- function(outdata,
   # 0-based index of each listing row's distinct record (first-appearance order).
   ref <- match(rec_key, rec_key[u_first]) - 1L
 
-  detail_records <- lapply(ae_listing[detail_cols], function(x) {
-    x <- x[u_row]
-    if (is.numeric(x)) round(x, detail_decimals) else x
-  })
+  # Ship each column as data the callback decodes on demand: dictionary-encoded
+  # `{u: uniques, c: codes}` when repetitive, else plain `{p: values}`. Unlike
+  # xfun's `[codes].map(i => u[i])` form, this never rebuilds the full string
+  # column at load -- the callback decodes only the rows of the detail opened.
+  enc <- function(x) {
+    if (is.numeric(x)) x <- round(x, detail_decimals) else if (is.factor(x)) x <- as.character(x)
+    u <- unique(x)
+    if (length(u) <= 0.5 * length(x)) list(u = u, c = match(x, u) - 1L) else list(p = x)
+  }
+  detail_records <- lapply(ae_listing[detail_cols], function(x) enc(x[u_row]))
   names(detail_records) <- detail_cols
 
   store_list <- list(
@@ -290,7 +296,7 @@ ae_forestly <- function(outdata,
     members = lapply(split(ref, ae_listing_param), as.integer)
   )
   # Per-record SOC, only in SOC-display mode (see `has_soc`).
-  if (has_soc) store_list$soc <- ae_listing$SOC_Name[u_row]
+  if (has_soc) store_list$soc <- enc(ae_listing$SOC_Name[u_row])
   specs_json <- xfun::tojson(store_list)
 
   # Treatment groups the control-bar picker (below) offers, in display order:
@@ -302,10 +308,10 @@ ae_forestly <- function(outdata,
 
   # lt calls the detail callback as (rawRow, index1Based, displayRow) and renders
   # the returned spec via LT.render (so the listing can itself be interactive).
-  # The IIFE captures the store in a closure (one copy, no global). On first expand
-  # it lazily builds a memoized `parameter + "\r" + upper(term[/SOC]) -> record
-  # indices` map, then looks each row up by its own `parameter`/`name`. Returning
-  # null leaves a row with no listing un-expandable.
+  # The IIFE captures the store in a closure (one copy, no global). The first time
+  # a row of a given parameter expands, it builds a memoized `upper(term[/SOC]) ->
+  # record indices` map for that parameter alone (not the whole listing), then
+  # looks the row up by its `name`. Returning null leaves a row un-expandable.
   #
   # On mount it also drops a treatment-group picker into the table's control bar
   # (lt's reusable LT.ui popover + checklist, attached via el._lt.bar): checking
@@ -315,45 +321,49 @@ ae_forestly <- function(outdata,
   # sub-table (no `detail`), nor another forestly table on the same page.
   detail_cb <- xfun::js(sprintf(
     "(() => {
-  // The listing payload is dict-encoded JS (`[codes].map(i => [dict][i])`), not
-  // plain JSON, so it can't ride as a deferred <script type=application/json>.
-  // Instead build it lazily on first expand: V8 only pre-parses this closure
-  // body at load, so the tens-of-MB of array literals compile and allocate off
-  // the initial-paint path rather than when the spec's IIFE runs.
+  // The listing payload is a large object literal. Assigning it is deferred to the
+  // first expand (getStore): V8 only pre-parses this closure body at load, so the
+  // tens-of-MB of array literals compile and allocate off the initial-paint path
+  // rather than when the spec's IIFE runs. Columns stay dictionary-encoded as data
+  // (see colGet), so no full string column is rebuilt until a detail decodes it.
   let store = null;
   const getStore = () => store || (store = %s);
+  // Decode a column cell by distinct-record index: dictionary columns are
+  // {u: uniques, c: codes}, plain columns {p: values}.
+  const colGet = (col) => col.p ? (i => col.p[i]) : (i => col.u[col.c[i]]);
   const groups = %s, selected = new Set(groups);
-  let map = null;                       // (param + '\\r' + UPPER term/soc) -> [record idx]
-  const lookup = () => {
-    if (map) return map;
+  const maps = Object.create(null);     // param -> Map(UPPER term/soc -> [record idx])
+  // Build the key map for one parameter only, on its first expand: `members[param]`
+  // already lists that parameter's record indices, so there is no need to scan the
+  // whole listing. `records`/`soc` hold one entry per distinct record; key each by
+  // its AE term, and by SOC when `soc` ships.
+  const lookup = (param) => {
+    if (maps[param]) return maps[param];
     const s = getStore();
-    map = new Map();
-    // `records`/`soc` hold one entry per distinct record; `members[param]` lists
-    // its record indices. Key each by its AE term, and by SOC when `soc` ships.
-    const ev = s.records.Adverse_Event, so = s.soc, mem = s.members;
-    const add = (k, r) => { const a = map.get(k); a ? a.push(r) : map.set(k, [r]); };
-    for (const p of Object.keys(mem)) {
-      const refs = mem[p];
-      for (let j = 0; j < refs.length; j++) {
-        const r = refs[j];
-        add(p + '\\r' + ev[r].toUpperCase(), r);
-        if (so) add(p + '\\r' + so[r].toUpperCase(), r);
-      }
+    const m = maps[param] = new Map();
+    const refs = s.members[param];
+    if (!refs) return m;
+    const evAt = colGet(s.records.Adverse_Event), soAt = s.soc && colGet(s.soc);
+    const add = (k, r) => { const a = m.get(k); a ? a.push(r) : m.set(k, [r]); };
+    for (let j = 0; j < refs.length; j++) {
+      const r = refs[j];
+      add(evAt(r).toUpperCase(), r);
+      if (soAt) add(soAt(r).toUpperCase(), r);
     }
-    return map;
+    return m;
   };
   const build = (row) => {
-    const key = row.parameter + '\\r' + String(row.name == null ? '' : row.name).toUpperCase();
-    let abs = lookup().get(key);
+    const key = String(row.name == null ? '' : row.name).toUpperCase();
+    let abs = lookup(row.parameter).get(key);
     if (!abs || !abs.length) return null;
     const s = getStore();
     abs = [...new Set(abs)].sort((a, b) => a - b);   // dedupe: a term may equal its SOC
     const grp = s.records.Treatment_Group;
-    if (grp) abs = abs.filter((i) => selected.has(grp[i]));
+    if (grp) { const g = colGet(grp); abs = abs.filter((i) => selected.has(g(i))); }
     return {
       ...s.tpl,
       data: Object.fromEntries(
-        Object.entries(s.records).map(([k, col]) => [k, abs.map((i) => col[i])])
+        Object.entries(s.records).map(([k, col]) => [k, abs.map(colGet(col))])
       )
     };
   };
