@@ -407,7 +407,7 @@ ae_forestly <- function(outdata,
     TRUE,
     parameter = list(
       type = "select", choices = param_levels, selected = param_levels[1],
-      label = ae_label
+      label = ae_label, box = FALSE  # single-choice only; no custom AE-criteria set
     ),
     soc_name = "select"
   )
