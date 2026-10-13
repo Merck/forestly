@@ -97,11 +97,11 @@ test_that("ae_forestly(): drill-down listings render lazily via lt", {
   # built lazily on first expand; a row carries no record pointers --
   # the client builds a param+term/SOC lookup on first expand and resolves each
   # row by its own parameter/name (see #147). Each distinct record is stored once
-  # and `members` maps each parameter to its record indices (dedupes the ~3x
+  # with a bitmask (`pmask`) of the parameters it belongs to (dedupes the ~3x
   # cross-parameter overlap in the stacked listing).
   expect_true(grepl("getStore = () =>", html_text, fixed = TRUE))
   expect_true(grepl("s.records", html_text, fixed = TRUE))
-  expect_true(grepl("s.members", html_text, fixed = TRUE))
+  expect_true(grepl("s.pmask", html_text, fixed = TRUE))
 
   # The lt runtime, interactivity extension, and inline-plot extension are
   # bundled as HTML dependencies.

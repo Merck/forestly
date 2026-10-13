@@ -262,11 +262,11 @@ ae_forestly <- function(outdata,
   # The stacked per-parameter listings overlap heavily: an AE meeting several
   # criteria (e.g. "any", "serious", "drug-related") is one physical record the
   # listing repeats once per matching parameter (~3x its distinct rows). So store
-  # each distinct record once (`records`) and let `members` list, per parameter,
-  # the record indices in it; the client keys each by its event (the AE term) to
-  # resolve the expanded term row. Columns repeat values, so xfun::tojson(dict=)
-  # dictionary-encodes them (uniques once + a code per row); rounding numerics
-  # boosts repeats. Deduping shrinks the store ~55%.
+  # each distinct record once (`records`) and, per record, a bitmask of the
+  # parameters it belongs to (`pmask`, see below); the client keys each by its
+  # event (the AE term) to resolve the expanded term row. Columns repeat values,
+  # so they are dictionary-encoded (uniques once + a code per row); rounding
+  # numerics boosts repeats. Deduping shrinks the store ~55%.
   # Row `name` is an AE term, or a SOC in SOC-display mode (components="soc").
   # Only then can a SOC row expand, so only then ship the per-record SOC and key
   # by it; the term-only table omits it to keep the payload small.
@@ -279,25 +279,57 @@ ae_forestly <- function(outdata,
   ref <- match(rec_key, rec_key[u_first]) - 1L
 
   # Ship each column as data the callback decodes on demand: dictionary-encoded
-  # `{u: uniques, c: codes}` when repetitive, else plain `{p: values}`. Unlike
-  # xfun's `[codes].map(i => u[i])` form, this never rebuilds the full string
-  # column at load -- the callback decodes only the rows of the detail opened.
+  # `{u: uniques, c: codes}` when repetitive, else plain `{p: values}`. The codes
+  # (and the per-parameter record indices) are the bulk, so they travel as a
+  # base64 little-endian typed array `{b, w, n}` (w = 1/2/4 bytes by range) rather
+  # than a JSON number array: ~1-2 bytes per value instead of digits+commas, and
+  # the client turns each into a TypedArray far faster than parsing a huge number
+  # array. The callback decodes only the columns of the detail opened.
+  pack <- function(ints) {
+    ints <- as.integer(ints)
+    m <- if (length(ints)) max(ints) else 0L
+    w <- if (m <= 255L) 1L else if (m <= 65535L) 2L else 4L
+    list(b = xfun::base64_encode(writeBin(ints, raw(), size = w, endian = "little")),
+         w = w, n = length(ints))
+  }
   enc <- function(x) {
     if (is.numeric(x)) x <- round(x, detail_decimals) else if (is.factor(x)) x <- as.character(x)
     u <- unique(x)
-    if (length(u) <= 0.5 * length(x)) list(u = u, c = match(x, u) - 1L) else list(p = x)
+    if (length(u) <= 0.5 * length(x)) list(u = u, c = pack(match(x, u) - 1L)) else list(p = x)
   }
   detail_records <- lapply(ae_listing[detail_cols], function(x) enc(x[u_row]))
   names(detail_records) <- detail_cols
 
+  # Which parameters each distinct record belongs to, as one bitmask per record
+  # (bit i = parameter i). A record meeting several criteria is one small int here
+  # instead of its index repeated once per criterion's member list -- much smaller
+  # when indices are large (a wide typed int) and records match several criteria.
+  # The client scans the masks for a given parameter's bit (see lookup).
+  params <- levels(ae_listing_param)
+  pnum <- as.integer(ae_listing_param)
+  rec_mask <- integer(length(u_row))
+  for (p in seq_along(params)) {
+    recs <- unique(ref[pnum == p]) + 1L
+    rec_mask[recs] <- bitwOr(rec_mask[recs], bitwShiftL(1L, p - 1L))
+  }
   store_list <- list(
     tpl = detail_tpl,
     records = detail_records,
-    members = lapply(split(ref, ae_listing_param), as.integer)
+    params = params,
+    pmask = pack(rec_mask)
   )
   # Per-record SOC, only in SOC-display mode (see `has_soc`).
   if (has_soc) store_list$soc <- enc(ae_listing$SOC_Name[u_row])
-  specs_json <- xfun::tojson(store_list)
+  # Pure JSON (dict off, so no `[codes].map()` form) parsed on the client with
+  # JSON.parse -- faster than evaluating an object literal for data this large.
+  store_json <- local({
+    old <- options(xfun.tojson.dict = 0)
+    on.exit(options(old))
+    xfun::tojson(store_list)
+  })
+  # the JSON text as a JS string literal for JSON.parse (as.character() drops the
+  # "json" class so tojson quotes/escapes it rather than passing it through)
+  specs_json <- xfun::tojson(as.character(store_json))
 
   # Treatment groups the control-bar picker (below) offers, in display order:
   # the arms that actually appear in the listing, so aggregate forest columns
@@ -321,32 +353,44 @@ ae_forestly <- function(outdata,
   # sub-table (no `detail`), nor another forestly table on the same page.
   detail_cb <- xfun::js(sprintf(
     "(() => {
-  // The listing payload is a large object literal. Assigning it is deferred to the
-  // first expand (getStore): V8 only pre-parses this closure body at load, so the
-  // tens-of-MB of array literals compile and allocate off the initial-paint path
-  // rather than when the spec's IIFE runs. Columns stay dictionary-encoded as data
-  // (see colGet), so no full string column is rebuilt until a detail decodes it.
+  // The listing payload is JSON, parsed on first expand (getStore): V8 only
+  // pre-parses this closure body at load, so the parse happens off the initial-
+  // paint path. Columns stay dictionary-encoded as data, with codes/record-indices
+  // as base64 typed arrays decoded on demand (see unpack/colGet), so nothing is
+  // rebuilt until a detail needs it.
   let store = null;
-  const getStore = () => store || (store = %s);
-  // Decode a column cell by distinct-record index: dictionary columns are
-  // {u: uniques, c: codes}, plain columns {p: values}.
-  const colGet = (col) => col.p ? (i => col.p[i]) : (i => col.u[col.c[i]]);
+  const getStore = () => store || (store = JSON.parse(%s));
+  // {b: base64 little-endian, w: bytes/value, n: count} -> TypedArray
+  const unpack = (o) => {
+    const s = atob(o.b), u8 = new Uint8Array(s.length);
+    for (let i = 0; i < s.length; i++) u8[i] = s.charCodeAt(i);
+    return o.w === 1 ? u8 : o.w === 2 ? new Uint16Array(u8.buffer) : new Uint32Array(u8.buffer);
+  };
+  // Decode a column cell by distinct-record index: {u: uniques, c: codes} or
+  // {p: values}. Codes decode once, then memoize in place.
+  const colGet = (col) => {
+    if (col.p) return (i) => col.p[i];
+    const c = col.c.b ? (col.c = unpack(col.c)) : col.c;
+    return (i) => col.u[c[i]];
+  };
   const groups = %s, selected = new Set(groups);
   const maps = Object.create(null);     // param -> Map(UPPER term/soc -> [record idx])
-  // Build the key map for one parameter only, on its first expand: `members[param]`
-  // already lists that parameter's record indices, so there is no need to scan the
-  // whole listing. `records`/`soc` hold one entry per distinct record; key each by
-  // its AE term, and by SOC when `soc` ships.
+  // Build the key map for one parameter only, on its first expand: scan the
+  // per-record bitmasks for that parameter's bit. `records`/`soc` hold one entry
+  // per distinct record; key each by its AE term, and by SOC when `soc` ships.
   const lookup = (param) => {
     if (maps[param]) return maps[param];
     const s = getStore();
     const m = maps[param] = new Map();
-    const refs = s.members[param];
-    if (!refs) return m;
+    const pIdx = s.params.indexOf(param);
+    if (pIdx < 0) return m;
+    const bit = 1 << pIdx;
+    if (s.pmask.b) s.pmask = unpack(s.pmask);             // decode once, memoize
+    const mask = s.pmask;
     const evAt = colGet(s.records.Adverse_Event), soAt = s.soc && colGet(s.soc);
     const add = (k, r) => { const a = m.get(k); a ? a.push(r) : m.set(k, [r]); };
-    for (let j = 0; j < refs.length; j++) {
-      const r = refs[j];
+    for (let r = 0; r < mask.length; r++) {
+      if (!(mask[r] & bit)) continue;
       add(evAt(r).toUpperCase(), r);
       if (soAt) add(soAt(r).toUpperCase(), r);
     }
