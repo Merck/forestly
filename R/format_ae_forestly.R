@@ -344,7 +344,7 @@ format_ae_forestly <- function(
       filterMethod = filter_method
     ),
     soc_name = reactable::colDef(
-      header = "SOC Name",
+      header = "SOC",
       minWidth = width_term, align = "right",
       show = FALSE
     )

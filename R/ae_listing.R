@@ -289,7 +289,7 @@ format_ae_listing <- function(outdata, ae_listing_labels = NULL, display_unique_
   }
 
   if (!is.null(ae_listing_labels)) {
-    listing_label <- c("Adverse Event", "SOC Name", "Treatment Group", ae_listing_labels)
+    listing_label <- c("Adverse Event", "SOC", "Treatment Group", ae_listing_labels)
     names(listing_label) <- names(res)
   } else {
     # Get all labels from the un-subset data
