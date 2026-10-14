@@ -320,13 +320,9 @@ ae_forestly <- function(outdata,
   )
   # Per-record SOC, only in SOC-display mode (see `has_soc`).
   if (has_soc) store_list$soc <- enc(ae_listing$SOC_Name[u_row])
-  # Pure JSON (dict off, so no `[codes].map()` form) parsed on the client with
+  # Pure JSON (dict = 0, so no `[codes].map()` form) parsed on the client with
   # JSON.parse -- faster than evaluating an object literal for data this large.
-  store_json <- local({
-    old <- options(xfun.tojson.dict = 0)
-    on.exit(options(old))
-    xfun::tojson(store_list)
-  })
+  store_json <- xfun::tojson(store_list, dict = 0)
   # the JSON text as a JS string literal for JSON.parse (as.character() drops the
   # "json" class so tojson quotes/escapes it rather than passing it through)
   specs_json <- xfun::tojson(as.character(store_json))
@@ -495,8 +491,18 @@ ae_forestly <- function(outdata,
     htmltools::tagList(
       lt::lt_dependency(interactive = TRUE, plot = TRUE),
       html_dependency_forestly_widgets(),
-      html_dependency_ae_drilldown(),
       htmltools::HTML(format(x, assets = FALSE))
     )
+  )
+}
+
+# Styles for the AE forest table and its drill-down listings.
+html_dependency_forestly_widgets <- function() {
+  htmltools::htmlDependency(
+    name = "forestly-widgets",
+    version = "0.1.0",
+    src = system.file("css", package = "forestly"),
+    stylesheet = c("forestly-widgets.css"),
+    all_files = FALSE
   )
 }

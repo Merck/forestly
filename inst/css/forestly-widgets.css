@@ -21,8 +21,18 @@
     }
   }
 
-  /* Highlight the hovered data row (not the detail drill-down or header). */
-  tbody tr:not(.lti-detail):hover > td {
-    background: #f0f4fa;
+  /* Bold headers and zebra rows for every table -- main forest plot and the
+     drill-down detail listings alike. */
+  thead th { font-weight: bold; }
+
+  /* Scope zebra to real data rows (skip the .lti-detail drill-down row so its
+     expanded panel isn't tinted as a unit). */
+  tbody tr:not(.lti-detail):nth-child(even) > * { background: #fafafa; }
+
+  /* Drill-down detail listings: smaller type, tighter rows, no top rule. */
+  .lti-detail .lt-table {
+    border-top: none;
+    font-size: 0.9em;
+    th, td { padding-block: 2px; }
   }
 }

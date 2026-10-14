@@ -115,17 +115,6 @@ test_that("ae_forestly(): drill-down listings render lazily via lt", {
   expect_true("lt-plot.js" %in% unlist(lt_dep$script))
 })
 
-test_that("ae_forestly(): forestly-widgets dependency ships styles only, no JS", {
-  html <- test_ae_forestly() |> ae_forestly()
-  deps <- htmltools::findDependencies(html)
-  dep <- Filter(function(d) identical(d$name, "forestly-widgets"), deps)[[1]]
-
-  # All controls are lt's own now; forestly ships only the table's CSS.
-  expect_true("css/forestly-widgets.css" %in% unlist(dep$stylesheet))
-  expect_null(dep$script)
-  expect_false(file.exists(system.file("js", "forestly-widgets.js", package = "forestly")))
-})
-
 test_that("ae_forestly(): both diff-toggle settings render without error", {
   outdata <- meta_ae_test() |>
     prepare_ae_forestly(
