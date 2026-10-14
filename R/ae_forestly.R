@@ -228,12 +228,14 @@ ae_forestly <- function(outdata,
   # Shrink every embedded JSON payload (the listing store below and the main
   # table serialized by lt's `format()`): all go through xfun::tojson(), which
   # reads these options -- dictionary-encode repetitive columns, drop whitespace,
-  # and pack long integer columns as base64. `pack = "js"` emits a self-contained
+  # and pack long integer columns as base64. `mode = "js"` emits a self-contained
   # expression (lt evaluates the spec, so it decodes with no extra code); the
   # listing store below opts back out, packing its own and parsing with JSON.parse.
+  # `pack` is the length threshold (Inf, the default, disables packing).
   # Scoped so the user's session options are left untouched.
   old_opt <- options(
-    xfun.tojson.dict = 0.5, xfun.tojson.pretty = FALSE, xfun.tojson.pack = list(mode = "js")
+    xfun.tojson.dict = 0.5, xfun.tojson.pretty = FALSE,
+    xfun.tojson.pack = 100, xfun.tojson.mode = "js"
   )
   on.exit(options(old_opt), add = TRUE)
 
@@ -304,10 +306,11 @@ ae_forestly <- function(outdata,
     rec_mask[recs] <- bitwOr(rec_mask[recs], bitwShiftL(1L, p - 1L))
   }
   # Base64-pack an integer vector (little-endian typed array) via xfun; nested in
-  # the store, tojson() emits it raw. pack = 0 forces packing (valid-JSON "json"
-  # mode, not a JS .map()); dict = 0 keeps it a bare packed object (not a dict),
-  # so the client's unpack() always sees a single width-tagged value.
-  pack_vec <- function(x) xfun::tojson(x, pack = 0, dict = 0)
+  # the store, tojson() emits it raw. pack = 0 forces packing; mode = "json" emits
+  # the valid-JSON packed object (not a JS .map()); dict = 0 keeps it a bare packed
+  # object (not a dict), so the client's unpack() always sees a single
+  # width-tagged value.
+  pack_vec <- function(x) xfun::tojson(x, pack = 0, dict = 0, mode = "json")
   # Dictionary-encode a column as {u: uniques, c: packed 0-based codes} when values
   # repeat enough to pay off, else ship it plain. forestly owns this {u, c} shape
   # (see colGet); its only tie to xfun is unpack(), which decodes `c` client-side.
@@ -327,7 +330,7 @@ ae_forestly <- function(outdata,
   # Columns are already encoded, so serialize structurally (no dict/pack here).
   # Parsed with JSON.parse on the client (faster than evaluating an object
   # literal) and decoded lazily, column by column, as details open.
-  store_json <- xfun::tojson(store_list, dict = 0, pack = Inf, pretty = FALSE)
+  store_json <- xfun::tojson(store_list, dict = 0, pack = Inf, mode = "json")
   # the JSON text as a JS string literal for JSON.parse (as.character() drops the
   # "json" class so tojson quotes/escapes it rather than passing it through)
   specs_json <- xfun::tojson(as.character(store_json))
