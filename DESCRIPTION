@@ -35,7 +35,7 @@ Imports:
     metalite,
     metalite.ae,
     ggplot2 (>= 3.5.0),
-    xfun (>= 0.61.4)
+    xfun (>= 0.61.7)
 Suggests:
     covr,
     dplyr,

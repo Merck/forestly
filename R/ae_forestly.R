@@ -227,9 +227,14 @@ ae_forestly <- function(outdata,
 
   # Shrink every embedded JSON payload (the listing store below and the main
   # table serialized by lt's `format()`): all go through xfun::tojson(), which
-  # reads these options -- dictionary-encode repetitive columns, drop whitespace.
+  # reads these options -- dictionary-encode repetitive columns, drop whitespace,
+  # and pack long integer columns as base64. `pack = "js"` emits a self-contained
+  # expression (lt evaluates the spec, so it decodes with no extra code); the
+  # listing store below opts back out, packing its own and parsing with JSON.parse.
   # Scoped so the user's session options are left untouched.
-  old_opt <- options(xfun.tojson.dict = 0.5, xfun.tojson.pretty = FALSE)
+  old_opt <- options(
+    xfun.tojson.dict = 0.5, xfun.tojson.pretty = FALSE, xfun.tojson.pack = list(mode = "js")
+  )
   on.exit(options(old_opt), add = TRUE)
 
   # ---- Drill-down detail (native lt row detail) ----
@@ -278,26 +283,12 @@ ae_forestly <- function(outdata,
   # 0-based index of each listing row's distinct record (first-appearance order).
   ref <- match(rec_key, rec_key[u_first]) - 1L
 
-  # Ship each column as data the callback decodes on demand: dictionary-encoded
-  # `{u: uniques, c: codes}` when repetitive, else plain `{p: values}`. The codes
-  # (and the per-parameter record indices) are the bulk, so they travel as a
-  # base64 little-endian typed array `{b, w, n}` (w = 1/2/4 bytes by range) rather
-  # than a JSON number array: ~1-2 bytes per value instead of digits+commas, and
-  # the client turns each into a TypedArray far faster than parsing a huge number
-  # array. The callback decodes only the columns of the detail opened.
-  pack <- function(ints) {
-    ints <- as.integer(ints)
-    m <- if (length(ints)) max(ints) else 0L
-    w <- if (m <= 255L) 1L else if (m <= 65535L) 2L else 4L
-    list(b = xfun::base64_encode(writeBin(ints, raw(), size = w, endian = "little")),
-         w = w, n = length(ints))
-  }
-  enc <- function(x) {
-    if (is.numeric(x)) x <- round(x, detail_decimals) else if (is.factor(x)) x <- as.character(x)
-    u <- unique(x)
-    if (length(u) <= 0.5 * length(x)) list(u = u, c = pack(match(x, u) - 1L)) else list(p = x)
-  }
-  detail_records <- lapply(ae_listing[detail_cols], function(x) enc(x[u_row]))
+  # One row per distinct record (u_row). Round numerics (lt needs no lt_format);
+  # encoding (below) handles factors.
+  detail_records <- lapply(ae_listing[detail_cols], function(x) {
+    x <- x[u_row]
+    if (is.numeric(x)) round(x, detail_decimals) else x
+  })
   names(detail_records) <- detail_cols
 
   # Which parameters each distinct record belongs to, as one bitmask per record
@@ -312,17 +303,31 @@ ae_forestly <- function(outdata,
     recs <- unique(ref[pnum == p]) + 1L
     rec_mask[recs] <- bitwOr(rec_mask[recs], bitwShiftL(1L, p - 1L))
   }
+  # Base64-pack an integer vector (little-endian typed array) via xfun; nested in
+  # the store, tojson() emits it raw. pack = 0 forces packing (valid-JSON "json"
+  # mode, not a JS .map()); dict = 0 keeps it a bare packed object (not a dict),
+  # so the client's unpack() always sees a single width-tagged value.
+  pack_vec <- function(x) xfun::tojson(x, pack = 0, dict = 0)
+  # Dictionary-encode a column as {u: uniques, c: packed 0-based codes} when values
+  # repeat enough to pay off, else ship it plain. forestly owns this {u, c} shape
+  # (see colGet); its only tie to xfun is unpack(), which decodes `c` client-side.
+  enc_col <- function(x) {
+    u <- unique(x)
+    if (length(u) > 0.5 * length(x)) return(x)   # too few repeats: plain array
+    list(u = u, c = pack_vec(match(x, u) - 1L))
+  }
   store_list <- list(
     tpl = detail_tpl,
-    records = detail_records,
+    records = lapply(detail_records, enc_col),
     params = params,
-    pmask = pack(rec_mask)
+    pmask = pack_vec(rec_mask)
   )
   # Per-record SOC, only in SOC-display mode (see `has_soc`).
-  if (has_soc) store_list$soc <- enc(ae_listing$SOC_Name[u_row])
-  # Pure JSON (dict = 0, so no `[codes].map()` form) parsed on the client with
-  # JSON.parse -- faster than evaluating an object literal for data this large.
-  store_json <- xfun::tojson(store_list, dict = 0)
+  if (has_soc) store_list$soc <- enc_col(ae_listing$SOC_Name[u_row])
+  # Columns are already encoded, so serialize structurally (no dict/pack here).
+  # Parsed with JSON.parse on the client (faster than evaluating an object
+  # literal) and decoded lazily, column by column, as details open.
+  store_json <- xfun::tojson(store_list, dict = 0, pack = Inf, pretty = FALSE)
   # the JSON text as a JS string literal for JSON.parse (as.character() drops the
   # "json" class so tojson quotes/escapes it rather than passing it through)
   specs_json <- xfun::tojson(as.character(store_json))
@@ -351,23 +356,21 @@ ae_forestly <- function(outdata,
     "(() => {
   // The listing payload is JSON, parsed on first expand (getStore): V8 only
   // pre-parses this closure body at load, so the parse happens off the initial-
-  // paint path. Columns stay dictionary-encoded as data, with codes/record-indices
-  // as base64 typed arrays decoded on demand (see unpack/colGet), so nothing is
-  // rebuilt until a detail needs it.
+  // paint path. Columns stay encoded as data, with codes/record-indices as base64
+  // typed arrays decoded on demand (see colGet), so nothing is rebuilt until a
+  // detail needs it.
   let store = null;
   const getStore = () => store || (store = JSON.parse(%s));
-  // {b: base64 little-endian, w: bytes/value, n: count} -> TypedArray
-  const unpack = (o) => {
-    const s = atob(o.b), u8 = new Uint8Array(s.length);
-    for (let i = 0; i < s.length; i++) u8[i] = s.charCodeAt(i);
-    return o.w === 1 ? u8 : o.w === 2 ? new Uint16Array(u8.buffer) : new Uint32Array(u8.buffer);
-  };
-  // Decode a column cell by distinct-record index: {u: uniques, c: codes} or
-  // {p: values}. Codes decode once, then memoize in place.
+  // xfun's unpack(): decode one base64-packed integer object to a typed array
+%s
+  // Decode a cell by record index. A column is a plain array, a dict
+  // {u: uniques, c: packed codes}, or bare packed ints (pmask); decode once,
+  // memoizing the typed array in place.
   const colGet = (col) => {
-    if (col.p) return (i) => col.p[i];
-    const c = col.c.b ? (col.c = unpack(col.c)) : col.c;
-    return (i) => col.u[c[i]];
+    if (Array.isArray(col)) return (i) => col[i];
+    if (col.u) { const c = col._c || (col._c = unpack(col.c)); return (i) => col.u[c[i]]; }
+    const a = col._a || (col._a = unpack(col));
+    return (i) => a[i];
   };
   const groups = %s, selected = new Set(groups);
   const maps = Object.create(null);     // param -> Map(UPPER term/soc -> [record idx])
@@ -381,7 +384,7 @@ ae_forestly <- function(outdata,
     const pIdx = s.params.indexOf(param);
     if (pIdx < 0) return m;
     const bit = 1 << pIdx;
-    if (s.pmask.b) s.pmask = unpack(s.pmask);             // decode once, memoize
+    if (!Array.isArray(s.pmask)) s.pmask = unpack(s.pmask);   // decode once, memoize
     const mask = s.pmask;
     const evAt = colGet(s.records.Adverse_Event), soAt = s.soc && colGet(s.soc);
     const add = (k, r) => { const a = m.get(k); a ? a.push(r) : m.set(k, [r]); };
@@ -427,7 +430,7 @@ ae_forestly <- function(outdata,
     tbl._lt.chips.append(chip.el);
   });
   return build;
-})()", specs_json, group_json, group_label_json))
+})()", specs_json, xfun::json_unpack, group_json, group_label_json))
 
   # ---- Build the interactive lt table ----
   built <- format_lt_forestly(
