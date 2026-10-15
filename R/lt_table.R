@@ -121,7 +121,7 @@ format_lt_forestly <- function(outdata,
     axis = TRUE,
     hide = FALSE # the per-arm proportions stay visible as numeric columns
   )
-  x <- lt::lt_label(x, stats::setNames(list("AE Proportion (%)"), pfig))
+  x <- lt::lt_label(x, list(pfig, "AE Proportion (%)"))
 
   # Inline risk-difference error-bar: one point + 95% CI per comparison, stacked,
   # shared scale, zero reference line, favor-direction axis label. Color + legend
@@ -146,7 +146,7 @@ format_lt_forestly <- function(outdata,
         hide = FALSE # CI bounds stay hidden via fully_hidden; keep the diffs
       )
     ))
-    x <- lt::lt_label(x, stats::setNames(list(I(outdata$diff_fig_header)), dfig))
+    x <- lt::lt_label(x, list(dfig, I(outdata$diff_fig_header)))
   }
 
   # Place the synthesized figure columns right after SOC (before the numeric
@@ -154,17 +154,12 @@ format_lt_forestly <- function(outdata,
   x <- lt::lt_move(x, c(pfig, dfig), after = "soc_name")
 
   # Column widths (px). The synthesized figure columns carry the figure width.
-  widths <- stats::setNames(
-    as.list(c(
-      paste0(w$term, "px"), paste0(w$term, "px"),
-      rep(c(paste0(w$n, "px"), paste0(w$prop, "px")), m),
-      paste0(w$fig, "px")
-    )),
-    c("name", "soc_name", arm_cols, pfig)
+  width_cols <- c("name", "soc_name", arm_cols, pfig, diff_name, if (nd > 0) dfig)
+  width_px <- c(
+    rep(w$term, 2), rep(c(w$n, w$prop), m), w$fig,
+    rep(w$diff, nd), if (nd > 0) w$fig
   )
-  for (nm in diff_name) widths[[nm]] <- paste0(w$diff, "px")
-  if (nd > 0) widths[[dfig]] <- paste0(w$fig, "px")
-  x <- do.call(lt::lt_width, c(list(x), widths))
+  x <- lt::lt_width(x, list(width_cols, paste0(width_px, "px")))
 
   # Decide show/hide handling for SOC and numeric diff columns.
   fully_hidden <- c("parameter", "hide_prop", "hide_n", lo_name, up_name)
