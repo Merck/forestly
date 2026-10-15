@@ -85,9 +85,7 @@ format_lt_forestly <- function(outdata,
   x <- lt::lt(tbl, auto_format = FALSE, auto_label = FALSE)
 
   # Column labels: arm n/(%), numeric diff header per comparison arm.
-  labels <- stats::setNames(
-    as.list(c(outdata$ae_col_header, "SOC")), c("name", "soc_name")
-  )
+  labels <- list(name = outdata$ae_col_header, soc_name = "SOC")
   for (nm in name_n) labels[[nm]] <- "n"
   for (nm in name_prop) labels[[nm]] <- "(%)"
   for (k in seq_len(nd)) labels[[diff_name[k]]] <- group[outdata$index_diff[k]]
