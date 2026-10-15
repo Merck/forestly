@@ -87,11 +87,3 @@ meta |>
   ae_forestly(display_diff_toggle = TRUE,
               display_soc_toggle = TRUE)
 ```
-
-AE Criteria
-
-Incidence (%) in One or More Treatment Groups
-
-Show/Hide SOC column
-
-Show/Hide Risk Difference

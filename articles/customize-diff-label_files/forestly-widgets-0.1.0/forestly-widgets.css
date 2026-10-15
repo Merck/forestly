@@ -1,0 +1,38 @@
+.forestly-ae {
+  /* Natural table width, centered (margin-left:50% + translateX back half its
+     width), capped below the viewport so a wider table breaks out of a narrow
+     parent yet still scrolls inside `.lt-wrap` rather than adding a page
+     scrollbar. 40px slack ~ scrollbar + gutter; CSS can't read the real width. */
+  width: max-content;
+  max-width: calc(100vw - 40px);
+  margin-left: 50%;
+  transform: translateX(-50%);
+
+  /* One line per body-data cell, clipped with an ellipsis, full text on hover;
+     skip figure (svg) cells. Header (thead), footer (tfoot) and drill-down
+     detail (.lti-detail) cells are exempt and wrap normally -- the header holds
+     group labels and the filter chips/funnels/popovers, detail holds free text. */
+  td:not(.lti-detail *, thead *, tfoot *) {
+    white-space: nowrap;
+
+    &:not(:hover):not(:has(svg)) {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  /* Bold headers and zebra rows for every table -- main forest plot and the
+     drill-down detail listings alike. */
+  thead th { font-weight: bold; }
+
+  /* Scope zebra to real data rows (skip the .lti-detail drill-down row so its
+     expanded panel isn't tinted as a unit). */
+  tbody tr:not(.lti-detail):nth-child(even) > * { background: #fafafa; }
+
+  /* Drill-down detail listings: smaller type, tighter rows, no top rule. */
+  .lti-detail .lt-table {
+    border-top: none;
+    font-size: 0.9em;
+    th, td { padding-block: 2px; }
+  }
+}

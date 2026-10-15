@@ -104,9 +104,3 @@ meta |>
   format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff", "total")) |>
   ae_forestly()
 ```
-
-AE Criteria
-
-Incidence (%) in One or More Treatment Groups
-
-Show/Hide SOC column

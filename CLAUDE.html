@@ -51,7 +51,7 @@
 
 <div class="section level2">
 <h2 id="project-overview">Project Overview<a class="anchor" aria-label="anchor" href="#project-overview"></a></h2>
-<p>This is the forestly R package, which creates interactive forest plots for clinical trial data analysis. The package is built on top of metalite and metalite.ae packages and uses reactable for interactive tables with Plotly.js for interactive visualizations.</p>
+<p>This is the forestly R package, which creates interactive forest plots for clinical trial data analysis. The package is built on top of metalite and metalite.ae packages and uses the <code>lt</code> package (yihui/lt) for interactive tables with inline SVG figures (dot plots and error bars) drawn client-side.</p>
 </div>
 <div class="section level2">
 <h2 id="development-guidelines">Development Guidelines<a class="anchor" aria-label="anchor" href="#development-guidelines"></a></h2>
@@ -63,7 +63,7 @@
 </li>
 <li>Run specific test files using: <code>devtools::test(filter = "filename")</code>
 </li>
-<li>Before running tests, ensure required packages are installed (metalite, metalite.ae, reactable, reactR)</li>
+<li>Before running tests, ensure required packages are installed (metalite, metalite.ae, lt (&gt;= 0.4.21))</li>
 </ul></div>
 <div class="section level3">
 <h3 id="code-style">Code Style<a class="anchor" aria-label="anchor" href="#code-style"></a></h3>
@@ -74,13 +74,13 @@
 <div class="section level3">
 <h3 id="key-functions">Key Functions<a class="anchor" aria-label="anchor" href="#key-functions"></a></h3>
 <ul><li>
-<code><a href="reference/ae_forestly.html">ae_forestly()</a></code>: Main function to create interactive forest plots</li>
+<code><a href="reference/ae_forestly.html">ae_forestly()</a></code>: Main function to create interactive forest plots (layers <code><a href="https://rdrr.io/pkg/lt/man/lt_interactive.html" class="external-link">lt::lt_interactive()</a></code> with the detail drill-down, typed filters, and CSV download on top of the structural table)</li>
 <li>
-<code><a href="reference/format_ae_forestly.html">format_ae_forestly()</a></code>: Formats AE data and configures Plotly visualizations</li>
+<code><a href="reference/format_ae_forestly.html">format_ae_forestly()</a></code>: Formats AE data and computes figure metadata (ranges, colors, headers, widths) for the inline dot plot / error bar</li>
+<li>
+<code>format_lt_forestly()</code>: Builds the structural <code>lt</code> table (interaction-free; in <code>R/lt_table.R</code>)</li>
 <li>
 <code>format_ae_listing()</code>: Formats AE listing data</li>
-<li>
-<code>sparkline_point_js()</code>: Generates JavaScript/Plotly code for interactive sparkline plots</li>
 <li>
 <code>propercase()</code>: Converts strings to proper case (handles factors)</li>
 <li>
@@ -120,10 +120,10 @@
 <h2 id="package-dependencies">Package Dependencies<a class="anchor" aria-label="anchor" href="#package-dependencies"></a></h2>
 <ul><li>metalite</li>
 <li>metalite.ae</li>
-<li>reactable</li>
-<li>reactR</li>
-<li>plotly (via JavaScript integration)</li>
-<li>brew (for template processing)</li>
+<li>lt (&gt;= 0.4.21) — interactive tables + inline SVG figures</li>
+<li>htmltools</li>
+<li>ggplot2 (static forest/table panels)</li>
+<li>xfun</li>
 <li>tools (base R)</li>
 </ul></div>
 <div class="section level2">
@@ -135,10 +135,9 @@
 <ul><li>The <code>ae_listing.R</code> file contains functions that handle factor inputs, which was a recent fix</li>
 <li>Test files should use <code>devtools::load_all()</code> or source the R files directly for testing</li>
 <li>The package uses testthat for unit testing framework</li>
-<li>Interactive plots use Plotly.js via JavaScript templates in <code>inst/js/</code>
-</li>
-<li>The y-axis ordering in <code>format_ae_forestly.R</code> affects the visual display in interactive plots</li>
-<li>When debugging interactive plot issues, check both R code and JavaScript template files</li>
+<li>The main interactive table is a single <code>lt</code> table: <code>format_lt_forestly()</code> builds the structure (per-arm columns, spanners, <code>lt_dotplot</code> proportion figure, <code>lt_errorbar</code> risk-difference figure, hidden helper columns), and <code><a href="reference/ae_forestly.html">ae_forestly()</a></code> makes it interactive and adds the drill-down (all controls are lt’s own)</li>
+<li>the AE-criteria dropdown and incidence slider are lt typed filters, declared via <code>lt_interactive(filter = ...)</code> in <code><a href="reference/ae_forestly.html">ae_forestly()</a></code> (e.g. <code>filter = list(parameter = list(type = "select", ...), hide_prop = list(type = "range", ...))</code>) and bound to the hidden helper columns (<code>parameter</code>, <code>hide_prop</code>/<code>hide_n</code>); lt renders them automatically (funnel under a visible column’s header, chip in the control bar for a hidden column). The CSV download is lt’s own <code>lt_interactive(download = ...)</code> control. forestly ships no widget JavaScript of its own anymore; <code>inst/css/forestly-widgets.css</code> carries only the table’s cell-truncation styles</li>
+<li>When debugging interactive plot issues, check both the R code (<code>R/lt_table.R</code>, <code>R/ae_forestly.R</code>) and the <code>lt</code> package JS runtime (<code>../lt/inst/www/lt-interactive.js</code>, <code>lt-plot.js</code>)</li>
 </ul></div>
 </div>
 

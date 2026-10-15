@@ -83,9 +83,3 @@ meta |>
   format_ae_forestly() |>
   ae_forestly()
 ```
-
-AE Criteria
-
-Incidence (%) in One or More Treatment Groups
-
-Show/Hide SOC column

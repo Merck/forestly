@@ -175,31 +175,44 @@ meta <- metalite::meta_adam(population = adsl, observation = adae) |>
 meta |>
   prepare_ae_forestly(parameter = "any") |>
   format_ae_forestly()
-#> List of 26
-#>  $ meta                   :List of 7
-#>  $ population             : chr "apat"
-#>  $ observation            : chr "wk12"
-#>  $ parameter              : chr "any"
-#>  $ n                      :'data.frame': 190 obs. of  3 variables:
-#>  $ order                  : num [1:190] 1021 1022 1023 1024 1025 ...
-#>  $ group                  : chr [1:3] "Low Dose" "Placebo" "Total"
-#>  $ reference_group        : num 2
-#>  $ parameter_order        : Factor w/ 1 level "any": 1 1 1 1 1 1 1 1 1 1 ...
-#>  $ components             : chr "par"
-#>  $ prop                   :'data.frame': 190 obs. of  3 variables:
-#>  $ diff                   :'data.frame': 190 obs. of  1 variable:
-#>  $ n_pop                  :'data.frame': 1 obs. of  3 variables:
-#>  $ name                   : chr [1:190] "Atrial fibrillation" "Atrial flutter" "Atrial hypertrophy" "Atrioventricular block first degree" ...
-#>  $ soc_name               : chr [1:190] "CARDIAC DISORDERS" "CARDIAC DISORDERS" "CARDIAC DISORDERS" "CARDIAC DISORDERS" ...
-#>  $ ci_lower               :'data.frame': 190 obs. of  1 variable:
-#>  $ ci_upper               :'data.frame': 190 obs. of  1 variable:
-#>  $ p                      :'data.frame': 190 obs. of  1 variable:
-#>  $ ae_listing             :'data.frame': 736 obs. of  16 variables:
-#>  $ tbl                    :'data.frame': 190 obs. of  14 variables:
-#>  $ reactable_columns      :List of 14
-#>  $ reactable_columns_group:List of 3
-#>  $ display                : chr [1:4] "n" "prop" "fig_prop" "fig_diff"
-#>  $ fig_prop_color         : chr [1:2] "#00857C" "#66203A"
-#>  $ fig_diff_color         : chr "#00857C"
-#>  $ hidden_column          : chr [1:6] "parameter" "diff_1" "lower_1" "upper_1" ...
+#> List of 39
+#>  $ meta           :List of 7
+#>  $ population     : chr "apat"
+#>  $ observation    : chr "wk12"
+#>  $ parameter      : chr "any"
+#>  $ n              :'data.frame': 190 obs. of  3 variables:
+#>  $ order          : num [1:190] 1021 1022 1023 1024 1025 ...
+#>  $ group          : chr [1:3] "Low Dose" "Placebo" "Total"
+#>  $ reference_group: num 2
+#>  $ parameter_order: Factor w/ 1 level "any": 1 1 1 1 1 1 1 1 1 1 ...
+#>  $ components     : chr "par"
+#>  $ prop           :'data.frame': 190 obs. of  3 variables:
+#>  $ diff           :'data.frame': 190 obs. of  1 variable:
+#>  $ n_pop          :'data.frame': 1 obs. of  3 variables:
+#>  $ name           : chr [1:190] "Atrial fibrillation" "Atrial flutter" "Atrial hypertrophy" "Atrioventricular block first degree" ...
+#>  $ soc_name       : chr [1:190] "CARDIAC DISORDERS" "CARDIAC DISORDERS" "CARDIAC DISORDERS" "CARDIAC DISORDERS" ...
+#>  $ ci_lower       :'data.frame': 190 obs. of  1 variable:
+#>  $ ci_upper       :'data.frame': 190 obs. of  1 variable:
+#>  $ p              :'data.frame': 190 obs. of  1 variable:
+#>  $ ae_listing     :'data.frame': 736 obs. of  16 variables:
+#>  $ tbl            :'data.frame': 190 obs. of  12 variables:
+#>  $ display        : chr [1:4] "n" "prop" "fig_prop" "fig_diff"
+#>  $ digits         : num 1
+#>  $ fig_prop_range : num [1:2] -2 29
+#>  $ fig_diff_range : num [1:2] -16 32
+#>  $ fig_prop_color : chr [1:2] "#00857C" "#66203A"
+#>  $ fig_diff_color : chr "#00857C"
+#>  $ diff_label     : chr "Treatment <- Favor -> Placebo"
+#>  $ ae_col_header  : chr "Adverse Event"
+#>  $ diff_col_header: chr "Risk Difference (%) <br> vs. Placebo"
+#>  $ diff_fig_header: chr "Risk Difference (%) + 95% CI <br> vs. Placebo"
+#>  $ n_group        : num 2
+#>  $ m_group        : num 2
+#>  $ name_n         : chr [1:2] "n_1" "n_2"
+#>  $ name_prop      : chr [1:2] "prop_1" "prop_2"
+#>  $ diff_name      : chr "diff_1"
+#>  $ ci_lower_name  : chr "lower_1"
+#>  $ ci_upper_name  : chr "upper_1"
+#>  $ index_diff     : num 1
+#>  $ widths         :List of 6
 ```

@@ -209,62 +209,77 @@ Rmarkdown. Rewrite <code>ae_download_report</code> to allow it use
 <span><span class="fu">tlf_download</span><span class="op">(</span><span class="op">)</span>    <span class="co"># download the above tables</span></span></code></pre>
 </div>
 <div class="section level2">
-<h2 id="main-function-3-forestly">Main function 3: <code>forestly()</code><a class="anchor" aria-label="anchor" href="#main-function-3-forestly"></a>
+<h2 id="main-function-3-ae_forestly">Main function 3: <code>ae_forestly()</code><a class="anchor" aria-label="anchor" href="#main-function-3-ae_forestly"></a>
 </h2>
-<p>This function generates an interactive forest plot for the returned
-objected of <code>tidy_ae_table()</code>. For this interactive forstly
-plot, it consists two blocks.</p>
-<p>The first block is a select list. The items listed in the select list
-is specified by the <code>ae_label =</code> in function
-<code>tidy_ae_table(..., ae_interested = , ...)</code>. By clicking
-different AE labels, different reactable will be generated. For example,
-if you click “serious AE”, then the reactable will only display the
-serious AE summary table. The main tool to develop this block is
-<code><a href="https://rdrr.io/pkg/crosstalk/man/filter_select.html" class="external-link">crosstalk::filter_select()</a></code>.</p>
-<p>The second block is a reactable. The reactable summarizes the AE
-information under the selected AE label. The main tool to develop this
-block is <code><a href="https://glin.github.io/reactable/reference/reactable.html" class="external-link">reactable::reactable()</a></code>.</p>
+<p>This function generates an interactive forest plot for the object
+returned by <code><a href="../reference/format_ae_forestly.html">format_ae_forestly()</a></code>. The interactive forest
+plot is built on the <a href="https://github.com/yihui/lt" class="external-link">lt</a>
+package: the main table and the inline figures are a single
+<code>lt</code> table made interactive with
+<code><a href="https://rdrr.io/pkg/lt/man/lt_interactive.html" class="external-link">lt::lt_interactive()</a></code>, surrounded by a few forestly-owned
+HTML controls.</p>
+<p>The output has two kinds of pieces.</p>
+<p>The first is the forestly controls (an ordinary
+<code>&lt;div&gt;</code> of HTML widgets): a parameter dropdown, an
+incidence range slider, and an optional CSV download button. They are
+plain DOM elements, not part of the table. On change they drive the
+table through the controller <code>lt</code> exposes on the rendered
+table element as <code>el._lt</code>, calling
+<code>el._lt.filter(id, fn)</code> to install a row predicate. The
+slider and dropdown filter on hidden helper columns
+(<code>hide_prop</code>/<code>hide_n</code> and <code>parameter</code>)
+that stay in the table spec but are hidden from view. This logic lives
+in <code>inst/js/forestly-widgets.js</code> and needs no
+<code>crosstalk</code>.</p>
+<p>The second is the <code>lt</code> table itself, which summarizes the
+AE information:</p>
+<ul>
+<li>Per-arm <code>n</code>/<code>(%)</code> columns grouped under
+treatment-group spanners.</li>
+<li>An inline proportion dot plot drawn by <code><a href="https://rdrr.io/pkg/lt/man/lt_dotplot.html" class="external-link">lt::lt_dotplot()</a></code>
+(one staggered dot per arm on a shared scale, with a footer
+legend).</li>
+<li>An inline risk-difference error bar drawn by
+<code><a href="https://rdrr.io/pkg/lt/man/lt_errorbar.html" class="external-link">lt::lt_errorbar()</a></code> (one point and 95% CI per comparison,
+with a zero reference line and a favor-direction axis).</li>
+<li>Expandable row detail (<code>lt_interactive(detail=)</code>):
+clicking a row’s caret renders that term’s AE listing as its own small
+interactive <code>lt</code> table, assembled on demand from a listing
+shipped once (see below).</li>
+</ul>
 <p>There are some utility functions used to develop
-<code>forestly()</code> and we listed them as follows.</p>
+<code><a href="../reference/ae_forestly.html">ae_forestly()</a></code>:</p>
 <ul>
 <li>
-<p><code>forestly_design_details()</code>: This function returns the
-design details of the reactable in the forest plot, including</p>
+<p><code>format_lt_forestly()</code>: Turns
+<code><a href="../reference/format_ae_forestly.html">format_ae_forestly()</a></code>’s <code>outdata</code> into the
+structural <code>lt</code> table (columns, labels, spanners, the dot
+plot and error bar, column widths, hidden helper columns). It is
+deliberately interaction-free so it can be tested in isolation;
+<code><a href="../reference/ae_forestly.html">ae_forestly()</a></code> layers <code>lt_interactive()</code> and the
+controls on top. The figure design is driven by metadata that
+<code><a href="../reference/format_ae_forestly.html">format_ae_forestly()</a></code> computes once across all rows:</p>
 <ul>
-<li>the design details of the cell of the two proportions;</li>
-<li>the design details of the cell of the CI;</li>
-<li>the design details of the footer of the two proportions;</li>
-<li>the design details of the footer of the CI.</li>
-</ul>
-<p>These design details are returned by another utility function
-<code>sparkline_point_js()</code>, and we will introduce its details
-later.</p>
-<p>To generate the above design details, users need to specify the
-elements for the design, including</p>
-<ul>
-<li>color: the color for the two proportion/CI plot (see arguments
-<code>fig_prop_color =</code> and <code>fig_diff_color =</code>);</li>
-<li>label: the labels to be displayed under the two proportion/CI plot
-(see arguments <code>fig_prop_label =</code> and
-<code>fig_diff_label =</code>);</li>
-<li>column width: the column width of the two proportion/CI plot (see
-arguments <code>fig_prop_colwidth =</code> and
-<code>fig_diff_colwidth =</code>);</li>
-<li>range: the x-axis range to plot the two proportion/CI plot (see
-arguments <code>fig_prop_range =</code> and
-<code>fig_diff_range =</code>).</li>
+<li>color: <code>fig_prop_color</code> / <code>fig_diff_color</code>,
+passed to <code>lt_dotplot(color=)</code> /
+<code>lt_errorbar(color=)</code>;</li>
+<li>label: the arm names and the <code>diff_label</code> favor-direction
+axis;</li>
+<li>column width: the per-column widths in <code>outdata$widths</code>,
+passed to <code><a href="https://rdrr.io/pkg/lt/man/lt_width.html" class="external-link">lt::lt_width()</a></code>;</li>
+<li>range: <code>fig_prop_range</code> / <code>fig_diff_range</code>,
+passed to <code>lt_dotplot(limits=)</code> /
+<code>lt_errorbar(limits=)</code>.</li>
 </ul>
 </li>
-<li><p><code>sparkline_point_js()</code>: This function generates a
-Javascript to be rendered. It is used for the design details of
-reactables, including both the cell and the footer. It has dependence to
-the files under path
-<code>forestly/inst/js/sparkline.js</code>.</p></li>
-<li><p><code>mk_reactable()</code>: This function is used to create a
-data table from tabular data with sorting and pagination by default.
-Essentially, it is a wrapper of function <code>reactable()</code> for
-robust BAAMR usage. It has dependence to R package
-<code>reactable</code>.</p></li>
+<li><p>The drill-down listing is embedded once as a shared record store
+captured in the detail callback’s closure; each table row carries only
+the record indices it needs (run-length or delta encoded), so the
+listing is never duplicated per row. The <code>lt</code> interactivity
+(<code>lt-interactive.js</code>) and inline-plot
+(<code>lt-plot.js</code>) runtimes are bundled as HTML dependencies via
+<code><a href="https://rdrr.io/pkg/lt/man/lt_dependency.html" class="external-link">lt::lt_dependency()</a></code>; only the numbers travel to the client
+and the SVG is drawn in the browser.</p></li>
 </ul>
 </div>
 <div class="section level2">

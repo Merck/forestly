@@ -13,9 +13,9 @@ ae_forestly(
   filter_label = NULL,
   filter_range = NULL,
   ae_label = NULL,
-  width = 1400,
   max_page = NULL,
-  dowload_button = FALSE
+  download_button = FALSE,
+  width = NULL
 )
 ```
 
@@ -53,17 +53,21 @@ ae_forestly(
   range is automatically calculated from the data. If only one value is
   provided, it will be used as the maximum and minimum will be 0.
 
-- width:
-
-  A numeric value of width of the table in pixels.
-
 - max_page:
 
   A numeric value of max page number shown in the table.
 
-- dowload_button:
+- download_button:
 
   A logical value to display download button.
+
+- width:
+
+  Table container width, a number (interpreted as pixels) or any CSS
+  width value. If `NULL` (default), the table takes its natural width; a
+  value fixes the container width. Either way the width is capped at the
+  viewport, and a wider table scrolls inside rather than widening the
+  page.
 
 ## Value
 

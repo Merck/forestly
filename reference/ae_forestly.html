@@ -62,9 +62,9 @@
 <span>  filter_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  filter_range <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  ae_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  width <span class="op">=</span> <span class="fl">1400</span>,</span>
 <span>  max_page <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  dowload_button <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  download_button <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  width <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -102,16 +102,19 @@ If NULL (default), the range is automatically calculated from the data.
 If only one value is provided, it will be used as the maximum and minimum will be 0.</p></dd>
 
 
-<dt id="arg-width">width<a class="anchor" aria-label="anchor" href="#arg-width"></a></dt>
-<dd><p>A numeric value of width of the table in pixels.</p></dd>
-
-
 <dt id="arg-max-page">max_page<a class="anchor" aria-label="anchor" href="#arg-max-page"></a></dt>
 <dd><p>A numeric value of max page number shown in the table.</p></dd>
 
 
-<dt id="arg-dowload-button">dowload_button<a class="anchor" aria-label="anchor" href="#arg-dowload-button"></a></dt>
+<dt id="arg-download-button">download_button<a class="anchor" aria-label="anchor" href="#arg-download-button"></a></dt>
 <dd><p>A logical value to display download button.</p></dd>
+
+
+<dt id="arg-width">width<a class="anchor" aria-label="anchor" href="#arg-width"></a></dt>
+<dd><p>Table container width, a number (interpreted as pixels) or any
+CSS width value. If <code>NULL</code> (default), the table takes its natural width; a
+value fixes the container width. Either way the width is capped at the
+viewport, and a wider table scrolls inside rather than widening the page.</p></dd>
 
 </dl></div>
     <div class="section level2">

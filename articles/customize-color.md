@@ -85,9 +85,3 @@ meta |>
   format_ae_forestly(color = c("black", "grey60", "grey40")) |>
   ae_forestly()
 ```
-
-AE Criteria
-
-Incidence (%) in One or More Treatment Groups
-
-Show/Hide SOC column

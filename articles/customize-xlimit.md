@@ -90,9 +90,3 @@ meta |>
   format_ae_forestly(prop_range = c(-0.5, 30), diff_range = c(-10, 35)) |>
   ae_forestly()
 ```
-
-AE Criteria
-
-Incidence (%) in One or More Treatment Groups
-
-Show/Hide SOC column

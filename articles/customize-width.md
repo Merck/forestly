@@ -108,12 +108,6 @@ meta |>
   ae_forestly()
 ```
 
-AE Criteria
-
-Incidence (%) in One or More Treatment Groups
-
-Show/Hide SOC column
-
 ## Multiple, Long Treatment Labels Example
 
 ### Step 1: build example metadata
@@ -211,9 +205,3 @@ meta |>
   ) |>
   ae_forestly()
 ```
-
-AE Criteria
-
-Incidence (%) in One or More Treatment Groups
-
-Show/Hide SOC column
