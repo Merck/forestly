@@ -31,11 +31,11 @@ Depends:
     R (>= 4.1)
 Imports:
     htmltools,
-    lt (>= 0.4.45),
+    lt (>= 0.4.50),
     metalite,
     metalite.ae,
     ggplot2 (>= 3.5.0),
-    xfun (>= 0.61.7)
+    xfun (>= 0.62)
 Suggests:
     covr,
     dplyr,
@@ -45,8 +45,7 @@ Suggests:
     patchwork,
     testthat (>= 3.0.0)
 Remotes:
-    yihui/lt,
-    yihui/xfun
+    yihui/lt
 VignetteBuilder: knitr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)

@@ -250,9 +250,7 @@ ae_forestly <- function(outdata,
 
   detail_cols <- names(ae_listing)[!(names(ae_listing) %in% c("param", "SOC_Name"))]
   detail_labels <- unname(listing_label[match(detail_cols, names(listing_label))])
-  detail_label_map <- stats::setNames(
-    ifelse(is.na(detail_labels), detail_cols, detail_labels), detail_cols
-  )
+  detail_labels <- ifelse(is.na(detail_labels), detail_cols, detail_labels)
   # Numeric columns ship rounded (see `detail_records`), so lt needs no lt_format().
   detail_decimals <- 1L
 
@@ -261,7 +259,7 @@ ae_forestly <- function(outdata,
   skeleton_df <- ae_listing[0, detail_cols, drop = FALSE]
   row.names(skeleton_df) <- NULL
   skeleton <- lt::lt(skeleton_df, auto_format = FALSE, auto_label = FALSE)
-  skeleton <- lt::lt_label(skeleton, detail_label_map)
+  skeleton <- lt::lt_label(skeleton, list(detail_cols, detail_labels))
   detail_tpl <- lt::lt_spec(lt::lt_interactive(
     skeleton, sort = TRUE, search = FALSE, filter = TRUE, resize = TRUE
   ))
