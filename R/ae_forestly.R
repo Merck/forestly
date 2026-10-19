@@ -364,13 +364,18 @@ ae_forestly <- function(outdata,
   const getStore = () => store || (store = JSON.parse(%s));
   // xfun's unpack(): decode one base64-packed integer object to a typed array
 %s
+  // A short vector ships as a plain array (packing wouldn't shrink it). Older
+  // xfun's unpack() returns undefined for anything but a packed object, so pass
+  // arrays and decoded typed arrays through here (newer xfun does it itself).
+  // TODO: drop dec() and call unpack() directly once xfun >= 0.63 is on CRAN.
+  const dec = (o) => Array.isArray(o) || ArrayBuffer.isView(o) ? o : unpack(o);
   // Decode a cell by record index. A column is a plain array, a dict
   // {u: uniques, c: packed codes}, or bare packed ints (pmask); decode once,
   // memoizing the typed array in place.
   const colGet = (col) => {
     if (Array.isArray(col)) return (i) => col[i];
-    if (col.u) { const c = col._c || (col._c = unpack(col.c)); return (i) => col.u[c[i]]; }
-    const a = col._a || (col._a = unpack(col));
+    if (col.u) { const c = col._c || (col._c = dec(col.c)); return (i) => col.u[c[i]]; }
+    const a = col._a || (col._a = dec(col));
     return (i) => a[i];
   };
   const groups = %s, selected = new Set(groups);
@@ -385,7 +390,7 @@ ae_forestly <- function(outdata,
     const pIdx = s.params.indexOf(param);
     if (pIdx < 0) return m;
     const bit = 1 << pIdx;
-    if (!Array.isArray(s.pmask)) s.pmask = unpack(s.pmask);   // decode once, memoize
+    s.pmask = dec(s.pmask);   // decode once, memoize
     const mask = s.pmask;
     const evAt = colGet(s.records.Adverse_Event), soAt = s.soc && colGet(s.soc);
     const add = (k, r) => { const a = m.get(k); a ? a.push(r) : m.set(k, [r]); };
