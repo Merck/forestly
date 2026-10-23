@@ -24,11 +24,13 @@ ae_forestly(
 
 \item{display_diff_toggle}{A boolean value to display risk difference toggle button.}
 
-\item{filter}{A character value of the filter variable. If NULL, the slider bar will not be displayed.}
+\item{filter}{The variable the incidence slider (the "Incidence (\%) in One or
+More Treatment Groups" chip in the control bar) filters on: \code{"prop"} for
+incidence (\%) or \code{"n"} for the number of AEs. Use \code{NULL} to hide the slider.}
 
-\item{filter_label}{A character value of the label for slider bar.}
+\item{filter_label}{A character value of the label for the slider chip.}
 
-\item{filter_range}{A numeric vector of length 2 for the range of the slider bar.}
+\item{filter_range}{A numeric vector of length 2 for the range of the slider.}
 
 \item{ae_label}{A character value of the label for criteria.
 If NULL (default), the range is automatically calculated from the data.
