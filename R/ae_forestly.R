@@ -488,7 +488,9 @@ ae_forestly <- function(outdata,
     filter = filter_cfg,
     pager = max_page,
     resize = TRUE,
-    hide = built$hide_menu,
+    hide = if (!is.null(built$hide_menu)) {
+      list(label = "Show/Hide columns", columns = built$hide_menu)
+    },
     detail = detail_cb,
     # lt's own CSV download (current view, displayed text) in its control bar;
     # forestly no longer carries a bespoke download button.
