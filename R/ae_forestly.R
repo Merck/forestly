@@ -21,9 +21,11 @@
 #' @param outdata An `outdata` object created by [format_ae_forestly()].
 #' @param display_soc_toggle A boolean value to display SOC toggle button.
 #' @param display_diff_toggle A boolean value to display risk difference toggle button.
-#' @param filter A character value of the filter variable. If NULL, the slider bar will not be displayed.
-#' @param filter_label A character value of the label for slider bar.
-#' @param filter_range A numeric vector of length 2 for the range of the slider bar.
+#' @param filter The variable the incidence slider (the "Incidence (%) in One or
+#'   More Treatment Groups" chip in the control bar) filters on: `"prop"` for
+#'   incidence (%) or `"n"` for the number of AEs. Use `NULL` to hide the slider.
+#' @param filter_label A character value of the label for the slider chip.
+#' @param filter_range A numeric vector of length 2 for the range of the slider.
 #' @param ae_label A character value of the label for criteria.
 #'   If NULL (default), the range is automatically calculated from the data.
 #'   If only one value is provided, it will be used as the maximum and minimum will be 0.
