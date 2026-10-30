@@ -1,4 +1,4 @@
-# forestly 0.1.7
+# forestly 0.2.0
 
 ## Improvements
 
