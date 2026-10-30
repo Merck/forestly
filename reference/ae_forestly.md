@@ -36,16 +36,18 @@ ae_forestly(
 
 - filter:
 
-  A character value of the filter variable. If NULL, the slider bar will
-  not be displayed.
+  The variable the incidence slider (the "Incidence (%) in One or More
+  Treatment Groups" chip in the control bar) filters on: `"prop"` for
+  incidence (%) or `"n"` for the number of AEs. Use `NULL` to hide the
+  slider.
 
 - filter_label:
 
-  A character value of the label for slider bar.
+  A character value of the label for the slider chip.
 
 - filter_range:
 
-  A numeric vector of length 2 for the range of the slider bar.
+  A numeric vector of length 2 for the range of the slider.
 
 - ae_label:
 

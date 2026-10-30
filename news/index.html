@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">forestly</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.8</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -48,9 +48,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.1.7" id="forestly-017">forestly 0.1.7<a class="anchor" aria-label="anchor" href="#forestly-017"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.2.0" id="forestly-020">forestly 0.2.0<a class="anchor" aria-label="anchor" href="#forestly-020"></a></h2>
 <div class="section level3">
-<h3 id="improvements-0-1-7">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-1-7"></a></h3>
+<h3 id="improvements-0-2-0">Improvements<a class="anchor" aria-label="anchor" href="#improvements-0-2-0"></a></h3>
 <ul><li>Rebuild the entire <code><a href="../reference/ae_forestly.html">ae_forestly()</a></code> widget on the <code>lt</code> package (yihui/lt), replacing <code>reactable</code>, <code>reactR</code>, <code>crosstalk</code>, and the vendored Plotly. The forest table, its inline per-arm proportion dot plot (<code>lt_dotplot</code>) and risk-difference error bar (<code>lt_errorbar</code>), the AE-criteria dropdown and incidence slider (<code>lt</code> typed filters), the CSV download, and the per-row drill-down AE listings are all <code>lt</code> tables, made interactive with <code>lt_interactive()</code>; forestly ships no widget JavaScript of its own (<a href="https://github.com/Merck/forestly/issues/168" class="external-link">#168</a>).</li>
 <li>Drop the <code>crosstalk</code>, <code>reactable</code>, and <code>reactR</code> package dependencies; require <code>lt (&gt;= 0.5)</code>.</li>
 <li>Reveal a truncated table cell’s full text on hover; figure cells, the drill-down detail, and the control-bar and per-column filter rows (whose chips, funnels, and popovers must stay visible) are exempt.</li>
