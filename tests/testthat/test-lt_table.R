@@ -17,23 +17,22 @@ test_that("format_lt_forestly(): returns an lt_tbl and a hide-menu spec", {
   expect_true("hide_menu" %in% names(built))
 })
 
-test_that("format_lt_forestly(): SOC toggle controls the hide menu vs. hard hide", {
+test_that("format_lt_forestly(): SOC toggle offers or excludes the SOC column", {
   out <- helper_lt_outdata()
-
-  # No toggles -> no column-visibility menu at all.
-  built_none <- format_lt_forestly(out, display_soc_toggle = FALSE, display_diff_toggle = FALSE)
-  expect_null(built_none$hide_menu)
 
   # SOC toggle -> SOC column offered in the menu (starts hidden).
-  built_soc <- format_lt_forestly(out, display_soc_toggle = TRUE, display_diff_toggle = FALSE)
-  expect_true("soc_name" %in% built_soc$hide_menu)
+  expect_true("soc_name" %in% format_lt_forestly(out, display_soc_toggle = TRUE)$hide_menu)
+
+  # Excluded: not in the menu, and nowhere in the rendered table.
+  expect_false("soc_name" %in% format_lt_forestly(out, display_soc_toggle = FALSE)$hide_menu)
+  html <- paste(as.character(ae_forestly(out, display_soc_toggle = FALSE)), collapse = "")
+  expect_false(grepl("soc_name", html, fixed = TRUE))
 })
 
-test_that("format_lt_forestly(): diff toggle adds the numeric diff columns to the menu", {
+test_that("format_lt_forestly(): diff columns are offered in the show/hide menu", {
   out <- helper_lt_outdata()
-  built <- format_lt_forestly(out, display_soc_toggle = TRUE, display_diff_toggle = TRUE)
+  built <- format_lt_forestly(out)
 
   # diff columns are named after the comparison arms (diff_<k>).
-  diff_cols <- out$diff_name
-  expect_true(all(diff_cols %in% built$hide_menu))
+  expect_true(all(out$diff_name %in% built$hide_menu))
 })

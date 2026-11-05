@@ -43,7 +43,7 @@ test_that("ae_forestly(): no incidence filter when filter is NULL", {
   expect_false(grepl("One or More Treatment Groups", html_text, fixed = TRUE))
 })
 
-test_that("ae_forestly(): both diff-toggle settings render without error", {
+test_that("ae_forestly(): deprecated display_diff_toggle warns but still renders", {
   outdata <- meta_ae_test() |>
     prepare_ae_forestly(
       population = "apat",
@@ -52,6 +52,9 @@ test_that("ae_forestly(): both diff-toggle settings render without error", {
     ) |>
     format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff"))
 
-  expect_s3_class(ae_forestly(outdata, display_diff_toggle = FALSE), "shiny.tag.list")
-  expect_s3_class(ae_forestly(outdata, display_diff_toggle = TRUE), "shiny.tag.list")
+  expect_warning(
+    res <- ae_forestly(outdata, display_diff_toggle = TRUE),
+    "deprecated"
+  )
+  expect_s3_class(res, "shiny.tag.list")
 })
