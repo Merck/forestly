@@ -56,7 +56,8 @@ format_lt_forestly <- function(outdata,
   lo_name <- outdata$ci_lower_name
   up_name <- outdata$ci_upper_name
   nd <- length(diff_name)
-  diff_shown <- "diff" %in% outdata$display
+  display <- outdata$display
+  diff_shown <- "diff" %in% display
 
   # Each figure draws into its own dedicated column via `lt_*(into=)`: lt ships
   # only the column name (an `add_col` op) and the runtime materializes the
@@ -64,15 +65,27 @@ format_lt_forestly <- function(outdata,
   # proportion / diff stays visible as text (`hide = FALSE` below) and is read by
   # reference, and the CI bounds come from the hidden `lo_name`/`up_name`.
   prop_cols <- paste0("prop_", seq_len(ng))
-  pfig <- "prop_fig"                               # proportion dot-plot target
-  dfig <- if (nd > 0) "diff_fig" else NULL         # risk-difference error-bar target
-  ci_cols <- c(lo_name, up_name)
+  # A figure is built only when listed in `display`; the CI bounds are carried
+  # only for the error bar.
+  pfig <- if ("fig_prop" %in% display) "prop_fig"                # dot-plot target
+  dfig <- if (nd > 0 && "fig_diff" %in% display) "diff_fig"      # error-bar target
+  ci_cols <- if (!is.null(dfig)) c(lo_name, up_name)
 
   # Column order of the real data: name, SOC, per-arm n/(%), numeric diffs,
   # hidden helpers last. The two figure columns are synthesized by the plots and
   # positioned after SOC by lt_move() below, so the figures lead the numeric
   # columns as in the forest-plot convention.
-  arm_cols <- as.vector(rbind(name_n, name_prop)) # n_1, prop_1, n_2, prop_2, ...
+  #
+  # `n` / `prop` shown only when listed in `display`. The per-arm proportions are
+  # still carried, hidden, when the dot plot reads them; otherwise they, and any
+  # unshown column, are left out of the data.
+  show_n <- if ("n" %in% display) name_n
+  show_prop <- if ("prop" %in% display) name_prop
+  prop_hidden <- if (!is.null(pfig)) setdiff(prop_cols, show_prop)
+  arm_cols <- intersect( # n_1, prop_1, n_2, prop_2, ...
+    as.vector(rbind(name_n, name_prop)), c(show_n, show_prop, prop_hidden)
+  )
+  shown_arm_cols <- setdiff(arm_cols, prop_hidden)
   visible <- c("name", if (display_soc_toggle) "soc_name", arm_cols, diff_name)
   hidden_tail <- c("parameter", "hide_prop", "hide_n", ci_cols)
   tbl <- tbl[, c(visible, hidden_tail), drop = FALSE]
@@ -86,13 +99,15 @@ format_lt_forestly <- function(outdata,
   # Column labels: arm n/(%), numeric diff header per comparison arm.
   labels <- list(name = outdata$ae_col_header)
   if (display_soc_toggle) labels$soc_name <- "SOC"
-  for (nm in name_n) labels[[nm]] <- "n"
-  for (nm in name_prop) labels[[nm]] <- "(%)"
+  for (nm in show_n) labels[[nm]] <- "n"
+  for (nm in show_prop) labels[[nm]] <- "(%)"
   for (k in seq_len(nd)) labels[[diff_name[k]]] <- group[outdata$index_diff[k]]
   x <- lt::lt_label(x, labels)
 
   # Numeric formatting: proportions wrapped as "(x.x)", diffs to `digits`.
-  x <- lt::lt_format(x, name_prop, decimals = digits, prefix = "(", suffix = ")")
+  if (length(show_prop)) {
+    x <- lt::lt_format(x, show_prop, decimals = digits, prefix = "(", suffix = ")")
+  }
   if (nd > 0) x <- lt::lt_format(x, diff_name, decimals = digits)
 
   # Per-arm treatment-group spanners "<Group><br>(N=...)" over each n/(%) pair.
@@ -101,7 +116,8 @@ format_lt_forestly <- function(outdata,
       "<span title=\"%s (N=%s)\">%s<br>(N=%s)</span>",
       group[i], outdata$n_pop[i], group[i], outdata$n_pop[i]
     )
-    x <- lt::lt_spanner(x, I(header), c(name_n[i], name_prop[i]))
+    arm_i <- intersect(c(name_n[i], name_prop[i]), shown_arm_cols)
+    if (length(arm_i)) x <- lt::lt_spanner(x, I(header), arm_i)
   }
   if (diff_shown && nd > 0) {
     x <- lt::lt_spanner(x, I(outdata$diff_col_header), diff_name)
@@ -110,18 +126,20 @@ format_lt_forestly <- function(outdata,
   # Inline proportion dot plot: one dot per arm on a shared scale, footer legend
   # keyed by arm color. Dots are staggered onto separate tracks so near-equal
   # per-arm proportions stay distinguishable (as in the original forest plot).
-  x <- lt::lt_dotplot(
-    x, prop_cols,
-    into = pfig,
-    color = outdata$fig_prop_color,
-    labels = group[seq_len(ng)],
-    limits = outdata$fig_prop_range,
-    width = w$fig,
-    stagger = TRUE,
-    axis = TRUE,
-    hide = FALSE # the per-arm proportions stay visible as numeric columns
-  )
-  x <- lt::lt_label(x, list(pfig, "AE Proportion (%)"))
+  if (!is.null(pfig)) {
+    x <- lt::lt_dotplot(
+      x, prop_cols,
+      into = pfig,
+      color = outdata$fig_prop_color,
+      labels = group[seq_len(ng)],
+      limits = outdata$fig_prop_range,
+      width = w$fig,
+      stagger = TRUE,
+      axis = TRUE,
+      hide = FALSE # the per-arm proportions stay visible as numeric columns
+    )
+    x <- lt::lt_label(x, list(pfig, "AE Proportion (%)"))
+  }
 
   # Inline risk-difference error-bar: one point + 95% CI per comparison, stacked,
   # shared scale, zero reference line, favor-direction axis label. Color + legend
@@ -132,7 +150,7 @@ format_lt_forestly <- function(outdata,
   })
   eb_color <- if (nd > 1) outdata$fig_diff_color else FALSE
   eb_labels <- if (nd > 1) group[outdata$index_diff] else NULL
-  if (nd > 0) {
+  if (!is.null(dfig)) {
     x <- do.call(lt::lt_errorbar, c(
       list(x), eb_series,
       list(
@@ -152,22 +170,20 @@ format_lt_forestly <- function(outdata,
   # Place the synthesized figure columns right after SOC, or the term column when
   # SOC is excluded (before the numeric columns); the plots appended them last
   # via `into=`.
-  x <- lt::lt_move(x, c(pfig, dfig), after = if (display_soc_toggle) "soc_name" else "name")
+  figs <- c(pfig, dfig)
+  if (length(figs)) x <- lt::lt_move(x, figs, after = if (display_soc_toggle) "soc_name" else "name")
 
   # Column widths (px). The synthesized figure columns carry the figure width.
-  width_cols <- c(
-    "name", if (display_soc_toggle) "soc_name", arm_cols, pfig, diff_name,
-    if (nd > 0) dfig
-  )
+  width_cols <- c("name", if (display_soc_toggle) "soc_name", arm_cols, pfig, diff_name, dfig)
   width_px <- c(
-    rep(w$term, 1 + display_soc_toggle), rep(c(w$n, w$prop), m), w$fig,
-    rep(w$diff, nd), if (nd > 0) w$fig
+    rep(w$term, 1 + display_soc_toggle), ifelse(arm_cols %in% name_n, w$n, w$prop),
+    rep(w$fig, length(pfig)), rep(w$diff, nd), rep(w$fig, length(dfig))
   )
   x <- lt::lt_width(x, list(width_cols, paste0(width_px, "px")))
 
   # Numeric diff columns not shown at start are offered in the show/hide menu
   # (SOC is either in the menu or excluded from the data above).
-  fully_hidden <- c("parameter", "hide_prop", "hide_n", ci_cols)
+  fully_hidden <- c("parameter", "hide_prop", "hide_n", ci_cols, prop_hidden)
   menu_hidden <- character(0)
 
   if (display_soc_toggle) menu_hidden <- "soc_name"
@@ -179,7 +195,7 @@ format_lt_forestly <- function(outdata,
   hide_menu <- if (length(menu_hidden)) menu_hidden else TRUE
 
   # Numeric columns shown at start (n, (%), difference) for ae_forestly() sliders.
-  range_cols <- setdiff(c(name_n, name_prop, diff_name), unique(c(fully_hidden, menu_hidden)))
+  range_cols <- setdiff(c(shown_arm_cols, diff_name), unique(c(fully_hidden, menu_hidden)))
 
   list(x = x, hide_menu = hide_menu, range_cols = range_cols)
 }

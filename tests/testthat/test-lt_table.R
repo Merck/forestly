@@ -36,3 +36,27 @@ test_that("format_lt_forestly(): diff columns are offered in the show/hide menu"
   # diff columns are named after the comparison arms (diff_<k>).
   expect_true(all(out$diff_name %in% built$hide_menu))
 })
+
+test_that("ae_forestly(): figures appear only when listed in `display`", {
+  m <- meta_ae_test() |>
+    prepare_ae_forestly(population = "apat", observation = "wk12", parameter = "any;rel;ser")
+  has_figs <- function(display) {
+    html <- paste(as.character(ae_forestly(format_ae_forestly(m, display = display))), collapse = "")
+    c(prop = grepl("AE Proportion (%)", html, fixed = TRUE),
+      diff = grepl("Risk Difference", html, fixed = TRUE))
+  }
+  expect_equal(has_figs(c("n", "prop", "fig_prop", "fig_diff")), c(prop = TRUE, diff = TRUE))
+  expect_equal(has_figs(c("n", "prop", "fig_prop")), c(prop = TRUE, diff = FALSE))
+  expect_equal(has_figs(c("n", "prop", "fig_diff")), c(prop = FALSE, diff = TRUE))
+  expect_equal(has_figs(c("n", "prop")), c(prop = FALSE, diff = FALSE))
+})
+
+test_that("format_lt_forestly(): n and (%) columns follow `display`", {
+  m <- meta_ae_test() |>
+    prepare_ae_forestly(population = "apat", observation = "wk12", parameter = "any;rel;ser")
+  shown <- function(display) format_lt_forestly(format_ae_forestly(m, display = display))$range_cols
+
+  expect_false(any(grepl("^(n|prop)_", shown("fig_prop"))))
+  expect_true(length(shown("n")) > 0 && all(grepl("^n_", shown("n"))))
+  expect_true(any(grepl("^prop_", shown("prop"))))
+})
