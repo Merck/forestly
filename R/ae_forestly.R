@@ -165,13 +165,10 @@ ae_forestly <- function(outdata,
                         max_page = NULL,
                         download_button = FALSE,
                         width = NULL) {
-  if (!is.null(display_diff_toggle)) {
-    warning(
-      "`display_diff_toggle` is deprecated and ignored; the risk-difference ",
-      "columns are always offered in the Show/Hide columns menu.",
-      call. = FALSE
-    )
-  }
+  if (!is.null(display_diff_toggle)) warning(
+    "`display_diff_toggle` is deprecated and will be removed in future; ",
+    "the risk-difference columns are always offered in the Show/Hide columns menu."
+  )
 
   # Set filter parameter
   if (!is.null(filter)) {
