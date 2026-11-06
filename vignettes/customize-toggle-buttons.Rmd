@@ -79,14 +79,13 @@ meta <- meta_adam(population = adsl, observation = adae) |>
 
 # Step 2: toggle risk difference columns
 
-Users can control the display of risk difference columns using the `display_diff_toggle = ...` argument in the `ae_forestly()` function.
+The numeric risk difference columns (`diff`) are always offered in the "Show/Hide columns" menu above the table, hidden by default unless `"diff"` is in the `display` argument of `format_ae_forestly()`. (The `display_diff_toggle` argument of `ae_forestly()` is deprecated and ignored.)
 
-In the example below, we enable the risk difference toggle button by setting `display_diff_toggle = TRUE`. This adds an interactive "Show/Hide Risk Difference" button above the table, allowing users to dynamically show or hide all risk difference related columns, including the difference values (`diff`) and the risk difference visualization (`fig_diff`).
+The `display_soc_toggle = ...` argument controls the SOC column: if `TRUE`, it is included in the table and offered in the same menu (hidden by default); if `FALSE`, it is left out of the table entirely. Leaving it out makes the saved HTML file slightly smaller, which only matters for very large data sets.
 
 ```{r}
 meta |>
   prepare_ae_forestly() |>
   format_ae_forestly(display = c("n", "prop", "fig_prop", "fig_diff", "diff")) |>
-  ae_forestly(display_diff_toggle = TRUE,
-              display_soc_toggle = TRUE)
+  ae_forestly(display_soc_toggle = TRUE)
 ```

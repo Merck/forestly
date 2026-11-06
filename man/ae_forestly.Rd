@@ -7,7 +7,7 @@
 ae_forestly(
   outdata,
   display_soc_toggle = TRUE,
-  display_diff_toggle = FALSE,
+  display_diff_toggle = NULL,
   filter = c("prop", "n"),
   filter_label = NULL,
   filter_range = NULL,
@@ -20,9 +20,15 @@ ae_forestly(
 \arguments{
 \item{outdata}{An \code{outdata} object created by \code{\link[=format_ae_forestly]{format_ae_forestly()}}.}
 
-\item{display_soc_toggle}{A boolean value to display SOC toggle button.}
+\item{display_soc_toggle}{Whether to include the SOC column in the table. If
+\code{TRUE}, it is offered in the "Show/Hide columns" menu (hidden by default); if
+\code{FALSE}, it is left out of the table entirely. Including it makes the saved
+HTML file slightly larger, which only matters for very large data sets.}
 
-\item{display_diff_toggle}{A boolean value to display risk difference toggle button.}
+\item{display_diff_toggle}{Deprecated and ignored. The numeric risk-difference
+columns are always in the table and, unless \code{"diff"} is in the \code{display}
+argument of \code{\link[=format_ae_forestly]{format_ae_forestly()}}, offered in the "Show/Hide columns" menu
+(hidden by default).}
 
 \item{filter}{The variable the incidence slider (the "Incidence (\%) in One or
 More Treatment Groups" chip in the control bar) filters on: \code{"prop"} for

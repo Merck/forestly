@@ -19,8 +19,14 @@
 #' Display interactive forest plot
 #'
 #' @param outdata An `outdata` object created by [format_ae_forestly()].
-#' @param display_soc_toggle A boolean value to display SOC toggle button.
-#' @param display_diff_toggle A boolean value to display risk difference toggle button.
+#' @param display_soc_toggle Whether to include the SOC column in the table. If
+#'   `TRUE`, it is offered in the "Show/Hide columns" menu (hidden by default); if
+#'   `FALSE`, it is left out of the table entirely. Including it makes the saved
+#'   HTML file slightly larger, which only matters for very large data sets.
+#' @param display_diff_toggle Deprecated and ignored. The numeric risk-difference
+#'   columns are always in the table and, unless `"diff"` is in the `display`
+#'   argument of [format_ae_forestly()], offered in the "Show/Hide columns" menu
+#'   (hidden by default).
 #' @param filter The variable the incidence slider (the "Incidence (%) in One or
 #'   More Treatment Groups" chip in the control bar) filters on: `"prop"` for
 #'   incidence (%) or `"n"` for the number of AEs. Use `NULL` to hide the slider.
@@ -151,7 +157,7 @@
 #' }
 ae_forestly <- function(outdata,
                         display_soc_toggle = TRUE,
-                        display_diff_toggle = FALSE,
+                        display_diff_toggle = NULL,
                         filter = c("prop", "n"),
                         filter_label = NULL,
                         filter_range = NULL,
@@ -159,6 +165,11 @@ ae_forestly <- function(outdata,
                         max_page = NULL,
                         download_button = FALSE,
                         width = NULL) {
+  if (!is.null(display_diff_toggle)) warning(
+    "`display_diff_toggle` is deprecated and will be removed in future; ",
+    "the risk-difference columns are always offered in the Show/Hide columns menu."
+  )
+
   # Set filter parameter
   if (!is.null(filter)) {
     display_filter = TRUE
@@ -443,8 +454,7 @@ ae_forestly <- function(outdata,
   # ---- Build the interactive lt table ----
   built <- format_lt_forestly(
     outdata,
-    display_soc_toggle = display_soc_toggle,
-    display_diff_toggle = display_diff_toggle
+    display_soc_toggle = display_soc_toggle
   )
   # forestly-ae on lt's container scopes cell styles and sizes the table (see
   # inst/css/forestly-widgets.css); per-column widths from format_lt_forestly() kept.
@@ -469,9 +479,9 @@ ae_forestly <- function(outdata,
     parameter = list(
       type = "select", choices = param_levels, selected = param_levels[1],
       label = ae_label, box = FALSE  # single-choice only; no custom AE-criteria set
-    ),
-    soc_name = "select"
+    )
   )
+  if (display_soc_toggle) filter_cfg$soc_name <- "select"
   for (nm in built$range_cols) filter_cfg[[nm]] <- "range"
   if (display_filter) {
     slider_col <- if (filter == "prop") "hide_prop" else "hide_n"
