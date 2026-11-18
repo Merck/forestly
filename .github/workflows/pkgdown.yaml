@@ -5,22 +5,56 @@ on:
     branches: [main, master]
   pull_request:
     branches: [main, master]
+    types: [opened, reopened, synchronize, closed]
+  delete:
   release:
     types: [published]
   workflow_dispatch:
 
 name: pkgdown
 
+permissions:
+  contents: write
+  pull-requests: write # comment the preview URL
+
+env:
+  SURGE_TOKEN: ${{ secrets.SURGE_TOKEN }}
+
 jobs:
+  # PR preview domain (<owner>-<repo>-pr-<N>.surge.sh), shared by the jobs below.
+  preview:
+    runs-on: ubuntu-latest
+    outputs:
+      domain: ${{ steps.domain.outputs.domain }}
+    steps:
+      - id: domain
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REF: ${{ github.event.ref }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            num="${{ github.event.pull_request.number }}"
+          elif [ "${{ github.event_name }}" = "delete" ]; then
+            num=$(gh pr list --repo "${{ github.repository }}" --state all \
+              --head "$REF" --json number --jq '.[0].number // empty')
+          fi
+          if [ -n "$num" ]; then
+            name=$(echo "${{ github.repository }}-pr-$num" |
+              tr 'A-Z' 'a-z' | tr -c 'a-z0-9\n' '-')
+            echo "domain=$name.surge.sh" >> "$GITHUB_OUTPUT"
+          fi
+
   pkgdown:
+    needs: preview
+    # Skip closed PRs and branch deletions (see teardown).
+    if: github.event_name != 'delete' && github.event.action != 'closed'
     runs-on: ubuntu-latest
     # Only restrict concurrency for non-PR jobs
     concurrency:
       group: pkgdown-${{ github.event_name != 'pull_request' || github.run_id }}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-    permissions:
-      contents: write
+      PREVIEW_DOMAIN: ${{ needs.preview.outputs.domain }}
     steps:
       - uses: actions/checkout@v4
 
@@ -39,6 +73,27 @@ jobs:
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
+      # Fork PRs cannot read the secret or comment, so skip them.
+      - name: Deploy PR preview to surge
+        if: >-
+          github.event_name == 'pull_request' && env.SURGE_TOKEN != '' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          npm install -g surge
+          surge ./docs "$PREVIEW_DOMAIN"
+
+      - name: Comment preview URL
+        if: >-
+          github.event_name == 'pull_request' && env.SURGE_TOKEN != '' &&
+          github.event.pull_request.head.repo.full_name == github.repository
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: surge-preview
+          message: |
+            Site preview: https://${{ env.PREVIEW_DOMAIN }}
+
+            Updates on every push; removed when this PR closes.
+
       - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'
         uses: JamesIves/github-pages-deploy-action@v4.5.0
@@ -46,3 +101,20 @@ jobs:
           clean: false
           branch: gh-pages
           folder: docs
+
+  # Remove a PR preview. Branch deletion is the main trigger (deleting at merge
+  # cancels `closed` runs); `closed` covers kept branches. Idempotent.
+  teardown:
+    needs: preview
+    if: >-
+      github.event.action == 'closed' ||
+      (github.event_name == 'delete' && github.event.ref_type == 'branch')
+    runs-on: ubuntu-latest
+    env:
+      PREVIEW_DOMAIN: ${{ needs.preview.outputs.domain }}
+    steps:
+      - name: Teardown preview
+        if: env.SURGE_TOKEN != '' && env.PREVIEW_DOMAIN != ''
+        run: |
+          npm install -g surge
+          surge teardown "$PREVIEW_DOMAIN" || true
