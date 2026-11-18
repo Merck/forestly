@@ -38,9 +38,9 @@
 #' @param max_page A numeric value of max page number shown in the table.
 #' @param download_button A logical value to display download button.
 #' @param width Table container width, a number (interpreted as pixels) or any
-#'   CSS width value. If `NULL` (default), the table takes its natural width; a
-#'   value fixes the container width. Either way the width is capped at the
-#'   viewport, and a wider table scrolls inside rather than widening the page.
+#'   CSS width value. If `NULL` (default), the container fills its parent; a
+#'   value fixes the container width. A wider table scrolls inside rather than
+#'   widening the page, and the container can be resized by dragging its corner.
 #'
 #' @section Searching and filtering:
 #' The interactive table has a search box for each column (and, in the
@@ -459,9 +459,8 @@ ae_forestly <- function(outdata,
   # forestly-ae on lt's container scopes cell styles and sizes the table (see
   # inst/css/forestly-widgets.css); per-column widths from format_lt_forestly() kept.
   built$x <- lt::lt_wrap(built$x, class = "forestly-ae")
-  # A user-specified width fixes the container (still capped at the viewport by
-  # the `.forestly-ae` CSS, so a wide table scrolls inside rather than widening
-  # the page). A number is pixels.
+  # A user-specified width fixes the container; a wider table scrolls inside
+  # rather than widening the page. A number is pixels.
   if (!is.null(width)) {
     width <- if (is.numeric(width)) paste0(width, "px") else width
     built$x <- lt::lt_wrap(built$x, style = paste0("width:", width))

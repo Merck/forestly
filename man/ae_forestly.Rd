@@ -47,9 +47,9 @@ If only one value is provided, it will be used as the maximum and minimum will b
 \item{download_button}{A logical value to display download button.}
 
 \item{width}{Table container width, a number (interpreted as pixels) or any
-CSS width value. If \code{NULL} (default), the table takes its natural width; a
-value fixes the container width. Either way the width is capped at the
-viewport, and a wider table scrolls inside rather than widening the page.}
+CSS width value. If \code{NULL} (default), the container fills its parent; a
+value fixes the container width. A wider table scrolls inside rather than
+widening the page, and the container can be resized by dragging its corner.}
 }
 \value{
 An AE forest plot saved as a \code{shiny.tag.list} object.
