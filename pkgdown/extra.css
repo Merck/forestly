@@ -45,3 +45,8 @@ footer {
         top: 0;
     }
 }
+/* Bootstrap sets `display: block` on tables; restore it for the forest table
+   so it sizes as a normal table inside `.lt-wrap`. */
+.forestly-ae table {
+    display: table;
+}

@@ -1,12 +1,7 @@
 .forestly-ae {
-  /* Natural table width, centered (margin-left:50% + translateX back half its
-     width), capped below the viewport so a wider table breaks out of a narrow
-     parent yet still scrolls inside `.lt-wrap` rather than adding a page
-     scrollbar. 40px slack ~ scrollbar + gutter; CSS can't read the real width. */
-  width: max-content;
-  max-width: calc(100vw - 40px);
-  margin-left: 50%;
-  transform: translateX(-50%);
+  /* Parent's width by default (a wider table scrolls inside `.lt-wrap`); the
+     user can drag the corner to resize. */
+  resize: horizontal;
 
   /* One line per body-data cell, clipped with an ellipsis, full text on hover;
      skip figure (svg) cells. Header (thead), footer (tfoot) and drill-down
